@@ -12,17 +12,17 @@ final class SwiftDemangleTests: XCTestCase {
         let mangled = "$s4test10returnsOptyxycSgxyScMYccSglF"
         let demangled = "test.returnsOpt<A>((@Swift.MainActor () -> A)?) -> (() -> A)?"
         let opts: DemangleOptions = .defaultOptions
-        let result = mangled.demangling(opts) ?? ""
+        let result = mangled.demangling(opts)
         XCTAssertEqual(result, demangled, "\n\(mangled) ---> \n\(result)\n\(demangled)")
     }
     
     func testDemangles() throws {
         loadAndForEachMangles(self.mangles) { mangled, demangled in
             var opts: DemangleOptions = .defaultOptions
-            var result = mangled.demangling(opts) ?? ""
+            var result = mangled.demangling(opts)
             if result != demangled {
                 opts.isClassify = true
-                result = mangled.demangling(opts) ?? ""
+                result = mangled.demangling(opts)
             }
             if result != demangled {
                 print("[TEST] for \(mangled) failed")
@@ -34,7 +34,12 @@ final class SwiftDemangleTests: XCTestCase {
         
         loadAndForEachMangles(self.simplified_mangles) { mangled, demangled in
             let opts: DemangleOptions = .simplifiedOptions
-            let result = mangled.demangling(opts) ?? ""
+            let result = mangled.demangling(opts)
+            if result != demangled {
+                print("[TEST] simplified demangle for \(mangled) failed")
+            } else {
+                print("[TEST] simplified demangle for \(mangled) succeed")
+            }
             XCTAssertEqual(result, demangled, "\n\(mangled) ---> \n\(result)\n\(demangled)")
         }
     }
