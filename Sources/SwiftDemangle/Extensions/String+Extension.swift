@@ -9,11 +9,11 @@ import Foundation
 
 public extension String {
     
-    public var demangled: String {
+    var demangled: String {
         return self.demangling(.defaultOptions)
     }
     
-    public func demangling(_ options: DemangleOptions) -> String {
+    func demangling(_ options: DemangleOptions) -> String {
         guard let regex = try? NSRegularExpression(pattern: "[^ \n\r\t]+", options: []) else { return self }
         return regex.matches(in: self, options: [], range: NSRange(startIndex..<endIndex, in: self)).reversed().reduce(self, { (text, match) -> String in
             if let range = Range<String.Index>.init(match.range, in: text) {

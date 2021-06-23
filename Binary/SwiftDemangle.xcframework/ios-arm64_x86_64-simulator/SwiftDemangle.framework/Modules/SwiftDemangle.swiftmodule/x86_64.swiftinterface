@@ -33,15 +33,15 @@ public struct DemangleOptions : Swift.OptionSet {
   public typealias Element = SwiftDemangle.DemangleOptions
   public typealias RawValue = Swift.Int
 }
-extension String {
-  public var demangled: Swift.String? {
-    get
-  }
-  public func demangling(_ options: SwiftDemangle.DemangleOptions) -> Swift.String?
-}
 extension Optional : Swift.Comparable where Wrapped == Swift.Int {
   public static func == (lhs: Swift.Int?, rhs: Swift.Int?) -> Swift.Bool
   public static func < (lhs: Swift.Int?, rhs: Swift.Int?) -> Swift.Bool
+}
+extension String {
+  public var demangled: Swift.String {
+    get
+  }
+  public func demangling(_ options: SwiftDemangle.DemangleOptions) -> Swift.String
 }
 public protocol StringIntegerIndexable : Swift.StringProtocol {
   subscript(indexRange: Swift.Range<Swift.Int>) -> Swift.Substring { get }
