@@ -31,6 +31,6 @@ let package = Package(
             name: "SwiftDemangleTests",
             dependencies: ["SwiftDemangle"]),
         .binaryTarget(name: "SwiftDemangleFramework",
-                      path: "Binary/SwiftDemangleFramework.xcframework"),
+                      path: "Binary/SwiftDemangle.xcframework"),
     ]
 )
