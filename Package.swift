@@ -32,5 +32,6 @@ let package = Package(
             dependencies: ["SwiftDemangle"]),
         .binaryTarget(name: "SwiftDemangleFramework",
                       path: "Binary/SwiftDemangle.xcframework"),
-    ]
+    ],
+    swiftLanguageVersions: [.v5]
 )
