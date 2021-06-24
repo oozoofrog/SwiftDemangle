@@ -8,21 +8,21 @@ final class SwiftDemangleTests: XCTestCase {
         XCTAssertEqual(Punycode(string: punycoded).decode(), encoded)
     }
     
-    func testDemangle() {
+    func testDemangle() throws {
         let mangled = "$s4test10returnsOptyxycSgxyScMYccSglF"
         let demangled = "test.returnsOpt<A>((@Swift.MainActor () -> A)?) -> (() -> A)?"
         let opts: DemangleOptions = .defaultOptions
-        let result = mangled.demangling(opts)
+        let result = try mangled.demangling(opts)
         XCTAssertEqual(result, demangled, "\n\(mangled) ---> \n\(result)\n\(demangled)")
     }
     
     func testDemangles() throws {
-        loadAndForEachMangles(self.mangles) { mangled, demangled in
+        try loadAndForEachMangles(self.mangles) { mangled, demangled in
             var opts: DemangleOptions = .defaultOptions
-            var result = mangled.demangling(opts)
+            var result = try mangled.demangling(opts)
             if result != demangled {
                 opts.isClassify = true
-                result = mangled.demangling(opts)
+                result = try mangled.demangling(opts)
             }
             if result != demangled {
                 print("[TEST] for \(mangled) failed")
@@ -32,9 +32,9 @@ final class SwiftDemangleTests: XCTestCase {
             XCTAssertEqual(result, demangled, "\n\(mangled) ---> \n\(result)\n\(demangled)")
         }
         
-        loadAndForEachMangles(self.simplified_mangles) { mangled, demangled in
+        try loadAndForEachMangles(self.simplified_mangles) { mangled, demangled in
             let opts: DemangleOptions = .simplifiedOptions
-            let result = mangled.demangling(opts)
+            let result = try mangled.demangling(opts)
             if result != demangled {
                 print("[TEST] simplified demangle for \(mangled) failed")
             } else {
@@ -76,7 +76,7 @@ final class SwiftDemangleTests: XCTestCase {
         XCTAssertFalse(extraOptionSetOnly.isValidOptionSet)
     }
     
-    func loadAndForEachMangles(_ mangles: String, forEach handler: (_ mangled: String, _ demangled: String) -> Void) {
+    func loadAndForEachMangles(_ mangles: String, forEach handler: (_ mangled: String, _ demangled: String) throws -> Void) throws {
         for mangledPair in mangles.split(separator: "\n") where mangledPair.isNotEmpty && !mangledPair.hasPrefix("//") {
             var range = mangledPair.range(of: " ---> ")
             if range == nil {
@@ -88,7 +88,7 @@ final class SwiftDemangleTests: XCTestCase {
             guard let range = range else { continue }
             let mangled = String(mangledPair[mangledPair.startIndex..<range.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
             let demangled = String(mangledPair[range.upperBound..<mangledPair.endIndex])
-            handler(mangled, demangled)
+            try handler(mangled, demangled)
         }
     }
     

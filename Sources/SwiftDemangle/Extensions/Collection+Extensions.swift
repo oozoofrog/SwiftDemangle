@@ -53,15 +53,15 @@ extension Array where Element: CollectionOptional {
 
 extension BidirectionalCollection where Index: BinaryInteger {
     
-    func interleave(eachHandle: (Index, Element) -> Void, betweenHandle: () -> Void) {
+    func interleave(eachHandle: (Index, Element) throws -> Void, betweenHandle: () throws -> Void) throws {
         var index = self.startIndex
         if let first = self.first {
-            eachHandle(index, first)
+            try eachHandle(index, first)
         }
-        dropFirst().forEach { element in
-            betweenHandle()
+        try dropFirst().forEach { element in
+            try betweenHandle()
             index += 1
-            eachHandle(index, element)
+            try eachHandle(index, element)
         }
     }
     

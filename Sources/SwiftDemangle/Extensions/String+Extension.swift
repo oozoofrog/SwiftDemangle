@@ -10,14 +10,15 @@ import Foundation
 public extension String {
     
     var demangled: String {
-        return self.demangling(.defaultOptions)
+        guard let demangled = try? self.demangling(.defaultOptions) else { return self }
+        return demangled
     }
     
-    func demangling(_ options: DemangleOptions) -> String {
+    func demangling(_ options: DemangleOptions) throws -> String {
         guard let regex = try? NSRegularExpression(pattern: "[^ \n\r\t]+", options: []) else { return self }
-        return regex.matches(in: self, options: [], range: NSRange(startIndex..<endIndex, in: self)).reversed().reduce(self, { (text, match) -> String in
+        return try regex.matches(in: self, options: [], range: NSRange(startIndex..<endIndex, in: self)).reversed().reduce(self, { (text, match) -> String in
             if let range = Range<String.Index>.init(match.range, in: text) {
-                let demangled = text[range].demangleSymbolAsString(with: options)
+                let demangled = try text[range].demangleSymbolAsString(with: options)
                 return text.replacingCharacters(in: range, with: demangled)
             } else {
                 return text

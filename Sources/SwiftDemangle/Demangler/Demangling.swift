@@ -17,7 +17,7 @@ protocol Demangling {
     func demangleSymbolAsNode() -> Node?
     func demangleSymbol() -> Node?
     func demangleOldSymbolAsNode() -> Node?
-    func demangleSymbolAsString(with options: DemangleOptions) -> String
+    func demangleSymbolAsString(with options: DemangleOptions) throws -> String
 }
 
 extension String: Demangling, Mangling {}
@@ -115,12 +115,12 @@ extension Demangling where Self: StringProtocol, Self: Mangling {
         return mangler.demangleTopLevel()
     }
     
-    internal func demangleSymbolAsString(with options: DemangleOptions) -> String {
+    internal func demangleSymbolAsString(with options: DemangleOptions) throws -> String {
         let root = demangleSymbolAsNode()
         var name = options.isClassify ? self.classified(root) : ""
         if let root = root {
             var printer = NodePrinter(options: options)
-            if let nodeToString = printer.printRoot(root).emptyToNil() {
+            if let nodeToString = try printer.printRoot(root).emptyToNil() {
                 name += nodeToString
             } else {
                 name = String(self)
