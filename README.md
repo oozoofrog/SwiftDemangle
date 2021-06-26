@@ -1,7 +1,6 @@
-# SwiftDemangling
-SwiftDemangling on Swift
+# SwiftDemangle
 
-based on [swift-demangle](https://github.com/apple/swift/blob/main/tools/swift-demangle/swift-demangle.cpp) [Swift 5.5](https://github.com/apple/swift/tree/release/5.5)
+demangler for mangled symbol translated from [swift-demangle](https://github.com/apple/swift/blob/main/tools/swift-demangle/swift-demangle.cpp) [Swift 5.5](https://github.com/apple/swift/tree/release/5.5)
 
 ## Usage
 
