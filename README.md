@@ -1,7 +1,7 @@
 # SwiftDemangling
-SwiftDemangling by Swift
+SwiftDemangling on Swift
 
-based by swift-demangle on [Swift 5.5](https://github.com/apple/swift/tree/release/5.5)
+based on [swift-demangle](https://github.com/apple/swift/blob/main/tools/swift-demangle/swift-demangle.cpp) [Swift 5.5](https://github.com/apple/swift/tree/release/5.5)
 
 ## Usage
 
