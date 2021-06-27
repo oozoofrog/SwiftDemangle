@@ -758,14 +758,14 @@ class OldDemangler: Demanglerable {
     func demangleBoundGenericArgs(nominalType: Node) -> Node? {
         var nominalType = nominalType
         // Generic arguments for the outermost type come first.
-        guard var parentOrModule = nominalType.children.first else { return nil }
+        guard var parentOrModule = nominalType.copyOfChildren.first else { return nil }
 
         if ![Node.Kind.Module, .Function, .Extension].contains(parentOrModule.kind) {
             guard let node = demangleBoundGenericArgs(nominalType: parentOrModule) else { return nil }
             parentOrModule = node
             let result = Node(kind: nominalType.kind)
             result.add(parentOrModule)
-            result.add(nominalType.children[1])
+            result.add(nominalType.children(1))
             nominalType = result
         }
        
@@ -778,7 +778,7 @@ class OldDemangler: Demanglerable {
         
         // If there were no arguments at this level there is nothing left
         // to do.
-        if args.children.isEmpty {
+        if args.copyOfChildren.isEmpty {
             return nominalType
         }
         
@@ -1031,10 +1031,10 @@ class OldDemangler: Demanglerable {
                     name = nil
                 }
             case .PrivateDeclName: // identifier file-discriminator?
-                if name.map(\.numberOfChildren).or(0) > 1, name?.children[1].text == "subscript" {
+                if name.map(\.numberOfChildren).or(0) > 1, name?.children(1).text == "subscript" {
                     isSubscript = true
                     
-                    let discriminator = name?.children[0]
+                    let discriminator = name?.children(0)
                     
                     // Create new PrivateDeclName with no 'subscript' identifier child
                     name = .init(kind: .PrivateDeclName)

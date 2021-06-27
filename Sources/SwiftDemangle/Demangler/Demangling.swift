@@ -223,7 +223,7 @@ extension Demangling where Self: StringProtocol, Self: Mangling {
                 node = nd.firstChild
             case .Global:
                 var newNode: Node?
-                for child in nd.children {
+                for child in nd.copyOfChildren {
                     if !child.kind.isFunctionAttr {
                         newNode = child
                         break

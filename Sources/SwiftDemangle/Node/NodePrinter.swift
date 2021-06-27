@@ -41,93 +41,93 @@ struct NodePrinter {
         switch kind {
         case .Static:
             printer("static ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .CurryThunk:
             printer("curry thunk of ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .DispatchThunk:
             printer("dispatch thunk of ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .MethodDescriptor:
             printer("method descriptor for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .MethodLookupFunction:
             printer("method lookup function for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .ObjCMetadataUpdateFunction:
             printer("ObjC metadata update function for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .ObjCResilientClassStub:
             printer("ObjC resilient class stub for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .FullObjCResilientClassStub:
             printer("full ObjC resilient class stub for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .OutlinedBridgedMethod:
             printer("outlined bridged method (\(node.text)) of ")
         case .OutlinedCopy:
             printer("outlined copy of ")
-            try print(node.children[0])
-            if node.children.count > 1 {
-                try print(node.children[1])
+            try print(node.children(0))
+            if node.numberOfChildren > 1 {
+                try print(node.children(1))
             }
         case .OutlinedConsume:
             printer("outlined consume of ")
-            try print(node.children[0])
-            if node.children.count > 1 {
-                try print(node.children[1])
+            try print(node.children(0))
+            if node.numberOfChildren > 1 {
+                try print(node.children(1))
             }
         case .OutlinedRetain:
             printer("outlined retain of ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .OutlinedRelease:
             printer("outlined release of ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .OutlinedInitializeWithTake:
             printer("outlined init with take of ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .OutlinedInitializeWithCopy:
             printer("outlined init with copy of ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .OutlinedAssignWithTake:
             printer("outlined assign with take of ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .OutlinedAssignWithCopy:
             printer("outlined assign with copy of ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .OutlinedDestroy:
             printer("outlined destroy of ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .OutlinedVariable:
             printer("outlined variable #\(node.index.or(0)) of ")
         case .Directness:
             printer("\(node.directness.text) ")
         case .AnonymousContext:
             if options.contains([.qualifyEntities, .displayExtensionContexts]) {
-                try print(node.children[1])
+                try print(node.children(1))
                 printer(".(unknown context at ")
-                try print(node.children[0])
+                try print(node.children(0))
                 printer(")")
-                if node.children.count >= 3, node.children[2].children.count > 0 {
+                if node.numberOfChildren >= 3, node.children(2).numberOfChildren > 0 {
                     printer("<")
-                    try print(node.children[2])
+                    try print(node.children(2))
                     printer(">")
                 }
             }
         case .Extension:
-            assert(node.children.count == 2 || node.children.count == 3, "Extension expects 2 or 3 children.")
+            assert(node.numberOfChildren == 2 || node.numberOfChildren == 3, "Extension expects 2 or 3 children.")
             if options.contains([.qualifyEntities, .displayExtensionContexts]) {
                 printer("(extension in ")
                 // Print the module where extension is defined.
-                try print(node.children[0], asPrefixContext: true)
+                try print(node.children(0), asPrefixContext: true)
                 printer("):")
             }
-            try print(node.children[1])
-            if node.children.count == 3 {
+            try print(node.children(1))
+            if node.numberOfChildren == 3 {
                 // Currently the runtime does not mangle the generic signature.
                 // This is an open to-do in swift::_buildDemanglingForContext().
                 if !options.contains(.printForTypeName) {
-                    try print(node.children[2])
+                    try print(node.children(2))
                 }
             }
         case .Variable:
@@ -140,7 +140,7 @@ struct NodePrinter {
             return try printEntity(entity: node, asPrefixContext: asPrefixContext, typePrinting: .noType, hasName: true)
         case .ExplicitClosure:
             let typePrinting: TypePrinting = options.contains(.showFunctionArgumentTypes) ? .functionStyle : .noType
-            return try printEntity(entity: node, asPrefixContext: asPrefixContext, typePrinting: typePrinting, hasName: false, extraName: "closure #", extraIndex: Int(node.children[1].index.or(0)) + 1)
+            return try printEntity(entity: node, asPrefixContext: asPrefixContext, typePrinting: typePrinting, hasName: false, extraName: "closure #", extraIndex: Int(node.children(1).index.or(0)) + 1)
             
         case .ImplicitClosure:
             let typePrinting: TypePrinting = options.contains(.showFunctionArgumentTypes) ? .functionStyle : .noType
@@ -149,7 +149,7 @@ struct NodePrinter {
                                    typePrinting: typePrinting,
                                    hasName: false,
                                    extraName: "implicit closure #",
-                                   extraIndex: Int(node.children[1].index.or(0)) + 1)
+                                   extraIndex: Int(node.children(1).index.or(0)) + 1)
         case .Global:
             try printChildren(node)
         case .Suffix:
@@ -161,16 +161,16 @@ struct NodePrinter {
         case .PropertyWrapperBackingInitializer:
             return try printEntity(entity: node, asPrefixContext: asPrefixContext, typePrinting: .noType, hasName: false, extraName: "property wrapper backing initializer")
         case .DefaultArgumentInitializer:
-            return try printEntity(entity: node, asPrefixContext: asPrefixContext, typePrinting: .noType, hasName: false, extraName: "default argument ", extraIndex: node.children[1].index.flatMap(Int.init).or(0))
+            return try printEntity(entity: node, asPrefixContext: asPrefixContext, typePrinting: .noType, hasName: false, extraName: "default argument ", extraIndex: node.children(1).index.flatMap(Int.init).or(0))
         case .DeclContext:
-            try print(node.children[0])
+            try print(node.children(0))
         case .Type:
-            try print(node.children[0])
+            try print(node.children(0))
         case .TypeMangling:
-            if node.children[0].kind == .LabelList {
-                try printFunctionType(labelList: node.children[0], type: node.children[1].children[0])
+            if node.children(0).kind == .LabelList {
+                try printFunctionType(labelList: node.children(0), type: node.children(1).children(0))
             } else {
-                try print(node.children[0])
+                try print(node.children(0))
             }
         case .Class,
              .Structure,
@@ -180,28 +180,28 @@ struct NodePrinter {
              .OtherNominalType:
             return try printEntity(entity: node, asPrefixContext: asPrefixContext, typePrinting: .noType, hasName: true)
         case .LocalDeclName:
-            try print(node.children[1])
+            try print(node.children(1))
             if options.contains(.displayLocalNameContexts) {
-                printer(" #\(node.children[0].index.or(0) + 1)")
+                printer(" #\(node.children(0).index.or(0) + 1)")
             }
         case .PrivateDeclName:
-            if node.children.count > 1 {
+            if node.numberOfChildren > 1 {
                 if options.contains(.showPrivateDiscriminators) {
                     printer("(")
                 }
-                try print(node.children[1])
+                try print(node.children(1))
                 
                 if options.contains(.showPrivateDiscriminators) {
-                    printer(" in " + node.children[0].text + ")")
+                    printer(" in " + node.children(0).text + ")")
                 }
             } else {
                 if options.contains(.showPrivateDiscriminators) {
-                    printer("(in " + node.children[0].text + ")")
+                    printer("(in " + node.children(0).text + ")")
                 }
             }
         case .RelatedEntityDeclName:
-            printer("related decl '" + node.children[0].text + "' for ")
-            try print(node.children[1])
+            printer("related decl '" + node.children(0).text + "' for ")
+            try print(node.children(1))
         case .Module:
             if options.contains(.displayModuleNames) {
                 printer(node.text)
@@ -247,7 +247,7 @@ struct NodePrinter {
         case .TupleElementName:
             printer(node.text + ": ")
         case .ReturnType:
-            if node.children.isEmpty {
+            if node.copyOfChildren.isEmpty {
                 printer(" -> " + node.text)
             } else {
                 printer(" -> ")
@@ -255,35 +255,35 @@ struct NodePrinter {
             }
             
         case .RetroactiveConformance:
-            if node.children.count != 2 {
+            if node.numberOfChildren != 2 {
                 return nil
             }
             
             printer("retroactive @ ")
-            try print(node.children[0])
-            try print(node.children[1])
+            try print(node.children(0))
+            try print(node.children(1))
         case .Weak:
             printer(ReferenceOwnership.weak.rawValue + " ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .Unowned:
             printer(ReferenceOwnership.unowned.rawValue + " ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .Unmanaged:
             printer(ReferenceOwnership.unmanaged.rawValue + " ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .InOut:
             printer("inout ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .Isolated:
             printer("isolated ")
-            try print(node.children[0])
+            try print(node.children(0))
             return nil
         case .Shared:
             printer("__shared ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .Owned:
             printer("__owned ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .NonObjCAttribute:
             printer("@nonobjc ")
         case .ObjCAttribute:
@@ -312,8 +312,8 @@ struct NodePrinter {
         case .IsSerialized:
             printer("serialized")
         case .GenericSpecializationParam:
-            try print(node.children[0])
-            for (offset, node) in node.children.enumerated() where offset > 0 {
+            try print(node.children(0))
+            for (offset, node) in node.copyOfChildren.enumerated() where offset > 0 {
                 if offset == 1 {
                     printer(" with ")
                 } else {
@@ -411,55 +411,55 @@ struct NodePrinter {
             printer(node.text + " postfix")
         case .LazyProtocolWitnessTableAccessor:
             printer("lazy protocol witness table accessor for type ")
-            try print(node.children[0])
+            try print(node.children(0))
             printer(" and conformance ")
-            try print(node.children[1])
+            try print(node.children(1))
         case .LazyProtocolWitnessTableCacheVariable:
             printer("lazy protocol witness table cache variable for type ")
-            try print(node.children[0])
+            try print(node.children(0))
             printer(" and conformance ")
-            try print(node.children[1])
+            try print(node.children(1))
         case .ProtocolSelfConformanceWitnessTable:
             printer("protocol self-conformance witness table for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .ProtocolWitnessTableAccessor:
             printer("protocol witness table accessor for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .ProtocolWitnessTable:
             printer("protocol witness table for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .ProtocolWitnessTablePattern:
             printer("protocol witness table pattern for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .GenericProtocolWitnessTable:
             printer("generic protocol witness table for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .GenericProtocolWitnessTableInstantiationFunction:
             printer("instantiation function for generic protocol witness table for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .ResilientProtocolWitnessTable:
             printer("resilient protocol witness table for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .VTableThunk:
             printer("vtable thunk for ")
-            try print(node.children[1])
+            try print(node.children(1))
             printer(" dispatching to ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .ProtocolSelfConformanceWitness:
             printer("protocol self-conformance witness for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .ProtocolWitness:
             printer("protocol witness for ")
-            try print(node.children[1])
+            try print(node.children(1))
             printer(" in conformance ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .PartialApplyForwarder:
             if options.contains(.shortenPartialApply) {
                 printer("partial apply")
             } else {
                 printer("partial apply forwarder")
             }
-            if node.children.isNotEmpty {
+            if node.copyOfChildren.isNotEmpty {
                 printer(" for ")
                 try printChildren(node)
             }
@@ -469,7 +469,7 @@ struct NodePrinter {
             } else {
                 printer("partial apply ObjC forwarder")
             }
-            if node.children.isNotEmpty {
+            if node.copyOfChildren.isNotEmpty {
                 printer(" for ")
                 try printChildren(node)
             }
@@ -481,9 +481,9 @@ struct NodePrinter {
                 printer("key path setter for ")
             }
             
-            try print(node.children[0])
+            try print(node.children(0))
             printer(" : ")
-            for child in node.children.dropFirst() {
+            for child in node.copyOfChildren.dropFirst() {
                 if child.kind == .IsSerialized {
                     printer(", ")
                 }
@@ -493,11 +493,11 @@ struct NodePrinter {
              .KeyPathHashThunkHelper:
             printer("key path index " + (node.kind == Node.Kind.KeyPathEqualsThunkHelper ? "equality" : "hash") + " operator for ")
             
-            var lastChildIndex = node.children.endIndex
-            var lastChild = node.children[lastChildIndex]
+            var lastChildIndex = node.copyOfChildren.endIndex
+            var lastChild = node.children(lastChildIndex)
             if lastChild.kind == .IsSerialized {
                 lastChildIndex -= 1
-                lastChild = node.children[lastChildIndex]
+                lastChild = node.children(lastChildIndex)
             }
             
             if lastChild.kind == .DependentGenericSignature {
@@ -508,28 +508,28 @@ struct NodePrinter {
             printer("(")
             for index in 0...lastChildIndex where index != 0 {
                 printer(", ")
-                try print(node.children[index])
+                try print(node.children(index))
             }
             printer(")")
         case .FieldOffset:
-            try print(node.children[0]) // directness
+            try print(node.children(0)) // directness
             printer("field offset for ")
-            try print(node.children[1])
+            try print(node.children(1))
         case .EnumCase:
             printer("enum case for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .ReabstractionThunk,
              .ReabstractionThunkHelper:
             if options.contains(.shortenThunk) {
                 printer("thunk for ")
-                try print(node.children[node.children.endIndex - 1])
+                try print(node.children(node.copyOfChildren.endIndex - 1))
                 return nil
             }
             printer("reabstraction thunk ")
             if node.kind == .ReabstractionThunkHelper {
                 printer("helper ")
             }
-            var children = node.children
+            var children = node.copyOfChildren
             if children.count == 3 {
                 try print(children.removeFirst())
                 printer(" ")
@@ -540,7 +540,7 @@ struct NodePrinter {
             try print(children[0])
         case .ReabstractionThunkHelperWithSelf:
             printer("reabstraction thunk ")
-            var children = node.children
+            var children = node.copyOfChildren
             if (children.count == 4) {
                 try print(children.removeFirst())
                 printer(" ")
@@ -578,129 +578,129 @@ struct NodePrinter {
             printer(node.index.or(0).hex)
         case .GenericTypeMetadataPattern:
             printer("generic type metadata pattern for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .Metaclass:
             printer("metaclass for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .ProtocolSelfConformanceDescriptor:
             printer("protocol self-conformance descriptor for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .ProtocolConformanceDescriptor:
             printer("protocol conformance descriptor for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .ProtocolDescriptor:
             printer("protocol descriptor for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .ProtocolRequirementsBaseDescriptor:
             printer("protocol requirements base descriptor for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .FullTypeMetadata:
             printer("full type metadata for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .TypeMetadata:
             printer("type metadata for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .TypeMetadataAccessFunction:
             printer("type metadata accessor for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .TypeMetadataInstantiationCache:
             printer("type metadata instantiation cache for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .TypeMetadataInstantiationFunction:
             printer("type metadata instantiation function for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .TypeMetadataSingletonInitializationCache:
             printer("type metadata singleton initialization cache for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .TypeMetadataCompletionFunction:
             printer("type metadata completion function for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .TypeMetadataDemanglingCache:
             printer("demangling cache variable for type metadata for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .TypeMetadataLazyCache:
             printer("lazy cache variable for type metadata for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .AssociatedConformanceDescriptor:
             printer("associated conformance descriptor for ")
-            try print(node.children[0])
+            try print(node.children(0))
             printer(".")
-            try print(node.children[1])
+            try print(node.children(1))
             printer(": ")
-            try print(node.children[2])
+            try print(node.children(2))
         case .DefaultAssociatedConformanceAccessor:
             printer("default associated conformance accessor for ")
-            try print(node.children[0])
+            try print(node.children(0))
             printer(".")
-            try print(node.children[1])
+            try print(node.children(1))
             printer(": ")
-            try print(node.children[2])
+            try print(node.children(2))
         case .AssociatedTypeDescriptor:
             printer("associated type descriptor for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .AssociatedTypeMetadataAccessor:
             printer("associated type metadata accessor for ")
-            try print(node.children[1])
+            try print(node.children(1))
             printer(" in ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .BaseConformanceDescriptor:
             printer("base conformance descriptor for ")
-            try print(node.children[0])
+            try print(node.children(0))
             printer(": ")
-            try print(node.children[1])
+            try print(node.children(1))
         case .DefaultAssociatedTypeMetadataAccessor:
             printer("default associated type metadata accessor for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .AssociatedTypeWitnessTableAccessor:
             printer("associated type witness table accessor for ")
-            try print(node.children[1])
+            try print(node.children(1))
             printer(" : ")
-            try print(node.children[2])
+            try print(node.children(2))
             printer(" in ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .BaseWitnessTableAccessor:
             printer("base witness table accessor for ")
-            try print(node.children[1])
+            try print(node.children(1))
             printer(" in ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .ClassMetadataBaseOffset:
             printer("class metadata base offset for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .PropertyDescriptor:
             printer("property descriptor for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .NominalTypeDescriptor:
             printer("nominal type descriptor for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .OpaqueTypeDescriptor:
             printer("opaque type descriptor for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .OpaqueTypeDescriptorAccessor:
             printer("opaque type descriptor accessor for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .OpaqueTypeDescriptorAccessorImpl:
             printer("opaque type descriptor accessor impl for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .OpaqueTypeDescriptorAccessorKey:
             printer("opaque type descriptor accessor key for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .OpaqueTypeDescriptorAccessorVar:
             printer("opaque type descriptor accessor var for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .CoroutineContinuationPrototype:
             printer("coroutine continuation prototype for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .ValueWitness:
-            printer(node.children[0].valueWitnessKind!.name)
+            printer(node.children(0).valueWitnessKind!.name)
             if options.contains(.shortenValueWitness) {
                 printer(" for ")
             } else {
                 printer(" value witness for ")
             }
-            try print(node.children[1])
+            try print(node.children(1))
         case .ValueWitnessTable:
             printer("value witness table for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .BoundGenericClass,
              .BoundGenericStructure,
              .BoundGenericEnum,
@@ -713,16 +713,16 @@ struct NodePrinter {
             
         case .SILBoxType:
             printer("@box ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .Metatype:
             var index = 0
             if node.numberOfChildren == 2 {
-                let repr = node.children[index]
+                let repr = node.children(index)
                 try print(repr)
                 printer(" ")
                 index += 1
             }
-            let type = node.children[index].children[0]
+            let type = node.children(index).children(0)
             try printWithParens(type)
             if type.isExistentialType {
                 printer(".Protocol")
@@ -732,21 +732,21 @@ struct NodePrinter {
         case .ExistentialMetatype:
             var index = 0
             if node.numberOfChildren == 2 {
-                let repr = node.children[index]
+                let repr = node.children(index)
                 try print(repr)
                 printer(" ")
                 index += 1
             }
-            let type = node.children[index]
+            let type = node.children(index)
             try print(type)
             printer(".Type")
         case .MetatypeRepresentation:
             printer(node.text)
         case .AssociatedTypeRef:
-            try print(node.children[0])
-            printer("." + node.children[1].text)
+            try print(node.children(0))
+            printer("." + node.children(1).text)
         case .ProtocolList:
-            guard let typeList = node.children.first else {
+            guard let typeList = node.copyOfChildren.first else {
                 return nil
             }
             if typeList.numberOfChildren == 0 {
@@ -758,24 +758,24 @@ struct NodePrinter {
             if node.numberOfChildren < 2 {
                 return nil
             }
-            let protocols = node.children[0]
-            let superclass = node.children[1]
+            let protocols = node.children(0)
+            let superclass = node.children(1)
             try print(superclass)
             printer(" & ")
-            if protocols.children.isEmpty {
+            if protocols.copyOfChildren.isEmpty {
                 return nil
             }
-            let typeList = protocols.children[0]
+            let typeList = protocols.children(0)
             try printChildren(typeList, separator: " & ")
         case .ProtocolListWithAnyObject:
-            if node.children.isEmpty {
+            if node.copyOfChildren.isEmpty {
                 return nil
             }
-            let protocols = node.children[0]
-            if protocols.children.isEmpty {
+            let protocols = node.children(0)
+            if protocols.copyOfChildren.isEmpty {
                 return nil
             }
-            let typeList = protocols.children[0]
+            let typeList = protocols.children(0)
             if typeList.numberOfChildren > 0 {
                 try printChildren(typeList, separator: " & ")
                 printer(" & ")
@@ -787,51 +787,51 @@ struct NodePrinter {
         case .AssociatedType:
             break
         case .OwningAddressor:
-            return try printAbstractStorage(node: node.children[0], asPrefixContext: asPrefixContext, extraName: "owningAddressor")
+            return try printAbstractStorage(node: node.children(0), asPrefixContext: asPrefixContext, extraName: "owningAddressor")
         case .OwningMutableAddressor:
-            return try printAbstractStorage(node: node.children[0], asPrefixContext: asPrefixContext, extraName: "owningMutableAddressor")
+            return try printAbstractStorage(node: node.children(0), asPrefixContext: asPrefixContext, extraName: "owningMutableAddressor")
         case .NativeOwningAddressor:
-            return try printAbstractStorage(node: node.children[0], asPrefixContext: asPrefixContext, extraName: "nativeOwningAddressor")
+            return try printAbstractStorage(node: node.children(0), asPrefixContext: asPrefixContext, extraName: "nativeOwningAddressor")
         case .NativeOwningMutableAddressor:
-            return try printAbstractStorage(node: node.children[0], asPrefixContext: asPrefixContext, extraName: "nativeOwningMutableAddressor")
+            return try printAbstractStorage(node: node.children(0), asPrefixContext: asPrefixContext, extraName: "nativeOwningMutableAddressor")
         case .NativePinningAddressor:
-            return try printAbstractStorage(node: node.children[0], asPrefixContext: asPrefixContext, extraName: "nativePinningAddressor")
+            return try printAbstractStorage(node: node.children(0), asPrefixContext: asPrefixContext, extraName: "nativePinningAddressor")
         case .NativePinningMutableAddressor:
-            return try printAbstractStorage(node: node.children[0], asPrefixContext: asPrefixContext, extraName: "nativePinningMutableAddressor")
+            return try printAbstractStorage(node: node.children(0), asPrefixContext: asPrefixContext, extraName: "nativePinningMutableAddressor")
         case .UnsafeAddressor:
-            return try printAbstractStorage(node: node.children[0], asPrefixContext: asPrefixContext, extraName: "unsafeAddressor")
+            return try printAbstractStorage(node: node.children(0), asPrefixContext: asPrefixContext, extraName: "unsafeAddressor")
         case .UnsafeMutableAddressor:
-            return try printAbstractStorage(node: node.children[0], asPrefixContext: asPrefixContext, extraName: "unsafeMutableAddressor")
+            return try printAbstractStorage(node: node.children(0), asPrefixContext: asPrefixContext, extraName: "unsafeMutableAddressor")
         case .GlobalGetter:
-            return try printAbstractStorage(node: node.children[0], asPrefixContext: asPrefixContext, extraName: "getter")
+            return try printAbstractStorage(node: node.children(0), asPrefixContext: asPrefixContext, extraName: "getter")
         case .Getter:
-            return try printAbstractStorage(node: node.children[0], asPrefixContext: asPrefixContext, extraName: "getter")
+            return try printAbstractStorage(node: node.children(0), asPrefixContext: asPrefixContext, extraName: "getter")
         case .Setter:
-            return try printAbstractStorage(node: node.children[0], asPrefixContext: asPrefixContext, extraName: "setter")
+            return try printAbstractStorage(node: node.children(0), asPrefixContext: asPrefixContext, extraName: "setter")
         case .MaterializeForSet:
-            return try printAbstractStorage(node: node.children[0], asPrefixContext: asPrefixContext, extraName: "materializeForSet")
+            return try printAbstractStorage(node: node.children(0), asPrefixContext: asPrefixContext, extraName: "materializeForSet")
         case .WillSet:
-            return try printAbstractStorage(node: node.children[0], asPrefixContext: asPrefixContext, extraName: "willset")
+            return try printAbstractStorage(node: node.children(0), asPrefixContext: asPrefixContext, extraName: "willset")
         case .DidSet:
-            return try printAbstractStorage(node: node.children[0], asPrefixContext: asPrefixContext, extraName: "didset")
+            return try printAbstractStorage(node: node.children(0), asPrefixContext: asPrefixContext, extraName: "didset")
         case .ReadAccessor:
-            return try printAbstractStorage(node: node.children[0], asPrefixContext: asPrefixContext, extraName: "read")
+            return try printAbstractStorage(node: node.children(0), asPrefixContext: asPrefixContext, extraName: "read")
         case .ModifyAccessor:
-            return try printAbstractStorage(node: node.children[0], asPrefixContext: asPrefixContext, extraName: "modify")
+            return try printAbstractStorage(node: node.children(0), asPrefixContext: asPrefixContext, extraName: "modify")
         case .Allocator:
-            return try printEntity(entity: node, asPrefixContext: asPrefixContext, typePrinting: .functionStyle, hasName: false, extraName: node.children[0].isClassType ? "__allocating_init" : "init")
+            return try printEntity(entity: node, asPrefixContext: asPrefixContext, typePrinting: .functionStyle, hasName: false, extraName: node.children(0).isClassType ? "__allocating_init" : "init")
         case .Constructor:
             return try printEntity(entity: node, asPrefixContext: asPrefixContext, typePrinting: .functionStyle, hasName: node.numberOfChildren > 2, extraName: "init")
         case .Destructor:
             return try printEntity(entity: node, asPrefixContext: asPrefixContext, typePrinting: .noType, hasName: false, extraName: "deinit")
         case .Deallocator:
-            return try printEntity(entity: node, asPrefixContext: asPrefixContext, typePrinting: .noType, hasName: false, extraName: node.children[0].isClassType ? "__deallocating_deinit" : "deinit")
+            return try printEntity(entity: node, asPrefixContext: asPrefixContext, typePrinting: .noType, hasName: false, extraName: node.children(0).isClassType ? "__deallocating_deinit" : "deinit")
         case .IVarInitializer:
             return try printEntity(entity: node, asPrefixContext: asPrefixContext, typePrinting: .noType, hasName: false, extraName: "__ivar_initializer")
         case .IVarDestroyer:
             return try printEntity(entity: node, asPrefixContext: asPrefixContext, typePrinting: .noType, hasName: false, extraName: "__ivar_destroyer")
         case .ProtocolConformance:
-            let (child0, child1, child2) = (node.children[0], node.children[1], node.children[2])
+            let (child0, child1, child2) = (node.children(0), node.children(1), node.children(2))
             if node.numberOfChildren == 4 {
                 // TODO: check if this is correct
                 printer("property behavior storage of ")
@@ -885,11 +885,11 @@ struct NodePrinter {
              .ImplResult:
             // Children: `convention, differentiability?, type`
             // Print convention.
-            try print(node.children[0])
+            try print(node.children(0))
             printer(" ")
             // Print differentiability, if it exists.
             if node.numberOfChildren == 3 {
-                try print(node.children[1])
+                try print(node.children(1))
             }
             // Print type.
             try print(node.lastChild)
@@ -897,13 +897,13 @@ struct NodePrinter {
             try printImplFunctionType(function: node)
         case .ImplInvocationSubstitutions:
             printer("for <")
-            try printChildren(node.children[0], separator: ", ")
+            try printChildren(node.children(0), separator: ", ")
             printer(">")
         case .ImplPatternSubstitutions:
             printer("@substituted ")
-            try print(node.children[0])
+            try print(node.children(0))
             printer(" for <")
-            try printChildren(node.children[1], separator: ", ")
+            try printChildren(node.children(1), separator: ", ")
             printer(">")
         case .ErrorType:
             printer("<ERROR TYPE>")
@@ -945,7 +945,7 @@ struct NodePrinter {
                         if index > depth {
                             printer(", ")
                         }
-                        try print(node.children[index])
+                        try print(node.children(index))
                     }
                 }
             }
@@ -953,14 +953,14 @@ struct NodePrinter {
         case .DependentGenericParamCount:
             throw SwiftDemangleError.nodePrinterError(description: "should be printed as a child of a DependentGenericSignature", nodeDebugDescription: node.debugDescription)
         case .DependentGenericConformanceRequirement:
-            let type = node.children[0]
-            let reqt = node.children[1]
+            let type = node.children(0)
+            let reqt = node.children(1)
             try print(type)
             printer(": ")
             try print(reqt)
         case .DependentGenericLayoutRequirement:
-            let type = node.children[0]
-            let layout = node.children[1]
+            let type = node.children(0)
+            let layout = node.children(1)
             
             try print(type)
             printer(": ")
@@ -991,55 +991,55 @@ struct NodePrinter {
             }
             if node.numberOfChildren > 2 {
                 printer("(")
-                try print(node.children[2])
+                try print(node.children(2))
                 if node.numberOfChildren > 3 {
                     printer(", ")
-                    try print(node.children[3])
+                    try print(node.children(3))
                 }
                 printer(")")
             }
         case .DependentGenericSameTypeRequirement:
-            let first = node.children[0]
-            let second = node.children[1]
+            let first = node.children(0)
+            let second = node.children(1)
             try print(first)
             printer(" == ")
             try print(second)
         case .DependentGenericParamType:
-            let index = node.children[1].index.or(0)
-            let depth = node.children[0].index.or(0)
+            let index = node.children(1).index.or(0)
+            let depth = node.children(0).index.or(0)
             printer(options.genericParameterName(depth: UInt64(depth), index: UInt64(index)))
         case .DependentGenericType:
-            let signature = node.children[0]
-            let dependentType = node.children[1]
+            let signature = node.children(0)
+            let dependentType = node.children(1)
             try print(signature)
             if dependentType.isNeedSpaceBeforeType {
                 printer(" ")
             }
             try print(dependentType)
         case .DependentMemberType:
-            let base = node.children[0]
+            let base = node.children(0)
             try print(base)
             printer(".")
-            let associatedType = node.children[1]
+            let associatedType = node.children(1)
             try print(associatedType)
         case .DependentAssociatedTypeRef:
             if node.numberOfChildren > 1 {
-                try print(node.children[1])
+                try print(node.children(1))
                 printer(".")
             }
-            try print(node.children[0])
+            try print(node.children(0))
         case .ReflectionMetadataBuiltinDescriptor:
             printer("reflection metadata builtin descriptor ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .ReflectionMetadataFieldDescriptor:
             printer("reflection metadata field descriptor ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .ReflectionMetadataAssocTypeDescriptor:
             printer("reflection metadata associated type descriptor ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .ReflectionMetadataSuperclassDescriptor:
             printer("reflection metadata superclass descriptor ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .AsyncAnnotation:
             printer(" async ")
         case .ThrowsAnnotation:
@@ -1052,13 +1052,13 @@ struct NodePrinter {
             printer(" variadic-marker ")
         case .SILBoxTypeWithLayout:
             assert(node.numberOfChildren == 1 || node.numberOfChildren == 3)
-            let layout = node.children[0]
+            let layout = node.children(0)
             assert(layout.kind == .SILBoxLayout)
             var genericArgs: Node?
             if node.numberOfChildren == 3 {
-                let signature = node.children[1]
+                let signature = node.children(1)
                 assert(signature.kind == .DependentGenericSignature)
-                genericArgs = node.children[2]
+                genericArgs = node.children(2)
                 assert(genericArgs?.kind == .TypeList)
                 try print(signature)
                 printer(" ")
@@ -1066,7 +1066,7 @@ struct NodePrinter {
             try print(layout)
             if let args = genericArgs {
                 printer(" <")
-                for (index, child) in args.children.enumerated() {
+                for (index, child) in args.copyOfChildren.enumerated() {
                     if index > 0 {
                         printer(", ")
                     }
@@ -1076,7 +1076,7 @@ struct NodePrinter {
             }
         case .SILBoxLayout:
             printer("{")
-            for (index, child) in node.children.enumerated() {
+            for (index, child) in node.copyOfChildren.enumerated() {
                 if index > 0 {
                     printer(",")
                 }
@@ -1087,19 +1087,19 @@ struct NodePrinter {
         case .SILBoxImmutableField,
              .SILBoxMutableField:
             printer(node.kind == .SILBoxImmutableField ? "let " : "var ")
-            assert(node.numberOfChildren == 1 && node.children[0].kind == .Type)
-            try print(node.children[0])
+            assert(node.numberOfChildren == 1 && node.children(0).kind == .Type)
+            try print(node.children(0))
         case .AssocTypePath:
             try printChildren(node, separator: ".")
         case .ModuleDescriptor:
             printer("module descriptor ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .AnonymousDescriptor:
             printer("anonymous descriptor ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .ExtensionDescriptor:
             printer("extension descriptor ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .AssociatedTypeGenericParamRef:
             printer("generic parameter reference for associated type ")
             try printChildren(node)
@@ -1116,19 +1116,19 @@ struct NodePrinter {
             try printChildren(node)
         case .DependentProtocolConformanceAssociated:
             printer("dependent associated protocol conformance ")
-            printOptionalIndex(node.children[2])
-            try print(node.children[0])
-            try print(node.children[1])
+            printOptionalIndex(node.children(2))
+            try print(node.children(0))
+            try print(node.children(1))
         case .DependentProtocolConformanceInherited:
             printer("dependent inherited protocol conformance ")
-            printOptionalIndex(node.children[2])
-            try print(node.children[0])
-            try print(node.children[1])
+            printOptionalIndex(node.children(2))
+            try print(node.children(0))
+            try print(node.children(1))
         case .DependentProtocolConformanceRoot:
             printer("dependent root protocol conformance ")
-            printOptionalIndex(node.children[2])
-            try print(node.children[0])
-            try print(node.children[1])
+            printOptionalIndex(node.children(2))
+            try print(node.children(0))
+            try print(node.children(1))
         case .ProtocolConformanceRefInTypeModule:
             printer("protocol conformance ref (type's module) ")
             try printChildren(node)
@@ -1139,21 +1139,21 @@ struct NodePrinter {
             printer("protocol conformance ref (retroactive) ")
             try printChildren(node)
         case .SugaredOptional:
-            try printWithParens(node.children[0])
+            try printWithParens(node.children(0))
             printer("?")
         case .SugaredArray:
             printer("[")
-            try print(node.children[0])
+            try print(node.children(0))
             printer("]")
         case .SugaredDictionary:
             printer("[")
-            try print(node.children[0])
+            try print(node.children(0))
             printer(" : ")
-            try print(node.children[1])
+            try print(node.children(1))
             printer("]")
         case .SugaredParen:
             printer("(")
-            try print(node.children[0])
+            try print(node.children(0))
             printer(")")
         case .OpaqueReturnType:
             printer("some")
@@ -1162,35 +1162,35 @@ struct NodePrinter {
             try printChildren(node)
             printer(">>")
         case .OpaqueType:
-            try print(node.children[0])
+            try print(node.children(0))
             printer(".")
-            try print(node.children[1])
+            try print(node.children(1))
         case .AccessorFunctionReference:
             printer("accessor function at " + node.index.or(0).description)
         case .CanonicalSpecializedGenericMetaclass:
             printer("specialized generic metaclass for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .CanonicalSpecializedGenericTypeMetadataAccessFunction:
             printer("canonical specialized generic type metadata accessor for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .MetadataInstantiationCache:
             printer("metadata instantiation cache for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .NoncanonicalSpecializedGenericTypeMetadata:
             printer("noncanonical specialized generic type metadata for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .NoncanonicalSpecializedGenericTypeMetadataCache:
             printer("cache variable for noncanonical specialized generic type metadata for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .GlobalVariableOnceToken,
              .GlobalVariableOnceFunction:
             printer(node.kind == .GlobalVariableOnceToken
                         ? "one-time initialization token for "
                         : "one-time initialization function for ")
-            try print(node.children[1])
+            try print(node.children(1))
         case .GlobalVariableOnceDeclList:
             if node.numberOfChildren == 1 {
-                try print(node.children[0])
+                try print(node.children(0))
             } else {
                 printer("(")
                 try printChildren(node, separator: ", ")
@@ -1201,12 +1201,12 @@ struct NodePrinter {
             fallthrough
         case .ObjCAsyncCompletionHandlerImpl:
             printer("@objc completion handler block implementation for ")
-            try print(node.children[0])
+            try print(node.children(0))
             printer(" with result type ")
-            try print(node.children[1])
+            try print(node.children(1))
         case .CanonicalPrespecializedGenericTypeCachingOnceToken:
             printer("flag for loading of canonical specialized generic type metadata for ")
-            try print(node.children[0])
+            try print(node.children(0))
         case .ConcurrentFunctionType:
             printer("@Sendable ")
             return nil
@@ -1466,15 +1466,15 @@ struct NodePrinter {
         var typePrinting = typePrinting
         var genericFunctionTypeList: Node?
         if entity.kind == .BoundGenericFunction {
-            genericFunctionTypeList = entity.children[1]
-            entity = entity.children[0]
+            genericFunctionTypeList = entity.children(1)
+            entity = entity.children(0)
         }
         // Either we print the context in prefix form "<context>.<name>" or in
         // suffix form "<name> in <context>".
         var multiWordName = extraName?.contains(" ") ?? false
         // Also a local name (e.g. Mystruct #1) does not look good if its context is
         // printed in prefix form.
-        let localName = hasName && entity.children[1].kind == .LocalDeclName
+        let localName = hasName && entity.children(1).kind == .LocalDeclName
         if localName, options.contains(.displayLocalNameContexts) {
             multiWordName = true
         }
@@ -1483,7 +1483,7 @@ struct NodePrinter {
             return entity
         }
         var postfixContext: Node?
-        let context = entity.children[0]
+        let context = entity.children(0)
         
         if printContext(context) {
             if multiWordName {
@@ -1512,7 +1512,7 @@ struct NodePrinter {
             if let name = overwriteName?.emptyToNil() {
                 printer(name)
             } else {
-                let name = entity.children[1]
+                let name = entity.children(1)
                 if name.kind != .PrivateDeclName {
                     try print(name)
                 }
@@ -1536,12 +1536,12 @@ struct NodePrinter {
                 isValid = false
                 return nil
             }
-            type = type.children[0]
+            type = type.children(0)
             if typePrinting == .functionStyle {
                 // We expect to see a function type here, but if we don't, use the colon.
                 var t = type
                 while t.kind == .DependentGenericType {
-                    t = t.children[1].children[0]
+                    t = t.children(1).children(0)
                 }
                 switch t.kind {
                 case .FunctionType, .NoEscapeFunctionType, .UncurriedFunctionType, .CFunctionPointer, .ThinFunctionType:
@@ -1587,13 +1587,13 @@ struct NodePrinter {
             }
             if type.kind == .DependentGenericType {
                 if genericFunctionTypeList == nil {
-                    try print(type.children[0]) // generic signature
+                    try print(type.children(0)) // generic signature
                 }
-                let dependentType = type.children[1]
+                let dependentType = type.children(1)
                 if (needSpaceBeforeType(type: dependentType)) {
                     printer(" ")
                 }
-                type = dependentType.children[0]
+                type = dependentType.children(0)
             }
             
             try printFunctionType(labelList: labelList, type: type)
@@ -1612,7 +1612,7 @@ struct NodePrinter {
     }
     
     mutating func printChildren(_ node: Node, separator: String? = nil) throws {
-        try printChildren(nodes: node.children, separator: separator)
+        try printChildren(nodes: node.copyOfChildren, separator: separator)
     }
     
     func printContext(_ context: Node) -> Bool {
@@ -1637,16 +1637,16 @@ struct NodePrinter {
     }
     
     mutating func printFunctionType(labelList: Node? = nil, type: Node) throws {
-        if type.children.count < 2 || type.children.count > 5 {
+        if type.numberOfChildren < 2 || type.numberOfChildren > 5 {
             isValid = false
             return
         }
         
         func printConventionWithMangledCType(convention: String) throws {
             printer("@convention(" + convention)
-            if type.children[0].kind == .ClangType {
+            if type.children(0).kind == .ClangType {
                 printer(", mangledCType: \"")
-                try print(type.children[0])
+                try print(type.children(0))
                 printer("\"")
             }
             printer(") ")
@@ -1678,27 +1678,27 @@ struct NodePrinter {
         var isAsync = false
         var isThrows = false
         var diffKind = MangledDifferentiabilityKind.nonDifferentiable
-        if type.children[startIndex].kind == .GlobalActorFunctionType {
+        if type.children(startIndex).kind == .GlobalActorFunctionType {
             try print(type.getChild(startIndex))
             startIndex += 1
         }
-        if type.children[startIndex].kind == .DifferentiableFunctionType {
-            diffKind = type.children[startIndex].mangledDifferentiabilityKind ?? .nonDifferentiable
+        if type.children(startIndex).kind == .DifferentiableFunctionType {
+            diffKind = type.children(startIndex).mangledDifferentiabilityKind ?? .nonDifferentiable
             startIndex += 1
         }
-        if type.children[startIndex].kind == .ClangType {
+        if type.children(startIndex).kind == .ClangType {
             // handled earlier
             startIndex += 1
         }
-        if type.children[startIndex].kind == .ThrowsAnnotation {
+        if type.children(startIndex).kind == .ThrowsAnnotation {
             startIndex += 1
             isThrows = true
         }
-        if type.children[startIndex].kind == .ConcurrentFunctionType {
+        if type.children(startIndex).kind == .ConcurrentFunctionType {
             startIndex += 1
             isSendable = true
         }
-        if type.children[startIndex].kind == .AsyncAnnotation {
+        if type.children(startIndex).kind == .AsyncAnnotation {
             startIndex += 1
             isAsync = true
         }
@@ -1721,7 +1721,7 @@ struct NodePrinter {
         }
         
         try printFunctionParameters(labelList: labelList,
-                                    parameterType: type.children[startIndex],
+                                    parameterType: type.children(startIndex),
                                     showTypes: options.contains(.showFunctionArgumentTypes))
         
         if !options.contains(.showFunctionArgumentTypes) {
@@ -1736,7 +1736,7 @@ struct NodePrinter {
             printer(" throws")
         }
         
-        try print(type.children[startIndex + 1])
+        try print(type.children(startIndex + 1))
     }
     
     mutating func printFunctionParameters(labelList: Node? = nil, parameterType: Node, showTypes: Bool) throws {
@@ -1745,9 +1745,9 @@ struct NodePrinter {
             return
         }
         
-        var parameters = parameterType.children[0]
+        var parameters = parameterType.children(0)
         assert(parameters.kind == .Type)
-        parameters = parameters.children[0]
+        parameters = parameters.children(0)
         if parameters.kind != .Tuple {
             // only a single not-named parameter
             if showTypes {
@@ -1761,7 +1761,7 @@ struct NodePrinter {
         }
         
         func getLabel(for param: Node, index: Int) -> String {
-            guard let label = labelList?.children[index] else {
+            guard let label = labelList?.children(index) else {
                 assertionFailure()
                 return "_"
             }
@@ -1769,10 +1769,10 @@ struct NodePrinter {
             return label.kind == .Identifier ? label.text : "_"
         }
         
-        let hasLabels = labelList?.children.count > 0
+        let hasLabels = labelList?.numberOfChildren > 0
         
         printer("(")
-        try parameters.children.interleave { (index, param) in
+        try parameters.copyOfChildren.interleave { (index, param) in
             assert(param.kind == .TupleElement)
             if hasLabels {
                 printer(getLabel(for: param, index: index) + ":")
@@ -1807,7 +1807,7 @@ struct NodePrinter {
         printer(description + " <")
         var separator = ""
         var argumentNumber = 0
-        for child in node.children {
+        for child in node.copyOfChildren {
             switch child.kind {
             case .SpecializationPassID:
                 // We skip the SpecializationPassID since it does not contain any
@@ -1819,7 +1819,7 @@ struct NodePrinter {
                 try print(child)
             default:
                 // Ignore empty specializations.
-                if child.children.isNotEmpty {
+                if child.copyOfChildren.isNotEmpty {
                     printer(separator)
                     printer(paramPrefix ?? "")
                     separator = ", "
@@ -1842,23 +1842,23 @@ struct NodePrinter {
     
     mutating func printFunctionSigSpecializationParams(node: Node) throws {
         var index = 0
-        let endIndex = node.children.count
+        let endIndex = node.numberOfChildren
         while index < endIndex {
-            let firstChild = node.children[index]
+            let firstChild = node.children(index)
             if let paramKindValue = firstChild.functionSigSpecializationParamKind {
                 if let kind = paramKindValue.kind {
                     switch kind {
                     case .BoxToValue,
                          .BoxToStack:
-                        try print(node.children[index])
+                        try print(node.children(index))
                         index += 1
                     case .ConstantPropFunction,
                          .ConstantPropGlobal:
                         printer("[")
-                        try print(node.children[index])
+                        try print(node.children(index))
                         index += 1
                         printer(" : ")
-                        let text = node.children[index].text
+                        let text = node.children(index).text
                         index += 1
                         let demangleName = try text.demangleSymbolAsString(with: .defaultOptions)
                         printer(demangleName.emptyToNil() ?? text)
@@ -1866,34 +1866,34 @@ struct NodePrinter {
                     case .ConstantPropInteger,
                          .ConstantPropFloat:
                         printer("[")
-                        try print(node.children[index])
+                        try print(node.children(index))
                         index += 1
                         printer(" : ")
-                        try print(node.children[index])
+                        try print(node.children(index))
                         index += 1
                         printer("]")
                     case .ConstantPropString:
                         printer("[")
-                        try print(node.children[index])
+                        try print(node.children(index))
                         index += 1
                         printer(" : ")
-                        try print(node.children[index])
+                        try print(node.children(index))
                         index += 1
                         printer("'")
-                        try print(node.children[index])
+                        try print(node.children(index))
                         index += 1
                         printer("'")
                         printer("]")
                     case .ClosureProp:
                         printer("[")
-                        try print(node.children[index])
+                        try print(node.children(index))
                         index += 1
                         printer(" : ")
-                        try print(node.children[index])
+                        try print(node.children(index))
                         index += 1
                         printer(", Argument Types : [")
-                        while index < node.children.count {
-                            let child = node.children[index]
+                        while index < node.numberOfChildren {
+                            let child = node.children(index)
                             // Until we no longer have a type node, keep demangling.
                             if child.kind != .Type {
                                 break
@@ -1902,7 +1902,7 @@ struct NodePrinter {
                             index += 1
                             
                             // If we are not done, print the ", ".
-                            if index < node.children.count, node.children[index].text.emptyToNil() != nil {
+                            if index < node.numberOfChildren, node.children(index).text.emptyToNil() != nil {
                                 printer(", ")
                             }
                         }
@@ -1910,7 +1910,7 @@ struct NodePrinter {
                     }
                 } else {
                     assert(paramKindValue.isValidOptionSet, "Invalid OptionSet")
-                    try print(node.children[index])
+                    try print(node.children(index))
                     index += 1
                 }
             }
@@ -1920,7 +1920,7 @@ struct NodePrinter {
     func needSpaceBeforeType(type: Node) -> Bool {
         switch type.kind {
         case .Type:
-            return needSpaceBeforeType(type: type.children[0])
+            return needSpaceBeforeType(type: type.children(0))
         case .FunctionType,
              .NoEscapeFunctionType,
              .UncurriedFunctionType,
@@ -1935,8 +1935,8 @@ struct NodePrinter {
         guard node.numberOfChildren > 1 else {
             return
         }
-        let typelist = node.children[1]
-        try print(node.children[0])
+        let typelist = node.children(1)
+        try print(node.children(0))
         printer("<")
         try printChildren(typelist, separator: ", ")
         printer(">")
@@ -1960,9 +1960,9 @@ struct NodePrinter {
         // Print the conforming type for a "bound" protocol node "as" the protocol
         // type.
         guard node.kind != .BoundGenericProtocol else {
-            try printChildren(node.children[1])
+            try printChildren(node.children(1))
             printer(" as ")
-            try print(node.children[0])
+            try print(node.children(0))
             return
         }
         
@@ -1973,17 +1973,17 @@ struct NodePrinter {
             try printBoundGenericNoSugar(node: node)
         case .optional,
              .implicitlyUnwrappedOptional:
-            let type = node.children[1].children[0]
+            let type = node.children(1).children(0)
             try printWithParens(type)
             printer(sugarType == .optional ? "?" : "!")
         case .array:
-            let type = node.children[1].children[0]
+            let type = node.children(1).children(0)
             printer("[")
             try print(type)
             printer("]")
         case .dictionary:
-            let keyType = node.children[1].children[0]
-            let valueType = node.children[1].children[1]
+            let keyType = node.children(1).children(0)
+            let valueType = node.children(1).children(1)
             printer("[")
             try print(keyType)
             printer(" : ")
@@ -2051,7 +2051,7 @@ struct NodePrinter {
                 }
             }
         }
-        for child in function.children {
+        for child in function.copyOfChildren {
             if child.kind == .ImplParameter {
                 if currentState == .inputs {
                     printer(", ")
@@ -2079,19 +2079,19 @@ struct NodePrinter {
         
         if let subs = patternSubs {
             printer(" for <")
-            try printChildren(subs.children[1])
+            try printChildren(subs.children(1))
             printer(">")
         }
         if let subs = invocationSubs {
             printer(" for <")
-            try printChildren(subs.children[0])
+            try printChildren(subs.children(0))
             printer(">")
         }
     }
     
     func findSugar(_ node: Node) -> SugarType {
         if node.numberOfChildren == 1, node.kind == .Type {
-            return findSugar(node.children[0])
+            return findSugar(node.children(0))
         }
         
         if node.numberOfChildren != 2 {
@@ -2102,21 +2102,21 @@ struct NodePrinter {
             return .none
         }
         
-        let unboundType = node.children[0].children[0] // drill through Type
-        let typeArgs = node.children[1]
+        let unboundType = node.children(0).children(0) // drill through Type
+        let typeArgs = node.children(1)
         
         if node.kind == .BoundGenericEnum {
             // Swift.Optional
-            if unboundType.children[1].isIdentifier(desired: "Optional"),
+            if unboundType.children(1).isIdentifier(desired: "Optional"),
                typeArgs.numberOfChildren == 1,
-               unboundType.children[0].isSwiftModule {
+               unboundType.children(0).isSwiftModule {
                 return .optional
             }
             
             // Swift.ImplicitlyUnwrappedOptional
-            if unboundType.children[1].isIdentifier(desired: "ImplicitlyUnwrappedOptional"),
+            if unboundType.children(1).isIdentifier(desired: "ImplicitlyUnwrappedOptional"),
                typeArgs.numberOfChildren == 1,
-               unboundType.children[0].isSwiftModule {
+               unboundType.children(0).isSwiftModule {
                 return .implicitlyUnwrappedOptional
             }
             
@@ -2126,16 +2126,16 @@ struct NodePrinter {
         assert(node.kind == .BoundGenericStructure)
         
         // Array
-        if unboundType.children[1].isIdentifier(desired: "Array"),
+        if unboundType.children(1).isIdentifier(desired: "Array"),
            typeArgs.numberOfChildren == 1,
-           unboundType.children[0].isSwiftModule {
+           unboundType.children(0).isSwiftModule {
             return .array
         }
         
         // Dictionary
-        if unboundType.children[1].isIdentifier(desired: "Dictionary"),
+        if unboundType.children(1).isIdentifier(desired: "Dictionary"),
            typeArgs.numberOfChildren == 2,
-           unboundType.children[0].isSwiftModule {
+           unboundType.children(0).isSwiftModule {
             return .dictionary
         }
         

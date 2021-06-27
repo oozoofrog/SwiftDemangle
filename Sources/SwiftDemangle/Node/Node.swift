@@ -15,11 +15,13 @@ final class Node {
     
     private(set) var kind: Kind
     private(set) var payload: Payload
-    private(set) var children: [Node] {
+    private(set) var _children: [Node] {
         didSet {
-            children.forEach({ $0.parent = self })
+            _children.forEach({ $0.parent = self })
         }
     }
+    
+    var copyOfChildren: [Node] { _children }
     
     fileprivate var numberOfParent: Int {
         var count = 0
@@ -31,12 +33,12 @@ final class Node {
         return count
     }
     
-    var numberOfChildren: Int { children.count }
+    var numberOfChildren: Int { _children.count }
     
     init(kind: Kind) {
         self.kind = kind
         self.payload = .none
-        self.children = []
+        self._children = []
     }
     
     convenience init(_ kind: Kind) {
@@ -46,7 +48,7 @@ final class Node {
     init(kind: Kind, text: String) {
         self.kind = kind
         self.payload = .text(text)
-        self.children = []
+        self._children = []
     }
     
     convenience init(_ kind: Kind, _ character: Character) {
@@ -56,19 +58,19 @@ final class Node {
     init(kind: Kind, functionParamKind: FunctionSigSpecializationParamKind.Kind) {
         self.kind = kind
         self.payload = .functionSigSpecializationParamKind(.init(kind: functionParamKind))
-        self.children = []
+        self._children = []
     }
     
     init(kind: Kind, functionParamOption: FunctionSigSpecializationParamKind.OptionSet) {
         self.kind = kind
         self.payload = .functionSigSpecializationParamKind(.init(optionSet: functionParamOption))
-        self.children = []
+        self._children = []
     }
     
     init<N>(kind: Kind, index: N) where N: BinaryInteger {
         self.kind = kind
         self.payload = .index(UInt64(index))
-        self.children = []
+        self._children = []
     }
     
     convenience init<N>(_ kind: Kind, _ index: N) where N: BinaryInteger {
@@ -78,7 +80,7 @@ final class Node {
     init(kind: Kind, payload: Payload) {
         self.kind = kind
         self.payload = payload
-        self.children = []
+        self._children = []
     }
     
     convenience init(_ kind: Kind, _ payload: Payload) {
@@ -88,7 +90,7 @@ final class Node {
     init(kind: Kind, children: Node?...) {
         self.kind = kind
         self.payload = .none
-        self.children = children.flatten()
+        self._children = children.flatten()
         self.updatePayloadForChildren()
     }
     
@@ -99,13 +101,13 @@ final class Node {
     func newNode(_ kind: Kind) -> Node {
         let node = Node(kind: kind)
         node.payload = payload
-        node.children = children
+        node._children = _children
         return node
     }
     
     func children(_ at: Int) -> Node {
-        if at < self.children.count {
-            return self.children[at]
+        if at < self._children.count {
+            return self._children[at]
         } else {
             assertionFailure()
             return Node(kind: .UnknownIndex)
@@ -113,11 +115,11 @@ final class Node {
     }
     
     func childIf(_ kind: Node.Kind) -> Node? {
-        children.first(where: { $0.kind == kind })
+        _children.first(where: { $0.kind == kind })
     }
     
     private func updatePayloadForChildren() {
-        switch self.children.count {
+        switch self._children.count {
         case 1:
             payload = .onechild
         case 2:
@@ -131,7 +133,7 @@ final class Node {
     
     func add(_ child: Node) {
         if payload.isChildren {
-            self.children.append(child)
+            self._children.append(child)
             self.updatePayloadForChildren()
         } else {
             assertionFailure("cannot add child to \(self)")
@@ -158,7 +160,7 @@ final class Node {
     func adds<C>(_ children: C) where C: Collection, C.Element == Node {
         guard children.isNotEmpty else { return }
         if payload.isChildren {
-            self.children.append(contentsOf: children)
+            self._children.append(contentsOf: children)
             self.updatePayloadForChildren()
         } else {
             assertionFailure("cannot add child to \(self)")
@@ -182,34 +184,34 @@ final class Node {
     }
     
     func remove(_ child: Node) {
-        if let index = children.firstIndex(where: { $0 === child }) {
-            self.children.remove(at: index)
+        if let index = _children.firstIndex(where: { $0 === child }) {
+            self._children.remove(at: index)
         }
     }
     
     func remove(_ at: Int) {
         guard at < numberOfChildren else { return }
-        self.children.remove(at: at)
+        self._children.remove(at: at)
     }
     
     func reverseChildren() {
-        children.reverse()
+        _children.reverse()
     }
     
     func reverseChildren(_ fromAt: Int) {
         guard fromAt < numberOfChildren else { return }
         if fromAt == 0 {
-            children.reverse()
+            _children.reverse()
         } else {
-            let prefix = children[0..<fromAt]
-            let reversedSuffix = children[fromAt..<children.count].reversed()
-            self.children = Array(prefix) + reversedSuffix
+            let prefix = _children[0..<fromAt]
+            let reversedSuffix = _children[fromAt..<_children.count].reversed()
+            self._children = Array(prefix) + reversedSuffix
         }
     }
     
     func replaceLast(_ child: Node) {
-        self.children.removeLast()
-        self.children.append(child)
+        self._children.removeLast()
+        self._children.append(child)
     }
     
     var isSwiftModule: Bool {
@@ -275,7 +277,7 @@ final class Node {
     }
     
     var lastChild: Node {
-        children(children.endIndex - 1)
+        children(_children.endIndex - 1)
     }
     
     var directness: Directness {
@@ -347,9 +349,9 @@ extension Node {
         case .Type:
             return firstChild.isSimpleType
         case .ProtocolList:
-            return children[0].numberOfChildren <= 1
+            return _children[0].numberOfChildren <= 1
         case .ProtocolListWithAnyObject:
-            return children[0].children[0].numberOfChildren == 0
+            return _children[0]._children[0].numberOfChildren == 0
         case .ProtocolListWithClass,
              .AccessorFunctionReference,
              .Allocator,
@@ -1229,7 +1231,7 @@ extension Node: CustomDebugStringConvertible {
     public var debugDescription: String {
         let kind = self.kind
         let payload = self.payload
-        let children = self.children
+        let children = self._children
         let numberOfParent = self.numberOfParent
         let prefix = [String](repeating: "  ", count: numberOfParent).joined()
         if numberOfChildren > 0 {

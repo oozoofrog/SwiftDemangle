@@ -728,7 +728,7 @@ class Demangler: Demanglerable, Mangling {
         if Nominal.getKind() == .TypeSymbolicReference || Nominal.getKind() == .ProtocolSymbolicReference {
             let remainingTypeList = createNode(.TypeList)
             for list in TypeLists.reversed() {
-                for child in list.children {
+                for child in list.copyOfChildren {
                     remainingTypeList.addChild(child)
                 }
             }
@@ -766,7 +766,7 @@ class Demangler: Demanglerable, Mangling {
             guard let NewNominal = createWithChild(nominal.getKind(), BoundParent) else { return nil }
             
             // Append remaining children of the origin nominal.
-            for child in nominal.children.dropFirst() {
+            for child in nominal.copyOfChildren.dropFirst() {
                 addChild(NewNominal, child)
             }
             nominal = NewNominal
@@ -1602,7 +1602,7 @@ class Demangler: Demanglerable, Mangling {
     func demangleGenericSpecialization(_ SpecKind: Node.Kind) -> Node? {
         guard let Spec = demangleSpecAttributes(SpecKind) else { return nil }
         guard let TyList = popTypeList() else { return nil }
-        for Ty in TyList.children {
+        for Ty in TyList.copyOfChildren {
             Spec.addChild(createWithChild(.GenericSpecializationParam, Ty))
         }
         return Spec
@@ -1622,7 +1622,7 @@ class Demangler: Demanglerable, Mangling {
         }
         
         // Add the required parameters in reverse order.
-        for Param in Spec?.children.reversed() ?? [] {
+        for Param in Spec?.copyOfChildren.reversed() ?? [] {
             var Param: Node? = Param
             if Param?.getKind() != .FunctionSignatureSpecializationParam {
                 continue
@@ -2643,7 +2643,7 @@ class Demangler: Demanglerable, Mangling {
         }
         
         func getChildIf(_ node: Node, _ filterBy: Node.Kind) -> (offset: Int, element: Node)? {
-            for node in node.children.enumerated() {
+            for node in node.copyOfChildren.enumerated() {
                 if node.element.getKind() == filterBy {
                     return node
                 }
@@ -2831,7 +2831,7 @@ class Demangler: Demanglerable, Mangling {
     
     func popSelfOrAssocTypePath() -> Node? {
         if let Type = popNode(.Type) {
-            if let child = Type.children.first, child.getKind() == .DependentGenericParamType {
+            if let child = Type.copyOfChildren.first, child.getKind() == .DependentGenericParamType {
                 return Type
             }
             
@@ -2957,7 +2957,7 @@ class Demangler: Demanglerable, Mangling {
         } else {
             newNode = Node(newKind)
         }
-        newNode.adds(node.children)
+        newNode.adds(node.copyOfChildren)
         return newNode
     }
     
