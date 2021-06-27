@@ -437,6 +437,7 @@ extension Node {
              .InOut,
              .InfixOperator,
              .Initializer,
+             .Isolated,
              .PropertyWrapperBackingInitializer,
              .PropertyWrapperInitFromProjectedValue,
              .KeyPathGetterThunkHelper,
@@ -887,6 +888,7 @@ extension Node {
         case InOut
         case InfixOperator
         case Initializer
+        case Isolated
         case KeyPathGetterThunkHelper
         case KeyPathSetterThunkHelper
         case KeyPathEqualsThunkHelper

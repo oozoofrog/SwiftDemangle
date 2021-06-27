@@ -2,6 +2,11 @@ import XCTest
 @testable import SwiftDemangle
 
 final class SwiftDemangleTests: XCTestCase {
+    
+    override func setUpWithError() throws {
+        continueAfterFailure = true
+    }
+    
     func testPunycode() {
         let punycoded = "Proprostnemluvesky_uybCEdmaEBa"
         let encoded = "Pročprostěnemluvíčesky"
@@ -9,10 +14,9 @@ final class SwiftDemangleTests: XCTestCase {
     }
     
     func testDemangle() throws {
-        let mangled = "$s4test10returnsOptyxycSgxyScMYccSglF"
-        let demangled = "test.returnsOpt<A>((@Swift.MainActor () -> A)?) -> (() -> A)?"
-        let opts: DemangleOptions = .defaultOptions
-        let result = try mangled.demangling(opts)
+        let mangled = "$s1t10globalFuncyyAA7MyActorCYiF"
+        let demangled = #"t.globalFunc(isolated t.MyActor) -> ()"#
+        let result = mangled.demangled
         XCTAssertEqual(result, demangled, "\n\(mangled) ---> \n\(result)\n\(demangled)")
     }
     
@@ -44,8 +48,7 @@ final class SwiftDemangleTests: XCTestCase {
     
     func testManglingsWithClangTypes() throws {
         try loadAndForEachMangles("manglings-with-clang-types.txt") { line, mangled, demangled in
-            let opts: DemangleOptions = .simplifiedOptions
-            let result = try mangled.demangling(opts)
+            let result = mangled.demangled
             if result != demangled {
                 print("[TEST] mangled_with_clang_type demangle for \(line): \(mangled) failed")
             }

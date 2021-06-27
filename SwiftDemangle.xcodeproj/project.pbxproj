@@ -24,6 +24,7 @@
 		8A837BC82688BB33002EA783 /* manglings-with-clang-types.txt in Resources */ = {isa = PBXBuildFile; fileRef = 8A837BC42688B6D9002EA783 /* manglings-with-clang-types.txt */; };
 		8A837BC92688BB33002EA783 /* manglings.txt in Resources */ = {isa = PBXBuildFile; fileRef = 8A837BC32688B6D9002EA783 /* manglings.txt */; };
 		8A837BCA2688BB33002EA783 /* simplified-manglings.txt in Resources */ = {isa = PBXBuildFile; fileRef = 8A837BC52688B6D9002EA783 /* simplified-manglings.txt */; };
+		8A837BCC2688BD99002EA783 /* String+Demangling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A837BCB2688BD99002EA783 /* String+Demangling.swift */; };
 		8AF7ED562684CE1600D6E6E6 /* SwiftDemangleError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AF7ED552684CE1600D6E6E6 /* SwiftDemangleError.swift */; };
 		OBJ_54 /* DemangleOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_10 /* DemangleOptions.swift */; };
 		OBJ_55 /* Demangler.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_11 /* Demangler.swift */; };
@@ -77,6 +78,7 @@
 		8A837BC32688B6D9002EA783 /* manglings.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = manglings.txt; sourceTree = "<group>"; };
 		8A837BC42688B6D9002EA783 /* manglings-with-clang-types.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "manglings-with-clang-types.txt"; sourceTree = "<group>"; };
 		8A837BC52688B6D9002EA783 /* simplified-manglings.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "simplified-manglings.txt"; sourceTree = "<group>"; };
+		8A837BCB2688BD99002EA783 /* String+Demangling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Demangling.swift"; sourceTree = "<group>"; };
 		8AF7ED552684CE1600D6E6E6 /* SwiftDemangleError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDemangleError.swift; sourceTree = "<group>"; };
 		OBJ_10 /* DemangleOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemangleOptions.swift; sourceTree = "<group>"; };
 		OBJ_11 /* Demangler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Demangler.swift; sourceTree = "<group>"; };
@@ -255,6 +257,7 @@
 				OBJ_13 /* Demangling.swift */,
 				OBJ_14 /* Mangling.swift */,
 				OBJ_15 /* OldDemangler.swift */,
+				8A837BCB2688BD99002EA783 /* String+Demangling.swift */,
 			);
 			path = Demangler;
 			sourceTree = "<group>";
@@ -359,6 +362,7 @@
 			files = (
 				OBJ_54 /* DemangleOptions.swift in Sources */,
 				OBJ_55 /* Demangler.swift in Sources */,
+				8A837BCC2688BD99002EA783 /* String+Demangling.swift in Sources */,
 				OBJ_56 /* Demanglerable.swift in Sources */,
 				8AF7ED562684CE1600D6E6E6 /* SwiftDemangleError.swift in Sources */,
 				OBJ_57 /* Demangling.swift in Sources */,

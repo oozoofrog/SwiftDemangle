@@ -166,6 +166,8 @@ class Demangler: Demanglerable, Mangling {
             return createNode(.ConcurrentFunctionType)
         case "c":
             return createWithChild(.GlobalActorFunctionType, popTypeAndGetChild())
+        case "i":
+            return createType(createWithChild(.Isolated, popTypeAndGetChild()))
         case "j":
             return demangleDifferentiableFunctionType()
         case "k":
@@ -850,7 +852,7 @@ class Demangler: Demanglerable, Mangling {
     
     func demangleClangType() -> Node? {
         let numChars = demangleNatural()
-        guard numChars > 0, mangledOriginal.count <= mangled.count + numChars else { return nil }
+        guard numChars > 0, self.position + mangled.count <= mangledOriginal.count else { return nil }
         var mangledClangType: String = ""
         mangledClangType.append(nextString(numChars))
         return createNode(.ClangType, mangledClangType)

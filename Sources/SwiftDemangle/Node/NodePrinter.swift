@@ -274,6 +274,10 @@ struct NodePrinter {
         case .InOut:
             printer("inout ")
             try print(node.children[0])
+        case .Isolated:
+            printer("isolated ")
+            try print(node.children[0])
+            return nil
         case .Shared:
             printer("__shared ")
             try print(node.children[0])
