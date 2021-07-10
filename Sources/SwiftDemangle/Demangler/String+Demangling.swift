@@ -15,8 +15,12 @@ public extension String {
     }
     
     func demangling(_ options: DemangleOptions) throws -> String {
+        var mangled = self
+        if mangled.hasPrefix("S") || mangled.hasPrefix("s") {
+            mangled = "$" + mangled
+        }
         guard let regex = try? NSRegularExpression(pattern: "[^ \n\r\t]+", options: []) else { return self }
-        return try regex.matches(in: self, options: [], range: NSRange(startIndex..<endIndex, in: self)).reversed().reduce(self, { (text, match) -> String in
+        return try regex.matches(in: mangled, options: [], range: NSRange(startIndex..<endIndex, in: mangled)).reversed().reduce(mangled, { (text, match) -> String in
             if let range = Range<String.Index>.init(match.range, in: text) {
                 let demangled = try text[range].demangleSymbolAsString(with: options)
                 return text.replacingCharacters(in: range, with: demangled)

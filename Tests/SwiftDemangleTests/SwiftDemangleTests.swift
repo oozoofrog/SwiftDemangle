@@ -1,6 +1,14 @@
 import XCTest
 @testable import SwiftDemangle
 
+func catchTry<R>(_ procedure: @autoclosure () throws -> R, or: R) -> R {
+    do {
+        return try procedure()
+    } catch {
+        return or
+    }
+}
+
 final class SwiftDemangleTests: XCTestCase {
     
     override func setUpWithError() throws {
@@ -23,15 +31,15 @@ final class SwiftDemangleTests: XCTestCase {
     func testManglings() throws {
         try loadAndForEachMangles("manglings.txt") { line, mangled, demangled in
             var opts: DemangleOptions = .defaultOptions
-            var result = try mangled.demangling(opts)
+            var result = catchTry(try mangled.demangling(opts), or: mangled)
             if result != demangled {
                 opts.isClassify = true
-                result = try mangled.demangling(opts)
+                result = catchTry(try mangled.demangling(opts), or: mangled)
             }
             if result != demangled {
                 print("[TEST] demangling for \(line):  \(mangled) failed")
             }
-            XCTAssertEqual(result, demangled, "\n\(line): \(mangled) ---> \n\(result)\n\(demangled)")
+            XCTAssertEqual(result, demangled, "\n\(line): \(mangled) ---> expect: (\(demangled)), result: (\(result))")
         }
     }
     

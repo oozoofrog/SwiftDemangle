@@ -1,5 +1,5 @@
 // swift-interface-format-version: 1.0
-// swift-compiler-version: Apple Swift version 5.4 (swiftlang-1205.0.26.9 clang-1205.0.19.55)
+// swift-compiler-version: Apple Swift version 5.4.2 (swiftlang-1205.0.28.2 clang-1205.0.19.57)
 // swift-module-flags: -target arm64-apple-ios12.0-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -module-name SwiftDemangle
 import Foundation
 import Swift
@@ -33,15 +33,20 @@ public struct DemangleOptions : Swift.OptionSet {
   public typealias Element = SwiftDemangle.DemangleOptions
   public typealias RawValue = Swift.Int
 }
-extension Optional : Swift.Comparable where Wrapped == Swift.Int {
-  public static func == (lhs: Swift.Int?, rhs: Swift.Int?) -> Swift.Bool
-  public static func < (lhs: Swift.Int?, rhs: Swift.Int?) -> Swift.Bool
-}
 extension String {
   public var demangled: Swift.String {
     get
   }
-  public func demangling(_ options: SwiftDemangle.DemangleOptions) -> Swift.String
+  public func demangling(_ options: SwiftDemangle.DemangleOptions) throws -> Swift.String
+}
+public enum SwiftDemangleError : Swift.Error {
+  case oldDemanglerError(description: Swift.String, nodeDebugDescription: Swift.String)
+  case newDemanglerError(description: Swift.String, nodeDebugDescription: Swift.String)
+  case nodePrinterError(description: Swift.String, nodeDebugDescription: Swift.String)
+}
+extension Optional : Swift.Comparable where Wrapped == Swift.Int {
+  public static func == (lhs: Swift.Int?, rhs: Swift.Int?) -> Swift.Bool
+  public static func < (lhs: Swift.Int?, rhs: Swift.Int?) -> Swift.Bool
 }
 public protocol StringIntegerIndexable : Swift.StringProtocol {
   subscript(indexRange: Swift.Range<Swift.Int>) -> Swift.Substring { get }
@@ -59,3 +64,15 @@ extension String : SwiftDemangle.StringIntegerIndexable {
 }
 extension Substring : SwiftDemangle.StringIntegerIndexable {
 }
+public enum PrintingError : Swift.String, Swift.Error {
+  case shouldBeHandleInPrintSpecializationPrefix
+  case unexpectedCaseNonDifferentiable
+  public init?(rawValue: Swift.String)
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+extension SwiftDemangle.PrintingError : Swift.Equatable {}
+extension SwiftDemangle.PrintingError : Swift.Hashable {}
+extension SwiftDemangle.PrintingError : Swift.RawRepresentable {}

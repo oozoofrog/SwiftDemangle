@@ -7,8 +7,9 @@
 
 import Foundation
 
-public enum PrintingError: Error {
-    case shouldBeHandleInPrintSpecializationPrefix(_ description: String)
+public enum PrintingError: String, Error {
+    case shouldBeHandleInPrintSpecializationPrefix
+    case unexpectedCaseNonDifferentiable
 }
 
 struct NodePrinter {
@@ -1228,7 +1229,7 @@ struct NodePrinter {
                 case .linear:
                     printer("(_linear)")
                 case .normal, .nonDifferentiable:
-                    assert(false, "Unexpected case NonDifferentiable")
+                    throw PrintingError.unexpectedCaseNonDifferentiable
                 }
             }
             printer(" ")
