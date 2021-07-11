@@ -1,5 +1,6 @@
 echo "Cleaning..."
 rm -rf ./build
+rm -rf ./Binary
 
 echo "Archiving..."
 xcodebuild archive -scheme SwiftDemangle-Package -archivePath "./build/ios.xcarchive" -sdk iphoneos SKIP_INSTALL=NO BUILD_LIBRARY_FOR_DISTRIBUTION=YES

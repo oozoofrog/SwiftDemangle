@@ -20,7 +20,7 @@ public extension String {
             mangled = "$" + mangled
         }
         guard let regex = try? NSRegularExpression(pattern: "[^ \n\r\t]+", options: []) else { return self }
-        return try regex.matches(in: mangled, options: [], range: NSRange(startIndex..<endIndex, in: mangled)).reversed().reduce(mangled, { (text, match) -> String in
+        return try regex.matches(in: mangled, options: [], range: NSRange(mangled.startIndex..<mangled.endIndex, in: mangled)).reversed().reduce(mangled, { (text, match) -> String in
             if let range = Range<String.Index>.init(match.range, in: text) {
                 let demangled = try text[range].demangleSymbolAsString(with: options)
                 return text.replacingCharacters(in: range, with: demangled)

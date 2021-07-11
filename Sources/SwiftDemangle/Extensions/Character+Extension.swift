@@ -34,7 +34,7 @@ extension Character {
     }
     
     var mangledDifferentiabilityKind: MangledDifferentiabilityKind? {
-        .init(rawValue: String(self))
+        return MangledDifferentiabilityKind(rawValue: String(self))
     }
 }
 

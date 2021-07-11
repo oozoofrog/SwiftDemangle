@@ -22,10 +22,10 @@ final class SwiftDemangleTests: XCTestCase {
     }
     
     func testDemangle() throws {
-        let mangled = "$s1t10globalFuncyyAA7MyActorCYiF"
-        let demangled = #"t.globalFunc(isolated t.MyActor) -> ()"#
+        let mangled = "s7example1fyyYjfYaKF"
+        let demangled = #"$s7example1fyyYjfYaKF"#
         let result = mangled.demangled
-        XCTAssertEqual(result, demangled, "\n\(mangled) ---> \n\(result)\n\(demangled)")
+        XCTAssertEqual(result, demangled, "\(mangled) ---> expect: (\(demangled)), result: (\(result))")
     }
     
     func testManglings() throws {
@@ -108,9 +108,9 @@ final class SwiftDemangleTests: XCTestCase {
             if range == nil {
                 range = mangledPair.range(of: " -> ")
             }
-            guard let range = range else { continue }
-            let mangled = String(mangledPair[mangledPair.startIndex..<range.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
-            let demangled = String(mangledPair[range.upperBound..<mangledPair.endIndex])
+            guard let rangePair = range else { continue }
+            let mangled = String(mangledPair[mangledPair.startIndex..<rangePair.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+            let demangled = String(mangledPair[rangePair.upperBound..<mangledPair.endIndex])
             try handler(offset, mangled, demangled)
         }
     }

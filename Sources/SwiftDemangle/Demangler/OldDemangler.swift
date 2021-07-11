@@ -207,8 +207,8 @@ class OldDemangler: Demanglerable {
                 return demangleChildOrReturn(parent: witnessTable, kind: .Type)
             }
             if nextIf("v") {
-                let fieldOffset = Node(kind: .FieldOffset)
-                guard let fieldOffset = demangleChildAsNodeOrReturn(parent: fieldOffset, kind: .Directness) else { return nil }
+                let _fieldOffset = Node(kind: .FieldOffset)
+                guard let fieldOffset = demangleChildAsNodeOrReturn(parent: _fieldOffset, kind: .Directness) else { return nil }
                 if let entity = demangleEntity() {
                     fieldOffset.add(entity)
                 } else {
@@ -229,13 +229,13 @@ class OldDemangler: Demanglerable {
                 return demangleChildOrReturn(parent: witnessTable, kind: .ProtocolConformance)
             }
             if nextIf("l") {
-                let accessor = Node(kind: .LazyProtocolWitnessTableAccessor)
-                guard let accessor = demangleChildOrReturn(parent: accessor, kind: .Type) else { return nil }
+                let _accessor = Node(kind: .LazyProtocolWitnessTableAccessor)
+                guard let accessor = demangleChildOrReturn(parent: _accessor, kind: .Type) else { return nil }
                 return demangleChildOrReturn(parent: accessor, kind: .ProtocolConformance)
             }
             if nextIf("L") {
-                let accessor = Node(kind: .LazyProtocolWitnessTableCacheVariable)
-                guard let accessor = demangleChildOrReturn(parent: accessor, kind: .Type) else { return nil }
+                let _accessor = Node(kind: .LazyProtocolWitnessTableCacheVariable)
+                guard let accessor = demangleChildOrReturn(parent: _accessor, kind: .Type) else { return nil }
                 return demangleChildOrReturn(parent: accessor, kind: .ProtocolConformance)
             }
             if nextIf("a") {
@@ -243,8 +243,8 @@ class OldDemangler: Demanglerable {
                 return demangleChildOrReturn(parent: tableTemplate, kind: .ProtocolConformance)
             }
             if nextIf("t") {
-                let accessor = Node(kind: .AssociatedTypeMetadataAccessor)
-                guard let accessor = demangleChildOrReturn(parent: accessor, kind: .ProtocolConformance) else { return nil }
+                let _accessor = Node(kind: .AssociatedTypeMetadataAccessor)
+                guard let accessor = demangleChildOrReturn(parent: _accessor, kind: .ProtocolConformance) else { return nil }
                 if let child = demangleDeclName() {
                     accessor.add(child)
                 } else {
@@ -253,12 +253,18 @@ class OldDemangler: Demanglerable {
                 return accessor
             }
             if nextIf("T") {
-                let accessor = Node(kind: .AssociatedTypeWitnessTableAccessor)
-                guard let accessor = demangleChildOrReturn(parent: accessor, kind: .ProtocolConformance) else { return nil }
-                guard let child = demangleDeclName() else { return nil }
-                accessor.add(child)
-                guard let child = demangleProtocolName() else { return nil }
-                accessor.add(child)
+                let _accessor = Node(kind: .AssociatedTypeWitnessTableAccessor)
+                guard let accessor = demangleChildOrReturn(parent: _accessor, kind: .ProtocolConformance) else { return nil }
+                if let child = demangleDeclName() {
+                    accessor.add(child)
+                } else {
+                    return nil
+                }
+                if let child = demangleProtocolName() {
+                    accessor.add(child)
+                } else {
+                    return nil
+                }
                 return accessor
             }
             return nil
@@ -277,8 +283,8 @@ class OldDemangler: Demanglerable {
                 return thunk
             }
             if nextIf("W") {
-                let thunk = Node(kind: .ProtocolWitness)
-                guard let thunk = demangleChildOrReturn(parent: thunk, kind: .ProtocolConformance) else { return nil }
+                let _thunk = Node(kind: .ProtocolWitness)
+                guard let thunk = demangleChildOrReturn(parent: _thunk, kind: .ProtocolConformance) else { return nil }
                 // The entity is mangled in its own generic context.
                 guard let entity = demangleEntity() else { return nil }
                 thunk.add(entity)
