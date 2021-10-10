@@ -2936,7 +2936,7 @@ class Demangler: Demanglerable, Mangling {
             }
         }
         if SecondLevel {
-            for st in StandardType2.allCases where st.rawValue == Subst {
+            for st in StandardTypeConcurrency.allCases where st.rawValue == Subst {
                 return createSwiftType(st.kind, st.typeName)
             }
         }

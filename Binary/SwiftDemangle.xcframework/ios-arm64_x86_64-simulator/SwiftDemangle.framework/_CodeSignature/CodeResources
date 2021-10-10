@@ -10,7 +10,7 @@
 		</data>
 		<key>Info.plist</key>
 		<data>
-		TZyqgeaqaaCcyp1P1zDuhcmVkEU=
+		kYwwSIE1AThzaqIzNGUjYjrawgw=
 		</data>
 		<key>Modules/SwiftDemangle.swiftmodule/arm64-apple-ios-simulator.swiftdoc</key>
 		<data>
@@ -22,7 +22,7 @@
 		</data>
 		<key>Modules/SwiftDemangle.swiftmodule/arm64-apple-ios-simulator.swiftmodule</key>
 		<data>
-		lL3okCDXaKOVtjMKMuJLmTP3Vfs=
+		y5icmc6+mCGA7Aq9dm8yvufOKkc=
 		</data>
 		<key>Modules/SwiftDemangle.swiftmodule/arm64.swiftdoc</key>
 		<data>
@@ -34,7 +34,7 @@
 		</data>
 		<key>Modules/SwiftDemangle.swiftmodule/arm64.swiftmodule</key>
 		<data>
-		lL3okCDXaKOVtjMKMuJLmTP3Vfs=
+		y5icmc6+mCGA7Aq9dm8yvufOKkc=
 		</data>
 		<key>Modules/SwiftDemangle.swiftmodule/x86_64-apple-ios-simulator.swiftdoc</key>
 		<data>
@@ -46,7 +46,7 @@
 		</data>
 		<key>Modules/SwiftDemangle.swiftmodule/x86_64-apple-ios-simulator.swiftmodule</key>
 		<data>
-		HP5oSCf0MgWS0e3pZBwif2Zq/Io=
+		ZI5Diiu4uHzQFD4zDYC90pEhhQo=
 		</data>
 		<key>Modules/SwiftDemangle.swiftmodule/x86_64.swiftdoc</key>
 		<data>
@@ -58,7 +58,7 @@
 		</data>
 		<key>Modules/SwiftDemangle.swiftmodule/x86_64.swiftmodule</key>
 		<data>
-		HP5oSCf0MgWS0e3pZBwif2Zq/Io=
+		ZI5Diiu4uHzQFD4zDYC90pEhhQo=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -88,7 +88,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			Y9SaGGCDlm+Wkw77pH+EmJ5xcMNGltk/KVeBqOsjQTI=
+			BbgKIvjwtucOxn7Dr+R4innHsosrMa9q3SUZz29fY3M=
 			</data>
 		</dict>
 		<key>Modules/SwiftDemangle.swiftmodule/arm64.swiftdoc</key>
@@ -109,7 +109,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			Y9SaGGCDlm+Wkw77pH+EmJ5xcMNGltk/KVeBqOsjQTI=
+			BbgKIvjwtucOxn7Dr+R4innHsosrMa9q3SUZz29fY3M=
 			</data>
 		</dict>
 		<key>Modules/SwiftDemangle.swiftmodule/x86_64-apple-ios-simulator.swiftdoc</key>
@@ -130,7 +130,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			ubXn7oXlMMQ+vCzVxQgkXbhQlGYueQ3AY/iGtTVF3p8=
+			vdkQvd5RcFJGI4bnDBqIWI3GeWJxRK6vmVzG1GMieNY=
 			</data>
 		</dict>
 		<key>Modules/SwiftDemangle.swiftmodule/x86_64.swiftdoc</key>
@@ -151,7 +151,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			ubXn7oXlMMQ+vCzVxQgkXbhQlGYueQ3AY/iGtTVF3p8=
+			vdkQvd5RcFJGI4bnDBqIWI3GeWJxRK6vmVzG1GMieNY=
 			</data>
 		</dict>
 	</dict>

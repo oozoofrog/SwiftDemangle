@@ -121,7 +121,7 @@ enum StandardType: Character, CaseIterable {
     }
 }
 
-enum StandardType2: Character, CaseIterable {
+enum StandardTypeConcurrency: Character, CaseIterable {
     case A = "A"
     case C = "C"
     case c = "c"
