@@ -16,8 +16,12 @@ struct NodePrinter {
     
     let options: DemangleOptions
     var printText: String = ""
-    var isValid: Bool = true
+    private(set) var isValid: Bool = true
     var isSpecializationPrefixPrinted = false
+    
+    private mutating func setInvalid() {
+        isValid = false
+    }
     
     mutating private func printer(_ text: String) {
         printText.append(text)
@@ -1534,7 +1538,7 @@ struct NodePrinter {
         if typePrinting != .noType {
             guard var type = entity.childIf(.Type) else {
                 assertionFailure("malformed entity")
-                isValid = false
+                setInvalid()
                 return nil
             }
             type = type.children(0)
@@ -1638,8 +1642,8 @@ struct NodePrinter {
     }
     
     mutating func printFunctionType(labelList: Node? = nil, type: Node) throws {
-        if type.numberOfChildren < 2 || type.numberOfChildren > 5 {
-            isValid = false
+        if type.numberOfChildren < 2 {
+            setInvalid()
             return
         }
         
@@ -1674,21 +1678,21 @@ struct NodePrinter {
             assertionFailure("Unhandled function type in printFunctionType!")
         }
         
+        var argumentIndex = type.numberOfChildren - 2
         var startIndex: Int = 0
         var isSendable = false
         var isAsync = false
         var isThrows = false
         var diffKind = MangledDifferentiabilityKind.nonDifferentiable
+        if type.getChild(startIndex).kind == .ClangType {
+            startIndex += 1
+        }
         if type.children(startIndex).kind == .GlobalActorFunctionType {
             try printNode(type.getChild(startIndex))
             startIndex += 1
         }
         if type.children(startIndex).kind == .DifferentiableFunctionType {
             diffKind = type.children(startIndex).mangledDifferentiabilityKind ?? .nonDifferentiable
-            startIndex += 1
-        }
-        if type.children(startIndex).kind == .ClangType {
-            // handled earlier
             startIndex += 1
         }
         if type.children(startIndex).kind == .ThrowsAnnotation {
@@ -1722,7 +1726,7 @@ struct NodePrinter {
         }
         
         try printFunctionParameters(labelList: labelList,
-                                    parameterType: type.children(startIndex),
+                                    parameterType: type.children(argumentIndex),
                                     showTypes: options.contains(.showFunctionArgumentTypes))
         
         if !options.contains(.showFunctionArgumentTypes) {
@@ -1737,12 +1741,12 @@ struct NodePrinter {
             printer(" throws")
         }
         
-        try printNode(type.children(startIndex + 1))
+        try printNode(type.children(argumentIndex + 1))
     }
     
     mutating func printFunctionParameters(labelList: Node? = nil, parameterType: Node, showTypes: Bool) throws {
         if parameterType.kind != .ArgumentTuple {
-            isValid = false
+            setInvalid()
             return
         }
         

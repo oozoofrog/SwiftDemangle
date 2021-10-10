@@ -1,5 +1,5 @@
 // swift-interface-format-version: 1.0
-// swift-compiler-version: Apple Swift version 5.4.2 (swiftlang-1205.0.28.2 clang-1205.0.19.57)
+// swift-compiler-version: Apple Swift version 5.5 (swiftlang-1300.0.31.1 clang-1300.0.29.1)
 // swift-module-flags: -target x86_64-apple-macos11.0 -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -module-name SwiftDemangle
 import Foundation
 import Swift
@@ -33,7 +33,7 @@ public struct DemangleOptions : Swift.OptionSet {
   public typealias Element = SwiftDemangle.DemangleOptions
   public typealias RawValue = Swift.Int
 }
-extension String {
+extension Swift.String {
   public var demangled: Swift.String {
     get
   }
@@ -44,7 +44,7 @@ public enum SwiftDemangleError : Swift.Error {
   case newDemanglerError(description: Swift.String, nodeDebugDescription: Swift.String)
   case nodePrinterError(description: Swift.String, nodeDebugDescription: Swift.String)
 }
-extension Optional : Swift.Comparable where Wrapped == Swift.Int {
+extension Swift.Optional : Swift.Comparable where Wrapped == Swift.Int {
   public static func == (lhs: Swift.Int?, rhs: Swift.Int?) -> Swift.Bool
   public static func < (lhs: Swift.Int?, rhs: Swift.Int?) -> Swift.Bool
 }
@@ -52,7 +52,7 @@ public protocol StringIntegerIndexable : Swift.StringProtocol {
   subscript(indexRange: Swift.Range<Swift.Int>) -> Swift.Substring { get }
   subscript(r: Swift.Range<Self.Index>) -> Swift.Substring { get }
 }
-extension StringIntegerIndexable {
+extension SwiftDemangle.StringIntegerIndexable {
   public subscript(index: Swift.Int) -> Swift.Character {
     get
   }
@@ -60,9 +60,9 @@ extension StringIntegerIndexable {
     get
   }
 }
-extension String : SwiftDemangle.StringIntegerIndexable {
+extension Swift.String : SwiftDemangle.StringIntegerIndexable {
 }
-extension Substring : SwiftDemangle.StringIntegerIndexable {
+extension Swift.Substring : SwiftDemangle.StringIntegerIndexable {
 }
 public enum PrintingError : Swift.String, Swift.Error {
   case shouldBeHandleInPrintSpecializationPrefix
