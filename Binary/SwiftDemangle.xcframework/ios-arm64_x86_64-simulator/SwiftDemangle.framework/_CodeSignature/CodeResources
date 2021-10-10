@@ -6,59 +6,59 @@
 	<dict>
 		<key>Headers/SwiftDemangle-Swift.h</key>
 		<data>
-		NcG71n5OdMJ0RVtQraEAhyeKDwY=
+		Uik8YrEx6HVC/A38BQUZhwwWvg4=
 		</data>
 		<key>Info.plist</key>
 		<data>
-		3fRU91BZzGSykeFN0n92cqhE7O0=
+		kYwwSIE1AThzaqIzNGUjYjrawgw=
 		</data>
 		<key>Modules/SwiftDemangle.swiftmodule/arm64-apple-ios-simulator.swiftdoc</key>
 		<data>
-		q1cJ5FIRhtMcL+WIfx0r6PvkUaw=
+		f7JMjlgl0zv13yqXynoYzZQTtcA=
 		</data>
 		<key>Modules/SwiftDemangle.swiftmodule/arm64-apple-ios-simulator.swiftinterface</key>
 		<data>
-		wMjhoxRK1RZfpf4KWxsRzd5rdyw=
+		WZxRS7wnx2X5QneC3JWPPtYZfto=
 		</data>
 		<key>Modules/SwiftDemangle.swiftmodule/arm64-apple-ios-simulator.swiftmodule</key>
 		<data>
-		tWa96lJNTFsQ2K62yrTvv5ViWks=
+		y5icmc6+mCGA7Aq9dm8yvufOKkc=
 		</data>
 		<key>Modules/SwiftDemangle.swiftmodule/arm64.swiftdoc</key>
 		<data>
-		q1cJ5FIRhtMcL+WIfx0r6PvkUaw=
+		f7JMjlgl0zv13yqXynoYzZQTtcA=
 		</data>
 		<key>Modules/SwiftDemangle.swiftmodule/arm64.swiftinterface</key>
 		<data>
-		wMjhoxRK1RZfpf4KWxsRzd5rdyw=
+		WZxRS7wnx2X5QneC3JWPPtYZfto=
 		</data>
 		<key>Modules/SwiftDemangle.swiftmodule/arm64.swiftmodule</key>
 		<data>
-		tWa96lJNTFsQ2K62yrTvv5ViWks=
+		y5icmc6+mCGA7Aq9dm8yvufOKkc=
 		</data>
 		<key>Modules/SwiftDemangle.swiftmodule/x86_64-apple-ios-simulator.swiftdoc</key>
 		<data>
-		g2cCJGADHWB3jQr2QtcACKlHe0w=
+		I5Jsyiqp0hOsgeZ7CNxblq2C6hw=
 		</data>
 		<key>Modules/SwiftDemangle.swiftmodule/x86_64-apple-ios-simulator.swiftinterface</key>
 		<data>
-		XE8PcTfOypPw6Vzq0IhKbsA1WGE=
+		JeKF/BaEhn/pLNq+4XVJesXfl5g=
 		</data>
 		<key>Modules/SwiftDemangle.swiftmodule/x86_64-apple-ios-simulator.swiftmodule</key>
 		<data>
-		n3H/7Flfe9GzleFpLYSSs8skcvw=
+		ZI5Diiu4uHzQFD4zDYC90pEhhQo=
 		</data>
 		<key>Modules/SwiftDemangle.swiftmodule/x86_64.swiftdoc</key>
 		<data>
-		g2cCJGADHWB3jQr2QtcACKlHe0w=
+		I5Jsyiqp0hOsgeZ7CNxblq2C6hw=
 		</data>
 		<key>Modules/SwiftDemangle.swiftmodule/x86_64.swiftinterface</key>
 		<data>
-		XE8PcTfOypPw6Vzq0IhKbsA1WGE=
+		JeKF/BaEhn/pLNq+4XVJesXfl5g=
 		</data>
 		<key>Modules/SwiftDemangle.swiftmodule/x86_64.swiftmodule</key>
 		<data>
-		n3H/7Flfe9GzleFpLYSSs8skcvw=
+		ZI5Diiu4uHzQFD4zDYC90pEhhQo=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -67,91 +67,91 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			cMW/rSPbxCQ3CYVLLxBhNsrCEgMA7jR/yZ7b34OwM48=
+			B8a6uXwp2kfAWna8LBvt8WI5GpDfAys+BKlj0hmks5o=
 			</data>
 		</dict>
 		<key>Modules/SwiftDemangle.swiftmodule/arm64-apple-ios-simulator.swiftdoc</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			9v0KW2UqYPHdR/MDQKOtYGKF9pPd+s2x5r2Je1nTjhA=
+			D6YIL9uwvgZfSfxlbS6up47JHBLXCTDQk4px1XBo0a0=
 			</data>
 		</dict>
 		<key>Modules/SwiftDemangle.swiftmodule/arm64-apple-ios-simulator.swiftinterface</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			mBfAMZQrpmpvxKnfZ5QQ5ooiW7Qc9PQqtIjUYNRx5OA=
+			9CsYOG5jo4uQaELh+XqLeULLL63AiwjU009ACd7kShU=
 			</data>
 		</dict>
 		<key>Modules/SwiftDemangle.swiftmodule/arm64-apple-ios-simulator.swiftmodule</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			zFxHr5HKMUnOFdE5Vj8KkxMsXGZuNvz9EAuQ+XXgCXU=
+			BbgKIvjwtucOxn7Dr+R4innHsosrMa9q3SUZz29fY3M=
 			</data>
 		</dict>
 		<key>Modules/SwiftDemangle.swiftmodule/arm64.swiftdoc</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			9v0KW2UqYPHdR/MDQKOtYGKF9pPd+s2x5r2Je1nTjhA=
+			D6YIL9uwvgZfSfxlbS6up47JHBLXCTDQk4px1XBo0a0=
 			</data>
 		</dict>
 		<key>Modules/SwiftDemangle.swiftmodule/arm64.swiftinterface</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			mBfAMZQrpmpvxKnfZ5QQ5ooiW7Qc9PQqtIjUYNRx5OA=
+			9CsYOG5jo4uQaELh+XqLeULLL63AiwjU009ACd7kShU=
 			</data>
 		</dict>
 		<key>Modules/SwiftDemangle.swiftmodule/arm64.swiftmodule</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			zFxHr5HKMUnOFdE5Vj8KkxMsXGZuNvz9EAuQ+XXgCXU=
+			BbgKIvjwtucOxn7Dr+R4innHsosrMa9q3SUZz29fY3M=
 			</data>
 		</dict>
 		<key>Modules/SwiftDemangle.swiftmodule/x86_64-apple-ios-simulator.swiftdoc</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			y94uYbP8snl+suQD6Aon+djVWpeNCbjingUWc4OCVmM=
+			H4xIa6S+ROvuRw7EM5SxoFvU66Wo3C69YIrvZIntcGs=
 			</data>
 		</dict>
 		<key>Modules/SwiftDemangle.swiftmodule/x86_64-apple-ios-simulator.swiftinterface</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			la3D4Ey/gCOtzkzbGINUswmGgJwgMYuAIlHjikg0z1c=
+			lZUFl+7sZeU8ix8fNIsOIYi2Ax/sOstsLJGGXF6PUf4=
 			</data>
 		</dict>
 		<key>Modules/SwiftDemangle.swiftmodule/x86_64-apple-ios-simulator.swiftmodule</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			Z2c5bIMeBgckDq5eM2a6tlNwQf/w10eXRkCI3x3tYCY=
+			vdkQvd5RcFJGI4bnDBqIWI3GeWJxRK6vmVzG1GMieNY=
 			</data>
 		</dict>
 		<key>Modules/SwiftDemangle.swiftmodule/x86_64.swiftdoc</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			y94uYbP8snl+suQD6Aon+djVWpeNCbjingUWc4OCVmM=
+			H4xIa6S+ROvuRw7EM5SxoFvU66Wo3C69YIrvZIntcGs=
 			</data>
 		</dict>
 		<key>Modules/SwiftDemangle.swiftmodule/x86_64.swiftinterface</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			la3D4Ey/gCOtzkzbGINUswmGgJwgMYuAIlHjikg0z1c=
+			lZUFl+7sZeU8ix8fNIsOIYi2Ax/sOstsLJGGXF6PUf4=
 			</data>
 		</dict>
 		<key>Modules/SwiftDemangle.swiftmodule/x86_64.swiftmodule</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			Z2c5bIMeBgckDq5eM2a6tlNwQf/w10eXRkCI3x3tYCY=
+			vdkQvd5RcFJGI4bnDBqIWI3GeWJxRK6vmVzG1GMieNY=
 			</data>
 		</dict>
 	</dict>
