@@ -6,7 +6,7 @@
 	<dict>
 		<key>Resources/Info.plist</key>
 		<data>
-		72/qBqACa0dz7NYE3XsvEQYe38g=
+		K+RRA1WJ/3lg3+6KjO6+4vDAwpA=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -36,7 +36,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			J9rEFzrXugQ4SJxei6SOvdfTVINOjlrKgzCftIQ/HPg=
+			fLTsNVenw6A/skOxQqortWrKfjKyd+DTQQCDygiyl3Q=
 			</data>
 		</dict>
 		<key>Modules/SwiftDemangle.swiftmodule/arm64.swiftdoc</key>
@@ -57,7 +57,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			J9rEFzrXugQ4SJxei6SOvdfTVINOjlrKgzCftIQ/HPg=
+			fLTsNVenw6A/skOxQqortWrKfjKyd+DTQQCDygiyl3Q=
 			</data>
 		</dict>
 		<key>Modules/SwiftDemangle.swiftmodule/x86_64-apple-macos.swiftdoc</key>
@@ -78,7 +78,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			aKT/J2O1myZUbIYU42JXlQirw1XNVJz1Hbq66ls0y9s=
+			cUukUWHfs1ttrvjqU60Bc1wOqU1hfK9qjNh5xJcVomU=
 			</data>
 		</dict>
 		<key>Modules/SwiftDemangle.swiftmodule/x86_64.swiftdoc</key>
@@ -99,14 +99,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			aKT/J2O1myZUbIYU42JXlQirw1XNVJz1Hbq66ls0y9s=
+			cUukUWHfs1ttrvjqU60Bc1wOqU1hfK9qjNh5xJcVomU=
 			</data>
 		</dict>
 		<key>Resources/Info.plist</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			2XtZhIkXuJEmt1kCjRPweHSF53cuhYxrH3UTTvoQQPo=
+			lnwg1gP953K/MzBlqhViZBLZ97+uRMcWhWJlnijBI1I=
 			</data>
 		</dict>
 	</dict>
