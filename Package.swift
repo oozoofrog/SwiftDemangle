@@ -16,7 +16,6 @@ let package = Package(
             type: .dynamic,
             targets: ["SwiftDemangle"]),
         .library(name: "SwiftDemangleFramework",
-                 type: .dynamic,
                  targets: ["SwiftDemangleFramework"])
     ],
     dependencies: [
@@ -31,7 +30,10 @@ let package = Package(
             dependencies: []),
         .testTarget(
             name: "SwiftDemangleTests",
-            dependencies: ["SwiftDemangle"]),
+            dependencies: ["SwiftDemangle"],
+            resources: [.copy("manglings-with-clang-types.txt"),
+                        .copy("manglings.txt"),
+                        .copy("simplified-manglings.txt")]),
         .binaryTarget(name: "SwiftDemangleFramework",
                       path: "Binary/SwiftDemangle.xcframework"),
     ],
