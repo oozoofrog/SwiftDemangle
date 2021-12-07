@@ -7,14 +7,16 @@ let package = Package(
     name: "SwiftDemangle",
     platforms: [
         .macOS(SupportedPlatform.MacOSVersion.v11),
-        .iOS(.v12)
+        .iOS(.v13)
     ],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
             name: "SwiftDemangle",
+            type: .dynamic,
             targets: ["SwiftDemangle"]),
         .library(name: "SwiftDemangleFramework",
+                 type: .dynamic,
                  targets: ["SwiftDemangleFramework"])
     ],
     dependencies: [

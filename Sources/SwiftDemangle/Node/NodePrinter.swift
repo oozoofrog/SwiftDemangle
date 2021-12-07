@@ -1678,7 +1678,7 @@ struct NodePrinter {
             assertionFailure("Unhandled function type in printFunctionType!")
         }
         
-        var argumentIndex = type.numberOfChildren - 2
+        let argumentIndex = type.numberOfChildren - 2
         var startIndex: Int = 0
         var isSendable = false
         var isAsync = false
