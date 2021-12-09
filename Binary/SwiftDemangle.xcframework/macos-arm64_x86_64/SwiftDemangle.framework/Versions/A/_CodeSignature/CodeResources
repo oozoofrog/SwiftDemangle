@@ -6,7 +6,7 @@
 	<dict>
 		<key>Resources/Info.plist</key>
 		<data>
-		vu5V+fLhH5lZa2AVZR6eK1lOrvk=
+		x8OAqg2wTuWqi0+RKjVLirbCBAw=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -15,98 +15,98 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			kcPCAPJHkrbXFodLcBuVp4nc+PWx8usaasFGIHmnyOg=
+			spbXvN75c41dq+zh94R4NUEfdyJ8Dit63ub5BY5qofE=
 			</data>
 		</dict>
 		<key>Modules/SwiftDemangle.swiftmodule/arm64-apple-macos.swiftdoc</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			zds5tKGz6MBY4Ta2UAa9Kc+O4uJdapjHrgYio6Tu6qo=
+			4r4X8Tasn5iUXAX1nQ4n2vI79TL1IGHqIaOarcKdkTg=
 			</data>
 		</dict>
 		<key>Modules/SwiftDemangle.swiftmodule/arm64-apple-macos.swiftinterface</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			8s5oY2ytLLhjfDPvB3/XZWiCimGW8Lxu3AmCjdbVoMs=
+			QAh3s2EVVMc2fu05VZRr61UFg9GiZqrt1Jk23T27KwM=
 			</data>
 		</dict>
 		<key>Modules/SwiftDemangle.swiftmodule/arm64-apple-macos.swiftmodule</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			I3kh+Tb8bo79TLmZPG0Yju9eaHK4Ap5izbN0zs7Ju2U=
+			ShiMn9zpKel4bKV9OUDfIvAf+RmrQa4z4XZxAf/NBW4=
 			</data>
 		</dict>
 		<key>Modules/SwiftDemangle.swiftmodule/arm64.swiftdoc</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			zds5tKGz6MBY4Ta2UAa9Kc+O4uJdapjHrgYio6Tu6qo=
+			4r4X8Tasn5iUXAX1nQ4n2vI79TL1IGHqIaOarcKdkTg=
 			</data>
 		</dict>
 		<key>Modules/SwiftDemangle.swiftmodule/arm64.swiftinterface</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			8s5oY2ytLLhjfDPvB3/XZWiCimGW8Lxu3AmCjdbVoMs=
+			QAh3s2EVVMc2fu05VZRr61UFg9GiZqrt1Jk23T27KwM=
 			</data>
 		</dict>
 		<key>Modules/SwiftDemangle.swiftmodule/arm64.swiftmodule</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			I3kh+Tb8bo79TLmZPG0Yju9eaHK4Ap5izbN0zs7Ju2U=
+			ShiMn9zpKel4bKV9OUDfIvAf+RmrQa4z4XZxAf/NBW4=
 			</data>
 		</dict>
 		<key>Modules/SwiftDemangle.swiftmodule/x86_64-apple-macos.swiftdoc</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			hfmwdsaCUYFdUYVsMW1ak+PWJAcQJ4+W9a363JHHNTQ=
+			5kXQO5ShGJGQj2oTe8+f4xwZxJv/B7kpOHcxqKRwJsY=
 			</data>
 		</dict>
 		<key>Modules/SwiftDemangle.swiftmodule/x86_64-apple-macos.swiftinterface</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			IcYj2a/wxsxicSUsOVXdTLCt7tHFm6LLsk/pUyis6T4=
+			zKnyfDWPyOCOjGoeDE6nBm3jllCUmig/0o2Op17K2xw=
 			</data>
 		</dict>
 		<key>Modules/SwiftDemangle.swiftmodule/x86_64-apple-macos.swiftmodule</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			M4zisFTAPhKt+JNg28brNt3OX7xavtrxzXZZH75HGzw=
+			DqgKLQPkHOfRCZmTmcwjbFd5GSAKk2xMbopPmbG/HvQ=
 			</data>
 		</dict>
 		<key>Modules/SwiftDemangle.swiftmodule/x86_64.swiftdoc</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			hfmwdsaCUYFdUYVsMW1ak+PWJAcQJ4+W9a363JHHNTQ=
+			5kXQO5ShGJGQj2oTe8+f4xwZxJv/B7kpOHcxqKRwJsY=
 			</data>
 		</dict>
 		<key>Modules/SwiftDemangle.swiftmodule/x86_64.swiftinterface</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			IcYj2a/wxsxicSUsOVXdTLCt7tHFm6LLsk/pUyis6T4=
+			zKnyfDWPyOCOjGoeDE6nBm3jllCUmig/0o2Op17K2xw=
 			</data>
 		</dict>
 		<key>Modules/SwiftDemangle.swiftmodule/x86_64.swiftmodule</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			M4zisFTAPhKt+JNg28brNt3OX7xavtrxzXZZH75HGzw=
+			DqgKLQPkHOfRCZmTmcwjbFd5GSAKk2xMbopPmbG/HvQ=
 			</data>
 		</dict>
 		<key>Resources/Info.plist</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			w4x/FsKzkS35IF6gK9vlW4zC6LkiXMs4KWdTBvO7hi8=
+			B8RB/yMACq6rWB3ICxwH24XSPIYy+ZTo1rrRF+vSMYQ=
 			</data>
 		</dict>
 	</dict>
