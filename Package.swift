@@ -26,8 +26,7 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
             name: "SwiftDemangle",
-            dependencies: [],
-            linkerSettings: [.unsafeFlags(["all_load"])]),
+            dependencies: []),
         .testTarget(
             name: "SwiftDemangleTests",
             dependencies: ["SwiftDemangle"],
