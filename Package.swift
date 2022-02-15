@@ -30,9 +30,7 @@ let package = Package(
         .testTarget(
             name: "SwiftDemangleTests",
             dependencies: ["SwiftDemangle"],
-            resources: [.copy("manglings-with-clang-types.txt"),
-                        .copy("manglings.txt"),
-                        .copy("simplified-manglings.txt")]),
+            resources: [.process("Resources")]),
         .binaryTarget(name: "SwiftDemangleFramework",
                       path: "Binary/SwiftDemangle.xcframework"),
     ],
