@@ -1774,7 +1774,12 @@ struct NodePrinter {
             return label.kind == .Identifier ? label.text : "_"
         }
         
-        let hasLabels = labelList?.numberOfChildren > 0
+        let hasLabels: Bool
+        if let numberOfChildren = labelList?.numberOfChildren {
+            hasLabels = numberOfChildren > 0
+        } else {
+            hasLabels = false
+        }
         
         printer("(")
         try parameters.copyOfChildren.interleave { (index, param) in
