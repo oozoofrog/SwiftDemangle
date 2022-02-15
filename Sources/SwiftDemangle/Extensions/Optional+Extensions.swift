@@ -39,23 +39,6 @@ extension Optional where Wrapped: Collection {
     
 }
 
-extension Optional: Comparable where Wrapped == Int {
-    public static func ==(lhs: Int?, rhs: Int?) -> Bool {
-        if let lhs = lhs, let rhs = rhs {
-            return lhs == rhs
-        } else {
-            return false
-        }
-    }
-    public static func <(lhs: Int?, rhs: Int?) -> Bool {
-        if let lhs = lhs, let rhs = rhs {
-            return lhs < rhs
-        } else {
-            return false
-        }
-    }
-}
-
 prefix func !<W>(rhs: Optional<W>) -> Bool {
     rhs.hasValue.not
 }
