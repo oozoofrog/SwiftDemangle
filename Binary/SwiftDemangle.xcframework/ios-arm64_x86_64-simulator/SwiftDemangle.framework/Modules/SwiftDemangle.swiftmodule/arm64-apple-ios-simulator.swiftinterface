@@ -45,10 +45,6 @@ public enum SwiftDemangleError : Swift.Error {
   case newDemanglerError(description: Swift.String, nodeDebugDescription: Swift.String)
   case nodePrinterError(description: Swift.String, nodeDebugDescription: Swift.String)
 }
-extension Swift.Optional : Swift.Comparable where Wrapped == Swift.Int {
-  public static func == (lhs: Swift.Int?, rhs: Swift.Int?) -> Swift.Bool
-  public static func < (lhs: Swift.Int?, rhs: Swift.Int?) -> Swift.Bool
-}
 public protocol StringIntegerIndexable : Swift.StringProtocol {
   subscript(indexRange: Swift.Range<Swift.Int>) -> Swift.Substring { get }
   subscript(r: Swift.Range<Self.Index>) -> Swift.Substring { get }
