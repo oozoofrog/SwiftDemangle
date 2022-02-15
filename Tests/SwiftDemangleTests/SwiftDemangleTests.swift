@@ -97,7 +97,7 @@ final class SwiftDemangleTests: XCTestCase {
     }
     
     func loadAndForEachMangles(_ inputFileName: String, forEach handler: (_ line: Int, _ mangled: String, _ demangled: String) throws -> Void) throws {
-        let bundle = Bundle(for: SwiftDemangleTests.self)
+        let bundle = Bundle.module
         let path = bundle.path(forResource: inputFileName, ofType: "")!
         let tests = try String(contentsOfFile: path)
         for (offset, mangledPair) in tests.split(separator: "\n").enumerated() where mangledPair.isNotEmpty && !mangledPair.hasPrefix("//") {
