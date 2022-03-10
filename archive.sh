@@ -9,10 +9,10 @@ xcodebuild archive -scheme SwiftDemangle-Package  -archivePath "./build/mac.xcar
 
 echo "Create XCFramework"
 xcodebuild -create-xcframework \
--framework "./build/ios.xcarchive/Products/Library/Frameworks/SwiftDemangle.framework" \
--framework "./build/ios_sim.xcarchive/Products/Library/Frameworks/SwiftDemangle.framework" \
--framework "./build/mac.xcarchive/Products/Library/Frameworks/SwiftDemangle.framework" \
--output "./Binary/SwiftDemangle.xcframework"
+-framework "./build/ios.xcarchive/Products/Library/Frameworks/SwiftDemangleFramework.framework" \
+-framework "./build/ios_sim.xcarchive/Products/Library/Frameworks/SwiftDemangleFramework.framework" \
+-framework "./build/mac.xcarchive/Products/Library/Frameworks/SwiftDemangleFramework.framework" \
+-output "./Binary/SwiftDemangleFramework.xcframework"
 
 echo "Cleaning..."
 rm -rf ./build
