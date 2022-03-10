@@ -6,6 +6,14 @@
 
 demangler for mangled symbol that translated from [swift-demangle](https://github.com/apple/swift/blob/main/tools/swift-demangle/swift-demangle.cpp) [Swift 5.5](https://github.com/apple/swift/tree/release/5.5)
 
+## Installation
+**SwiftDemangle** supply **SPM** only
+```swift
+dependencies: [
+  .package(url: "https://github.com/oozoofrog/SwiftDemangle", from: "5.5.5"),
+],
+```
+
 ## Usage
 
 ```Swift
