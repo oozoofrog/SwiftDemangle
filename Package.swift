@@ -14,8 +14,8 @@ let package = Package(
         .library(
             name: "SwiftDemangle",
             targets: ["SwiftDemangle"]),
-        .library(name: "SwiftDemangleFramework",
-                 targets: ["SwiftDemangleFramework"])
+//        .library(name: "SwiftDemangleFramework",
+//                 targets: ["SwiftDemangleFramework"])
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -31,8 +31,8 @@ let package = Package(
             name: "SwiftDemangleTests",
             dependencies: ["SwiftDemangle"],
             resources: [.process("Resources")]),
-        .binaryTarget(name: "SwiftDemangleFramework",
-                      path: "Binary/SwiftDemangleFramework.xcframework"),
+//        .binaryTarget(name: "SwiftDemangleFramework",
+//                      path: "Binary/SwiftDemangleFramework.xcframework"),
     ],
     swiftLanguageVersions: [.v5]
 )
