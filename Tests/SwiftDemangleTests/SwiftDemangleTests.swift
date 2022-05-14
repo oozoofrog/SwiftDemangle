@@ -28,6 +28,13 @@ final class SwiftDemangleTests: XCTestCase {
         XCTAssertEqual(result, demangled, "\(mangled) ---> expect: (\(demangled)), result: (\(result))")
     }
     
+    func testDemanglingInAngleQuotationMarks() throws {
+        let mangled = "<_TtC4TestP33_EBDFD10FF4CF0D65A8576F5ADD7EC0FF8TestView; frame = (0 0; 404 67.3333); layer = <CALayer>>"
+        let demangled = "<Test.(TestView in _EBDFD10FF4CF0D65A8576F5ADD7EC0FF) with unmangled suffix \";\" frame = (0 0; 404 67.3333); layer = <CALayer>>"
+        let result = mangled.demangled
+        XCTAssertEqual(result, demangled, "\(mangled) ---> expect: (\(demangled)), result: (\(result))")
+    }
+    
     func testManglings() throws {
         try loadAndForEachMangles("manglings.txt") { line, mangled, demangled in
             var opts: DemangleOptions = .defaultOptions
