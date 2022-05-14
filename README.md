@@ -10,7 +10,7 @@ demangler for mangled symbol that translated from [swift-demangle](https://githu
 **SwiftDemangle** supply **SPM** only
 ```swift
 dependencies: [
-  .package(url: "https://github.com/oozoofrog/SwiftDemangle", from: "5.5.5"),
+  .package(url: "https://github.com/oozoofrog/SwiftDemangle", from: "5.5.8"),
 ],
 ```
 
