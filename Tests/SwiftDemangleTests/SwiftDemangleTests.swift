@@ -12,7 +12,7 @@ func catchTry<R>(_ procedure: @autoclosure () throws -> R, or: R) -> R {
 final class SwiftDemangleTests: XCTestCase {
     
     override func setUpWithError() throws {
-        continueAfterFailure = true
+        continueAfterFailure = false
     }
     
     func testPunycode() {
@@ -46,7 +46,13 @@ final class SwiftDemangleTests: XCTestCase {
             if result != demangled {
                 print("[TEST] demangling for \(line):  \(mangled) failed")
             }
-            XCTAssertEqual(result, demangled, "\n\(line): \(mangled) ---> expect: (\(demangled)), result: (\(result))")
+            XCTAssertEqual(result, demangled, """
+
+            mangled = "\(mangled)"
+            demangled = "\(demangled)"
+            XCTAssertEqual(mangled.demangled, demangled)
+            result = "\(result)"
+            """)
         }
     }
     
@@ -109,17 +115,11 @@ final class SwiftDemangleTests: XCTestCase {
         let tests = try String(contentsOfFile: path)
         for (offset, mangledPair) in tests.split(separator: "\n").enumerated() where mangledPair.isNotEmpty && !mangledPair.hasPrefix("//") {
             var range = mangledPair.range(of: " ---> ")
-            if range == nil {
-                range = mangledPair.range(of: " --> ")
-            }
-            if range == nil {
-                range = mangledPair.range(of: " -> ")
-            }
             guard let rangePair = range else { continue }
             let mangled = String(mangledPair[mangledPair.startIndex..<rangePair.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
             let demangled = String(mangledPair[rangePair.upperBound..<mangledPair.endIndex])
             try handler(offset, mangled, demangled)
         }
     }
-    
+
 }

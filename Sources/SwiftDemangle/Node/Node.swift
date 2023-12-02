@@ -305,6 +305,7 @@ extension Node {
             return true
         }
     }
+
     var isSimpleType: Bool {
         switch kind {
         case .AssociatedType,
@@ -460,6 +461,7 @@ extension Node {
              .NativePinningAddressor,
              .NativePinningMutableAddressor,
              .NominalTypeDescriptor,
+             .NominalTypeDescriptorRecord,
              .NonObjCAttribute,
              .Number,
              .ObjCAsyncCompletionHandlerImpl,
@@ -468,6 +470,7 @@ extension Node {
              .ObjCMetadataUpdateFunction,
              .ObjCResilientClassStub,
              .OpaqueTypeDescriptor,
+             .OpaqueTypeDescriptorRecord,
              .OpaqueTypeDescriptorAccessor,
              .OpaqueTypeDescriptorAccessorImpl,
              .OpaqueTypeDescriptorAccessorKey,
@@ -484,8 +487,10 @@ extension Node {
              .PropertyDescriptor,
              .ProtocolConformance,
              .ProtocolConformanceDescriptor,
+             .ProtocolConformanceDescriptorRecord,
              .MetadataInstantiationCache,
              .ProtocolDescriptor,
+             .ProtocolDescriptorRecord,
              .ProtocolRequirementsBaseDescriptor,
              .ProtocolSelfConformanceDescriptor,
              .ProtocolSelfConformanceWitness,
@@ -601,6 +606,8 @@ extension Node {
              .IndexSubset,
              .AsyncAwaitResumePartialFunction,
              .AsyncSuspendResumePartialFunction:
+            return false
+        default:
             return false
         }
     }
@@ -853,6 +860,9 @@ extension Node {
         case FunctionSignatureSpecializationParamKind
         case FunctionSignatureSpecializationParamPayload
         case FunctionType
+        case ConstrainedExistential
+        case ConstrainedExistentialRequirementList
+        case ConstrainedExistentialSelf
         case GenericPartialSpecialization
         case GenericPartialSpecializationNotReAbstracted
         case GenericProtocolWitnessTable
@@ -914,6 +924,7 @@ extension Node {
         case NativePinningAddressor
         case NativePinningMutableAddressor
         case NominalTypeDescriptor
+        case NominalTypeDescriptorRecord
         case NonObjCAttribute
         case Number
         case ObjCAsyncCompletionHandlerImpl
@@ -939,7 +950,9 @@ extension Node {
         case ProtocolConformanceRefInProtocolModule
         case ProtocolConformanceRefInOtherModule
         case ProtocolDescriptor
+        case ProtocolDescriptorRecord
         case ProtocolConformanceDescriptor
+        case ProtocolConformanceDescriptorRecord
         case ProtocolList
         case ProtocolListWithClass
         case ProtocolListWithAnyObject
@@ -1033,6 +1046,7 @@ extension Node {
         case OutlinedAssignWithCopy
         case OutlinedDestroy
         case OutlinedVariable
+        case OutlinedReadOnlyObject
         case AssocTypePath
         case LabelList
         case ModuleDescriptor
@@ -1049,6 +1063,7 @@ extension Node {
         case OpaqueType
         case OpaqueTypeDescriptorSymbolicReference
         case OpaqueTypeDescriptor
+        case OpaqueTypeDescriptorRecord
         case OpaqueTypeDescriptorAccessor
         case OpaqueTypeDescriptorAccessorImpl
         case OpaqueTypeDescriptorAccessorKey
@@ -1079,20 +1094,32 @@ extension Node {
         case IndexSubset
         case AsyncAwaitResumePartialFunction
         case AsyncSuspendResumePartialFunction
-        
-        //        public var name: String {
-        //            if let first = rawValue.first {
-        //                return first.uppercased() + rawValue.dropFirst(1)
-        //            }
-        //            return rawValue
-        //        }
-        
+
+        // Added in Swift 5.6
+        case AccessibleFunctionRecord
+        case CompileTimeConst
+
+        // Added in Swift 5.7
+        case BackDeploymentThunk
+        case BackDeploymentFallback
+        case ExtendedExistentialTypeShape
+        case Uniquable
+        case UniqueExtendedExistentialTypeShapeSymbolicReference
+        case NonUniqueExtendedExistentialTypeShapeSymbolicReference
+        case SymbolicExtendedExistentialType
+
+        // Added in Swift 5.8
+        case MetatypeParamsRemoved
+        case HasSymbolQuery
+        case RuntimeDiscoverableAttributeRecord
+        case RuntimeAttributeGenerator
+        case OpaqueReturnTypeIndex
+        case OpaqueReturnTypeParent
+
         public func `in`(_ kinds: Self...) -> Bool {
             kinds.contains(self)
         }
-        
-        //        public var description: String { name }
-        //        public var debugDescription: String { "Node." + rawValue }
+
     }
     
     public enum IsVariadic {
@@ -1253,7 +1280,7 @@ extension Node.Kind {
     private static let anyGenerics: [Node.Kind] = array(.Structure, .Class, .Enum, .Protocol, .ProtocolSymbolicReference, .OtherNominalType, .TypeAlias, .TypeSymbolicReference)
     private static let requirements = array(.DependentGenericSameTypeRequirement, .DependentGenericLayoutRequirement, .DependentGenericConformanceRequirement)
     private static let contexts = array(.Allocator, .AnonymousContext, .Class, .Constructor, .Deallocator, .DefaultArgumentInitializer, .Destructor, .DidSet, .Enum, .ExplicitClosure, .Extension, .Function, .Getter, .GlobalGetter, .IVarInitializer, .IVarDestroyer, .ImplicitClosure, .Initializer, .MaterializeForSet, .ModifyAccessor, .Module, .NativeOwningAddressor, .NativeOwningMutableAddressor, .NativePinningAddressor, .NativePinningMutableAddressor, .OtherNominalType, .OwningAddressor, .OwningMutableAddressor, .PropertyWrapperBackingInitializer, .PropertyWrapperInitFromProjectedValue, .Protocol, .ProtocolSymbolicReference, .ReadAccessor, .Setter, .Static, .Structure, .Subscript, .TypeSymbolicReference, .TypeAlias, .UnsafeAddressor, .UnsafeMutableAddressor, .Variable, .WillSet, .OpaqueReturnTypeOf, .AutoDiffFunction)
-    private static let functionAttrs = array(.FunctionSignatureSpecialization, .GenericSpecialization, .GenericSpecializationPrespecialized, .InlinedGenericFunction, .GenericSpecializationNotReAbstracted, .GenericPartialSpecialization, .GenericPartialSpecializationNotReAbstracted, .GenericSpecializationInResilienceDomain, .ObjCAttribute, .NonObjCAttribute, .DynamicAttribute, .DirectMethodReferenceAttribute, .VTableAttribute, .PartialApplyForwarder, .PartialApplyObjCForwarder, .OutlinedVariable, .OutlinedBridgedMethod, .MergedFunction, .DynamicallyReplaceableFunctionImpl, .DynamicallyReplaceableFunctionKey, .DynamicallyReplaceableFunctionVar, .AsyncFunctionPointer, .AsyncAwaitResumePartialFunction, .AsyncSuspendResumePartialFunction)
+    private static let functionAttrs = array(.FunctionSignatureSpecialization, .GenericSpecialization, .GenericSpecializationPrespecialized, .InlinedGenericFunction, .GenericSpecializationNotReAbstracted, .GenericPartialSpecialization, .GenericPartialSpecializationNotReAbstracted, .GenericSpecializationInResilienceDomain, .ObjCAttribute, .NonObjCAttribute, .DynamicAttribute, .DirectMethodReferenceAttribute, .VTableAttribute, .PartialApplyForwarder, .PartialApplyObjCForwarder, .OutlinedVariable, .OutlinedBridgedMethod, .OutlinedReadOnlyObject, .MergedFunction, .DynamicallyReplaceableFunctionImpl, .DynamicallyReplaceableFunctionKey, .DynamicallyReplaceableFunctionVar, .AsyncFunctionPointer, .AsyncAwaitResumePartialFunction, .AsyncSuspendResumePartialFunction)
     
     var isDeclName: Bool {
         Self.declNames.contains(self)

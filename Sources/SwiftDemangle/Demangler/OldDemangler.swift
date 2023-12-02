@@ -1549,7 +1549,7 @@ class OldDemangler: Demanglerable {
                     if nextIf("f") {
                         var size: Node.IndexType = .zero
                         guard demangleBuiltinSize(number: &size) else { return nil }
-                        return Node(kind: .BuiltinTypeName, text: "Builtin.Vec\(elts)xFloat\(size)")
+                        return Node(kind: .BuiltinTypeName, text: "Builtin.Vec\(elts)xFPIEEE\(size)")
                     }
                     if nextIf("p") {
                         return Node(kind: .BuiltinTypeName, text: "Builtin.Vec\(elts)xRawPointer")
