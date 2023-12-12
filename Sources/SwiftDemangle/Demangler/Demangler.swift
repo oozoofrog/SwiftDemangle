@@ -601,7 +601,36 @@ class Demangler: Demanglerable, Mangling {
         }
         return Ext
     }
-    
+
+    @discardableResult
+    func setParentForOpaqueReturnTypeNodes(parent: Node?, visitedNode: Node?) -> Node? {
+        guard let parent, let visitedNode else {
+            return nil
+        }
+        if visitedNode.kind == .OpaqueReturnType {
+            if visitedNode.numberOfChildren > 0, visitedNode.lastChild.getKind() == .OpaqueReturnTypeParent {
+                return parent
+            }
+            visitedNode.add(createNode(.OpaqueReturnTypeParent, parent.index ?? 0))
+            return parent
+        }
+
+        // If this node is one that may in turn define its own opaque return type,
+        // stop recursion, since any opaque return type nodes underneath would refer
+        // to the nested declaration rather than the one we're looking at.
+        switch visitedNode.kind {
+        case .Function,
+                .Variable,
+                .Subscript:
+            return parent
+        default:
+            for index in 0..<visitedNode.numberOfChildren {
+                setParentForOpaqueReturnTypeNodes(parent: parent, visitedNode: visitedNode.children(index))
+            }
+            return parent
+        }
+    }
+
     func demanglePlainFunction() -> Node? {
         let GenSig = popNode(.DependentGenericSignature)
         var type = popFunctionType(.FunctionType)
@@ -614,11 +643,15 @@ class Demangler: Demanglerable, Mangling {
         let Name = popNode(isDeclName)
         let Ctx = popContext()
         
+        var result: Node?
         if LabelList.hasValue {
-            return createWithChildren(.Function, Ctx, Name, LabelList, type)
+            result = createWithChildren(.Function, Ctx, Name, LabelList, type)
+        } else {
+            result = createWithChildren(.Function, Ctx, Name, type)
         }
-        
-        return createWithChildren(.Function, Ctx, Name, type)
+
+        result = setParentForOpaqueReturnTypeNodes(parent: result, visitedNode: type)
+        return result
     }
     
     func demangleRetroactiveProtocolConformanceRef() -> Node? {
@@ -1265,6 +1298,10 @@ class Demangler: Demanglerable, Mangling {
             return createNode(.DynamicAttribute)
         case "d":
             return createNode(.DirectMethodReferenceAttribute)
+        case "E": 
+            return createNode(.DistributedThunk)
+        case "F":
+            return createNode(.DistributedAccessor)
         case "a":
             return createNode(.PartialApplyObjCForwarder)
         case "A":

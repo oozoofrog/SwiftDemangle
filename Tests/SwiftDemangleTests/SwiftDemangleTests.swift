@@ -48,8 +48,8 @@ final class SwiftDemangleTests: XCTestCase {
             }
             XCTAssertEqual(result, demangled, """
 
-            mangled = "\(mangled)"
-            demangled = "\(demangled)"
+            let mangled = "\(mangled)"
+            let demangled = "\(demangled)"
             XCTAssertEqual(mangled.demangled, demangled)
             result = "\(result)"
             """)

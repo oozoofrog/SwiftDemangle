@@ -620,6 +620,14 @@ struct NodePrinter {
         case .OpaqueTypeDescriptorSymbolicReference:
             printer("opaque type symbolic reference 0x")
             printer(node.index.or(0).hex)
+        case .DistributedThunk:
+            if options.contains(.shortenThunk) == false {
+                printer("distributed thunk ")
+            }
+        case .DistributedAccessor:
+            if options.contains(.shortenThunk) == false {
+                printer("distributed accessor for ")
+            }
         case .DynamicallyReplaceableFunctionKey:
             if !options.contains(.shortenThunk) {
                 printer("dynamically replaceable key for ")

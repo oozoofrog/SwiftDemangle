@@ -580,6 +580,8 @@ extension Node {
              .ProtocolConformanceRefInTypeModule,
              .ProtocolConformanceRefInProtocolModule,
              .ProtocolConformanceRefInOtherModule,
+             .DistributedThunk,
+             .DistributedAccessor,
              .DynamicallyReplaceableFunctionKey,
              .DynamicallyReplaceableFunctionImpl,
              .DynamicallyReplaceableFunctionVar,
@@ -834,6 +836,8 @@ extension Node {
         case Destructor
         case DidSet
         case Directness
+        case DistributedThunk
+        case DistributedAccessor
         case DynamicAttribute
         case DirectMethodReferenceAttribute
         case DynamicSelf
@@ -1253,21 +1257,29 @@ extension Node {
     }
 }
 
+// MARK: - Debugging
 extension Node: CustomDebugStringConvertible {
     
     public var debugDescription: String {
-        let kind = self.kind
-        let payload = self.payload
-        let children = self._children
-        let numberOfParent = self.numberOfParent
-        let prefix = [String](repeating: "  ", count: numberOfParent).joined()
-        if numberOfChildren > 0 {
-            return "\(numberOfParent > 0 ? "\n" : "")\(prefix)Kind: \(kind) \(children.map(\.debugDescription).joined(separator: ", "))"
-        } else {
-            return "\(numberOfParent > 0 ? "\n" : "")\(prefix)Kind: \(kind), Payload: \(payload)"
-        }
+//        let kind = self.kind
+//        let payload = self.payload
+//        let children = self._children
+//        let numberOfParent = self.numberOfParent
+//        let prefix = [String](repeating: "  ", count: numberOfParent).joined()
+//        if numberOfChildren > 0 {
+//            return "\(numberOfParent > 0 ? "\n" : "")\(prefix)Kind: \(kind) \(children.map(\.debugDescription).joined(separator: ", "))"
+//        } else {
+//            return "\(numberOfParent > 0 ? "\n" : "")\(prefix)Kind: \(kind), Payload: \(payload)"
+//        }
+        printHierarchy()
     }
     
+    // Node와 그 자식들의 kind와 계층 관계를 출력하는 메서드
+    func printHierarchy(level: Int = 0) -> String {
+        var string = "\(String(repeating: "  ", count: level))\(kind.rawValue)\(self.hasText ? ("text:" + self.text) : "")\n"
+        string += _children.map { $0.printHierarchy(level: level + 1) }.joined()
+        return string
+    }
 }
 
 extension Node.Kind {

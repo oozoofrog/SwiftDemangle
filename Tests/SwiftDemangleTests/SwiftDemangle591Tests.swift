@@ -47,4 +47,10 @@ final class SwiftDemangle591Tests: XCTestCase {
         let demangled = "MatrixType #1 in static (extension in Foobar):Foobar.Vector2<Swift.Double><A where A == Swift.Double>.simdMatrix(scale: Foobar.Vector2<Swift.Double>, rotate: Swift.Double, translate: Foobar.Vector2<Swift.Double>) -> __C.simd_double3x3"
         XCTAssertEqual(mangled.demangled, demangled)
     }
+
+    func test591_4() throws {
+        let mangled = "$s17distributed_thunk2DAC1fyyFTE"
+        let demangled = "distributed thunk distributed_thunk.DA.f() -> ()"
+        XCTAssertEqual(mangled.demangled, demangled)
+    }
 }
