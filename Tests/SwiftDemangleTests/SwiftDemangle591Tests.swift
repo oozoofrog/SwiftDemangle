@@ -36,27 +36,33 @@ final class SwiftDemangle591Tests: XCTestCase {
         XCTAssertEqual(mangled.demangled, demangled)
     }
 
-    func test591_2() throws {
+    func test$sSUss17FixedWidthIntegerRzrlEyxqd__cSzRd__lufCSu_SiTgm5() throws {
         let mangled = "$sSUss17FixedWidthIntegerRzrlEyxqd__cSzRd__lufCSu_SiTgm5"
         let demangled = "generic specialization <Swift.UInt, Swift.Int> of (extension in Swift):Swift.UnsignedInteger< where A: Swift.FixedWidthInteger>.init<A where A1: Swift.BinaryInteger>(A1) -> A"
         XCTAssertEqual(mangled.demangled, demangled)
     }
 
-    func test591_3() throws {
+    func test$s6Foobar7Vector2VAASdRszlE10simdMatrix5scale6rotate9translateSo0C10_double3x3aACySdG_SdAJtFZ0D4TypeL_aySd__GD() throws {
         let mangled = "$s6Foobar7Vector2VAASdRszlE10simdMatrix5scale6rotate9translateSo0C10_double3x3aACySdG_SdAJtFZ0D4TypeL_aySd__GD"
         let demangled = "MatrixType #1 in static (extension in Foobar):Foobar.Vector2<Swift.Double><A where A == Swift.Double>.simdMatrix(scale: Foobar.Vector2<Swift.Double>, rotate: Swift.Double, translate: Foobar.Vector2<Swift.Double>) -> __C.simd_double3x3"
         XCTAssertEqual(mangled.demangled, demangled)
     }
 
-    func test591_4() throws {
+    func test$s17distributed_thunk2DAC1fyyFTE() throws {
         let mangled = "$s17distributed_thunk2DAC1fyyFTE"
         let demangled = "distributed thunk distributed_thunk.DA.f() -> ()"
         XCTAssertEqual(mangled.demangled, demangled)
     }
 
-    func test591_5() throws {
+    func test$s27distributed_actor_accessors7MyActorC7simple2ySSSiFTETFHF() throws {
         let mangled = "$s27distributed_actor_accessors7MyActorC7simple2ySSSiFTETFHF"
         let demangled = "accessible function runtime record for distributed accessor for distributed thunk distributed_actor_accessors.MyActor.simple2(Swift.Int) -> Swift.String"
+        XCTAssertEqual(mangled.demangled, demangled)
+    }
+
+    func test$s1A3bar1aySSYt_tF() throws {
+        let mangled = "$s1A3bar1aySSYt_tF"
+        let demangled = "A.bar(a: _const Swift.String) -> ()"
         XCTAssertEqual(mangled.demangled, demangled)
     }
 }
