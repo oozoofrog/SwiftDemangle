@@ -53,4 +53,10 @@ final class SwiftDemangle591Tests: XCTestCase {
         let demangled = "distributed thunk distributed_thunk.DA.f() -> ()"
         XCTAssertEqual(mangled.demangled, demangled)
     }
+
+    func test591_5() throws {
+        let mangled = "$s27distributed_actor_accessors7MyActorC7simple2ySSSiFTETFHF"
+        let demangled = "accessible function runtime record for distributed accessor for distributed thunk distributed_actor_accessors.MyActor.simple2(Swift.Int) -> Swift.String"
+        XCTAssertEqual(mangled.demangled, demangled)
+    }
 }
