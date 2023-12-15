@@ -1312,7 +1312,7 @@ extension Node.Kind {
         .OutlinedBridgedMethod,
         .OutlinedReadOnlyObject,
         .MergedFunction,
-        .DispatchThunk,
+        .DistributedThunk,
         .DistributedAccessor,
         .DynamicallyReplaceableFunctionImpl,
         .DynamicallyReplaceableFunctionKey,
