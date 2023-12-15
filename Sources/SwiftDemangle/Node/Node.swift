@@ -1276,7 +1276,7 @@ extension Node: CustomDebugStringConvertible {
     
     // Node와 그 자식들의 kind와 계층 관계를 출력하는 메서드
     func printHierarchy(level: Int = 0) -> String {
-        var string = "\(String(repeating: "  ", count: level))\(kind.rawValue)\(self.hasText ? ("text:" + self.text) : "")\n"
+        var string = "\(String(repeating: "  ", count: level))\(kind.rawValue)\(self.hasText ? (", text:" + self.text) : "")\n"
         string += _children.map { $0.printHierarchy(level: level + 1) }.joined()
         return string
     }
@@ -1292,7 +1292,35 @@ extension Node.Kind {
     private static let anyGenerics: [Node.Kind] = array(.Structure, .Class, .Enum, .Protocol, .ProtocolSymbolicReference, .OtherNominalType, .TypeAlias, .TypeSymbolicReference)
     private static let requirements = array(.DependentGenericSameTypeRequirement, .DependentGenericLayoutRequirement, .DependentGenericConformanceRequirement)
     private static let contexts = array(.Allocator, .AnonymousContext, .Class, .Constructor, .Deallocator, .DefaultArgumentInitializer, .Destructor, .DidSet, .Enum, .ExplicitClosure, .Extension, .Function, .Getter, .GlobalGetter, .IVarInitializer, .IVarDestroyer, .ImplicitClosure, .Initializer, .MaterializeForSet, .ModifyAccessor, .Module, .NativeOwningAddressor, .NativeOwningMutableAddressor, .NativePinningAddressor, .NativePinningMutableAddressor, .OtherNominalType, .OwningAddressor, .OwningMutableAddressor, .PropertyWrapperBackingInitializer, .PropertyWrapperInitFromProjectedValue, .Protocol, .ProtocolSymbolicReference, .ReadAccessor, .Setter, .Static, .Structure, .Subscript, .TypeSymbolicReference, .TypeAlias, .UnsafeAddressor, .UnsafeMutableAddressor, .Variable, .WillSet, .OpaqueReturnTypeOf, .AutoDiffFunction)
-    private static let functionAttrs = array(.FunctionSignatureSpecialization, .GenericSpecialization, .GenericSpecializationPrespecialized, .InlinedGenericFunction, .GenericSpecializationNotReAbstracted, .GenericPartialSpecialization, .GenericPartialSpecializationNotReAbstracted, .GenericSpecializationInResilienceDomain, .ObjCAttribute, .NonObjCAttribute, .DynamicAttribute, .DirectMethodReferenceAttribute, .VTableAttribute, .PartialApplyForwarder, .PartialApplyObjCForwarder, .OutlinedVariable, .OutlinedBridgedMethod, .OutlinedReadOnlyObject, .MergedFunction, .DynamicallyReplaceableFunctionImpl, .DynamicallyReplaceableFunctionKey, .DynamicallyReplaceableFunctionVar, .AsyncFunctionPointer, .AsyncAwaitResumePartialFunction, .AsyncSuspendResumePartialFunction)
+    private static let functionAttrs = array(
+        .FunctionSignatureSpecialization,
+        .GenericSpecialization,
+        .GenericSpecializationPrespecialized,
+        .InlinedGenericFunction,
+        .GenericSpecializationNotReAbstracted,
+        .GenericPartialSpecialization,
+        .GenericPartialSpecializationNotReAbstracted,
+        .GenericSpecializationInResilienceDomain,
+        .ObjCAttribute,
+        .NonObjCAttribute,
+        .DynamicAttribute,
+        .DirectMethodReferenceAttribute,
+        .VTableAttribute,
+        .PartialApplyForwarder,
+        .PartialApplyObjCForwarder,
+        .OutlinedVariable,
+        .OutlinedBridgedMethod,
+        .OutlinedReadOnlyObject,
+        .MergedFunction,
+        .DispatchThunk,
+        .DistributedAccessor,
+        .DynamicallyReplaceableFunctionImpl,
+        .DynamicallyReplaceableFunctionKey,
+        .DynamicallyReplaceableFunctionVar,
+        .AsyncFunctionPointer,
+        .AsyncAwaitResumePartialFunction,
+        .AsyncSuspendResumePartialFunction
+    )
     
     var isDeclName: Bool {
         Self.declNames.contains(self)
