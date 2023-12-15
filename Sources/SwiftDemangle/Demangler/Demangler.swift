@@ -54,6 +54,9 @@ class Demangler: Demanglerable, Mangling {
         // If any other prefixes are accepted, please update Mangler::verify.
         
         if !parseAndPushNodes() {
+            #if DEBUG
+            debugPrint("[DEMANGLER] progressed chars -> \(parsedChars)")
+            #endif
             return nil
         }
         
@@ -177,6 +180,10 @@ class Demangler: Demanglerable, Mangling {
         }
     }
     
+    #if DEBUG
+    var parsedChars: String = ""
+    #endif
+
     func demangleOperator() -> Node? {
         while true {
             let c = nextChar()
@@ -213,6 +220,8 @@ class Demangler: Demanglerable, Mangling {
                     return createWithChild(.OpaqueTypeDescriptorRecord, popNode())
                 case "r":
                     return createWithChild(.ProtocolDescriptorRecord, popProtocol())
+                case "F":
+                    return createNode(.AccessibleFunctionRecord)
                 default:
                     pushBack()
                     pushBack()
@@ -2513,6 +2522,9 @@ class Demangler: Demanglerable, Mangling {
     @discardableResult
     func nextChar() -> Character {
         guard let first = mangled.first else { return .zero }
+        #if DEBUG
+        parsedChars.append(first.character)
+        #endif
         mangled = Data(mangled.dropFirst())
         return first.character
     }

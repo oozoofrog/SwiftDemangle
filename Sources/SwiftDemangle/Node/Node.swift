@@ -1319,7 +1319,12 @@ extension Node.Kind {
         .DynamicallyReplaceableFunctionVar,
         .AsyncFunctionPointer,
         .AsyncAwaitResumePartialFunction,
-        .AsyncSuspendResumePartialFunction
+        .AsyncSuspendResumePartialFunction,
+        .AccessibleFunctionRecord,
+        .BackDeploymentThunk,
+        .BackDeploymentFallback,
+        .HasSymbolQuery,
+        .RuntimeDiscoverableAttributeRecord
     )
     
     var isDeclName: Bool {
