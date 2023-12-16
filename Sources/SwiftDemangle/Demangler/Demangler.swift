@@ -1525,6 +1525,14 @@ class Demangler: Demanglerable, Mangling {
             default:
                 return demangleAutoDiffFunctionOrSimpleThunk(.AutoDiffFunction)
             }
+        case "w":
+              switch (nextChar()) {
+              case "b": return createNode(.BackDeploymentThunk)
+              case "B": return createNode(.BackDeploymentFallback)
+              case "S": return createNode(.HasSymbolQuery)
+              default:
+                return nil
+              }
         default:
             return nil
         }
