@@ -2059,7 +2059,10 @@ struct NodePrinter {
                         printer(" : ")
                         let text = node.children(index).text
                         index += 1
-                        let demangleName = try text.demangleSymbolAsString(with: .defaultOptions)
+                        let demangleName = try text.demangleSymbolAsString(
+                            with: .defaultOptions,
+                            printDebugInformation: false
+                        )
                         printer(demangleName.emptyToNil() ?? text)
                         printer("]")
                     case .ConstantPropInteger,

@@ -16,10 +16,13 @@ class OldDemangler: Demanglerable {
     private(set) var substitutions: [Node] = []
     
     private(set) var printerName: String = ""
-    
-    required init(_ mangled: String) {
+
+    private let printDebugInformation: Bool
+
+    required init(_ mangled: String, printDebugInformation: Bool = false) {
         self.mangled = mangled.data(using: .ascii) ?? Data()
         self.mangledOriginal = Data(self.mangled)
+        self.printDebugInformation = printDebugInformation
     }
     
     func demangleTopLevel() -> Node? {
