@@ -63,6 +63,6 @@ final class SwiftDemangle591Tests: XCTestCase {
     func test$s1A3bar1aySSYt_tF() throws {
         let mangled = "$s1A3bar1aySSYt_tF"
         let demangled = "A.bar(a: _const Swift.String) -> ()"
-        XCTAssertEqual(mangled.demangled, demangled)
+        XCTAssertEqual(try mangled.demangling(.defaultOptions, printDebugInformation: true), demangled)
     }
 }
