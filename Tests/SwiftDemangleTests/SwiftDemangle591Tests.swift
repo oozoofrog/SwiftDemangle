@@ -65,4 +65,11 @@ final class SwiftDemangle591Tests: XCTestCase {
         let demangled = "A.bar(a: _const Swift.String) -> ()"
         XCTAssertEqual(try mangled.demangling(.defaultOptions, printDebugInformation: true), demangled)
     }
+
+    func test$s1t1fyyFSiAA3StrVcs7KeyPathCyADSiGcfu_SiADcfu0_33_556644b740b1b333fecb81e55a7cce98ADSiTf3npk_n() throws {
+        let mangled = "$s1t1fyyFSiAA3StrVcs7KeyPathCyADSiGcfu_SiADcfu0_33_556644b740b1b333fecb81e55a7cce98ADSiTf3npk_n"
+        let demangled = "function signature specialization <Arg[1] = [Constant Propagated KeyPath : _556644b740b1b333fecb81e55a7cce98<t.Str,Swift.Int>]> of implicit closure #2 (t.Str) -> Swift.Int in implicit closure #1 (Swift.KeyPath<t.Str, Swift.Int>) -> (t.Str) -> Swift.Int in t.f() -> ()"
+        // $s1t1fyyFSiAA3StrVcs7KeyPathCyADSiGcfu_SiADcfu0_33_556644b740b1b333fecb81e55a7cce98ADSiTf3npk_n
+        XCTAssertEqual(try mangled.demangling(.defaultOptions, printDebugInformation: true), demangled)
+    }
 }
