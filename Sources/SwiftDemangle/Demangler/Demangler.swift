@@ -175,6 +175,8 @@ class Demangler: Demanglerable, Mangling {
             return demangleDifferentiableFunctionType()
         case "k":
             return createType(createWithChild(.NoDerivative, popTypeAndGetChild()))
+        case "t":
+            return createType(createWithChild(.CompileTimeConst, popTypeAndGetChild()))
         default:
             return nil
         }
