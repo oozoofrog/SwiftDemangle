@@ -13,30 +13,30 @@ public enum PrintingError: String, Error {
 }
 
 struct NodePrinter {
-    
+
     private(set) var options: DemangleOptions
     var printText: String = ""
     private(set) var isValid: Bool = true
     var isSpecializationPrefixPrinted = false
-   
+
     let depthLimit = 768
 
     private mutating func setInvalid() {
         isValid = false
     }
-    
+
     mutating private func printer(_ text: String) {
         printText.append(text)
     }
-    
+
     mutating private func printerText(_ node: Node) {
         printer(node.text)
     }
-    
+
     mutating private func printerIndex(_ index: Int) {
         printer(index.description)
     }
-    
+
     mutating private func printerHex(_ index: UInt64?) {
         printer(String(format: "%lld", index ?? 0))
     }
@@ -45,7 +45,7 @@ struct NodePrinter {
         try printNode(node, depth: 0)
         return printText
     }
-    
+
     @discardableResult
     mutating func printNode(_ node: Node?, depth: Int, asPrefixContext: Bool = false) throws -> Node? {
         if depth > depthLimit {
@@ -222,11 +222,11 @@ struct NodePrinter {
                 try printNode(node.children(0), depth: depth + 1)
             }
         case .Class,
-             .Structure,
-             .Enum,
-             .Protocol,
-             .TypeAlias,
-             .OtherNominalType:
+                .Structure,
+                .Enum,
+                .Protocol,
+                .TypeAlias,
+                .OtherNominalType:
             return try printEntity(
                 entity: node,
                 depth: depth,
@@ -268,14 +268,14 @@ struct NodePrinter {
         case .UnknownIndex:
             printer("unknown index")
         case .FunctionType,
-             .UncurriedFunctionType,
-             .NoEscapeFunctionType,
-             .AutoClosureType,
-             .EscapingAutoClosureType,
-             .ThinFunctionType,
-             .CFunctionPointer,
-             .ObjCBlock,
-             .EscapingObjCBlock:
+                .UncurriedFunctionType,
+                .NoEscapeFunctionType,
+                .AutoClosureType,
+                .EscapingAutoClosureType,
+                .ThinFunctionType,
+                .CFunctionPointer,
+                .ObjCBlock,
+                .EscapingObjCBlock:
             try printFunctionType(type: node, depth: depth)
         case .ClangType:
             printer(node.text)
@@ -293,13 +293,13 @@ struct NodePrinter {
             if let label = node.childIf(.TupleElementName) {
                 printer(label.text + ": ")
             }
-            
+
             if let type = node.childIf(.Type) {
                 try printNode(type, depth: depth + 1)
             } else {
                 assertionFailure("malformed .TupleElement")
             }
-            
+
             if node.childIf(.VariadicMarker) != nil {
                 printer("...")
             }
@@ -312,12 +312,12 @@ struct NodePrinter {
                 printer(" -> ")
                 try printChildren(node, depth: depth)
             }
-            
+
         case .RetroactiveConformance:
             if node.numberOfChildren != 2 {
                 return nil
             }
-            
+
             printer("retroactive @ ")
             try printNode(node.children(0), depth: depth + 1)
             try printNode(node.children(1), depth: depth + 1)
@@ -360,7 +360,7 @@ struct NodePrinter {
         case .GenericPartialSpecializationNotReAbstracted:
             try printSpecializationPrefix(node: node, description: "generic not-reabstracted partial specialization", depth: depth, paramPrefix: "Signature = ")
         case .GenericSpecialization,
-             .GenericSpecializationInResilienceDomain:
+                .GenericSpecializationInResilienceDomain:
             try printSpecializationPrefix(node: node, description: "generic specialization", depth: depth)
         case .GenericSpecializationPrespecialized:
             try printSpecializationPrefix(node: node, description: "generic pre-specialization", depth: depth)
@@ -382,7 +382,7 @@ struct NodePrinter {
             }
             return nil
         case .FunctionSignatureSpecializationReturn,
-             .FunctionSignatureSpecializationParam:
+                .FunctionSignatureSpecializationParam:
             throw SwiftDemangleError.nodePrinterError(description: "should be handled in printSpecializationPrefix", nodeDebugDescription: node.debugDescription)
         case .FunctionSignatureSpecializationParamPayload:
             if let demangleName = try node.text.demangleSymbolAsString(with: .defaultOptions).emptyToNil() {
@@ -411,7 +411,7 @@ struct NodePrinter {
                     printedOptionSet = true
                     printer("Owned To Guaranteed")
                 }
-                
+
                 if kind.containOptions(.GuaranteedToOwned) {
                     if printedOptionSet {
                         printer(" and ")
@@ -419,7 +419,7 @@ struct NodePrinter {
                     printedOptionSet = true
                     printer("Guaranteed To Owned")
                 }
-                
+
                 if kind.containOptions(.SROA) {
                     if printedOptionSet {
                         printer(" and ")
@@ -427,11 +427,11 @@ struct NodePrinter {
                     printer("Exploded")
                     return nil
                 }
-                
+
                 if printedOptionSet {
                     return nil
                 }
-                
+
                 if let kind = kind.kind {
                     switch kind {
                     case .BoxToValue:
@@ -450,6 +450,10 @@ struct NodePrinter {
                         printer("Constant Propagated String")
                     case .ClosureProp:
                         printer("Closure Propagated")
+                    case .InOutToOut:
+                        printer("InOut Converted to Out")
+                    case .ConstantPropKeyPath:
+                        printer("Constant Propagated KeyPath")
                     }
                 }
                 if !kind.optionSet.isEmpty {
@@ -533,13 +537,13 @@ struct NodePrinter {
                 try printChildren(node, depth: depth)
             }
         case .KeyPathGetterThunkHelper,
-             .KeyPathSetterThunkHelper:
+                .KeyPathSetterThunkHelper:
             if node.kind == .KeyPathGetterThunkHelper {
                 printer("key path getter for ")
             } else {
                 printer("key path setter for ")
             }
-            
+
             try printNode(node.children(0), depth: depth + 1)
             printer(" : ")
             for child in node.copyOfChildren.dropFirst() {
@@ -549,21 +553,21 @@ struct NodePrinter {
                 try printNode(child, depth: depth + 1)
             }
         case .KeyPathEqualsThunkHelper,
-             .KeyPathHashThunkHelper:
+                .KeyPathHashThunkHelper:
             printer("key path index " + (node.kind == Node.Kind.KeyPathEqualsThunkHelper ? "equality" : "hash") + " operator for ")
-            
+
             var lastChildIndex = node.copyOfChildren.endIndex
             var lastChild = node.children(lastChildIndex)
             if lastChild.kind == .IsSerialized {
                 lastChildIndex -= 1
                 lastChild = node.children(lastChildIndex)
             }
-            
+
             if lastChild.kind == .DependentGenericSignature {
                 try printNode(lastChild, depth: depth + 1)
                 lastChildIndex -= 1
             }
-            
+
             printer("(")
             for index in 0...lastChildIndex where index != 0 {
                 printer(", ")
@@ -578,7 +582,7 @@ struct NodePrinter {
             printer("enum case for ")
             try printNode(node.children(0), depth: depth + 1)
         case .ReabstractionThunk,
-             .ReabstractionThunkHelper:
+                .ReabstractionThunkHelper:
             if options.contains(.shortenThunk) {
                 printer("thunk for ")
                 try printNode(node.children(node.copyOfChildren.endIndex - 1), depth: depth + 1)
@@ -781,15 +785,15 @@ struct NodePrinter {
             printer("value witness table for ")
             try printNode(node.children(0), depth: depth + 1)
         case .BoundGenericClass,
-             .BoundGenericStructure,
-             .BoundGenericEnum,
-             .BoundGenericProtocol,
-             .BoundGenericOtherNominalType,
-             .BoundGenericTypeAlias:
+                .BoundGenericStructure,
+                .BoundGenericEnum,
+                .BoundGenericProtocol,
+                .BoundGenericOtherNominalType,
+                .BoundGenericTypeAlias:
             try printBoundGeneric(node: node, depth: depth)
         case .DynamicSelf:
             printer("Self")
-            
+
         case .SILBoxType:
             printer("@box ")
             try printNode(node.children(0), depth: depth + 1)
@@ -830,7 +834,7 @@ struct NodePrinter {
         case .ConstrainedExistentialRequirementList:
             try printChildren(node, depth: depth, separator: ", ")
         case .ConstrainedExistentialSelf:
-           printer("Self")
+            printer("Self")
         case .AssociatedTypeRef:
             try printNode(node.children(0), depth: depth + 1)
             printer("." + node.children(1).text)
@@ -971,7 +975,7 @@ struct NodePrinter {
             printer("@yields ")
             try printChildren(node, depth: depth, separator: " ")
         case .ImplParameter,
-             .ImplResult:
+                .ImplResult:
             // Children: `convention, differentiability?, type`
             // Print convention.
             try printNode(node.children(0), depth: depth + 1)
@@ -997,7 +1001,7 @@ struct NodePrinter {
         case .ErrorType:
             printer("<ERROR TYPE>")
         case .DependentPseudogenericSignature,
-             .DependentGenericSignature:
+                .DependentGenericSignature:
             printer("<")
             let numChildren = node.numberOfChildren
             var depth: Int = 0
@@ -1026,7 +1030,7 @@ struct NodePrinter {
                     printer(options.genericParameterName(depth: UInt64(depth), index: UInt64(index)))
                 }
             }
-            
+
             if depth != node.numberOfChildren {
                 if options.contains(.displayWhereClauses) {
                     printer(" where ")
@@ -1050,13 +1054,13 @@ struct NodePrinter {
         case .DependentGenericLayoutRequirement:
             let type = node.children(0)
             let layout = node.children(1)
-            
+
             try printNode(type, depth: depth + 1)
             printer(": ")
-            
+
             assert(layout.kind == .Identifier)
             assert(layout.text.count == 1)
-            
+
             let character = layout.text[0]
             switch character {
             case "U":
@@ -1174,7 +1178,7 @@ struct NodePrinter {
             }
             printer(" }")
         case .SILBoxImmutableField,
-             .SILBoxMutableField:
+                .SILBoxMutableField:
             printer(node.kind == .SILBoxImmutableField ? "let " : "var ")
             assert(node.numberOfChildren == 1 && node.children(0).kind == .Type)
             try printNode(node.children(0), depth: depth + 1)
@@ -1272,10 +1276,10 @@ struct NodePrinter {
             printer("cache variable for noncanonical specialized generic type metadata for ")
             try printNode(node.children(0), depth: depth + 1)
         case .GlobalVariableOnceToken,
-             .GlobalVariableOnceFunction:
+                .GlobalVariableOnceFunction:
             printer(node.kind == .GlobalVariableOnceToken
-                        ? "one-time initialization token for "
-                        : "one-time initialization function for ")
+                    ? "one-time initialization token for "
+                    : "one-time initialization function for ")
             try printNode(node.children(1), depth: depth + 1)
         case .GlobalVariableOnceDeclList:
             if node.numberOfChildren == 1 {
@@ -1630,7 +1634,7 @@ struct NodePrinter {
         }
         return nil
     }
-    
+
     @discardableResult
     private mutating func printEntity(entity: Node,
                                       depth: Int,
@@ -1662,7 +1666,7 @@ struct NodePrinter {
         }
         var postfixContext: Node?
         let context = entity.children(0)
-        
+
         if printContext(context) {
             if multiWordName {
                 // If the name contains some spaces we don't print the context now but
@@ -1751,7 +1755,7 @@ struct NodePrinter {
                 )
             }
         }
-        
+
         if !asPrefixContext, let context = postfixContext, (!localName || options.contains(.displayLocalNameContexts)) {
             switch entity.kind {
             case .DefaultArgumentInitializer,
@@ -1768,7 +1772,7 @@ struct NodePrinter {
         }
         return postfixContext
     }
-    
+
     mutating func printEntityType(entity: Node, type: Node, genericFunctionTypeList: Node?, depth: Int) throws {
         let labelList = entity.childIf(.LabelList)
         var type = type
@@ -1788,13 +1792,13 @@ struct NodePrinter {
                 }
                 type = dependentType.children(0)
             }
-            
+
             try printFunctionType(labelList: labelList, type: type, depth: depth)
         } else {
             try printNode(type, depth: depth + 1)
         }
     }
-    
+
     mutating func printChildren(nodes: [Node], depth: Int, separator: String? = nil) throws {
         for (offset, node) in nodes.enumerated() {
             if let separator = separator, offset > 0 {
@@ -1803,11 +1807,11 @@ struct NodePrinter {
             try printNode(node, depth: depth)
         }
     }
-    
+
     mutating func printChildren(_ node: Node, depth: Int, separator: String? = nil) throws {
         try printChildren(nodes: node.copyOfChildren, depth: depth, separator: separator)
     }
-    
+
     func printContext(_ context: Node) -> Bool {
         if !options.contains(.qualifyEntities) {
             return false
@@ -1828,13 +1832,13 @@ struct NodePrinter {
         }
         return true
     }
-    
+
     mutating func printFunctionType(labelList: Node? = nil, type: Node, depth: Int) throws {
         if type.numberOfChildren < 2 {
             setInvalid()
             return
         }
-        
+
         func printConventionWithMangledCType(convention: String) throws {
             printer("@convention(" + convention)
             if type.children(0).kind == .ClangType {
@@ -1844,14 +1848,14 @@ struct NodePrinter {
             }
             printer(") ")
         }
-        
+
         switch type.kind {
         case .FunctionType,
-             .UncurriedFunctionType,
-             .NoEscapeFunctionType:
+                .UncurriedFunctionType,
+                .NoEscapeFunctionType:
             break
         case .AutoClosureType,
-             .EscapingAutoClosureType:
+                .EscapingAutoClosureType:
             printer("@autoclosure ")
         case .ThinFunctionType:
             printer("@convention(thin) ")
@@ -1865,7 +1869,7 @@ struct NodePrinter {
         default:
             assertionFailure("Unhandled function type in printFunctionType!")
         }
-        
+
         let argumentIndex = type.numberOfChildren - 2
         var startIndex: Int = 0
         var isSendable = false
@@ -1895,7 +1899,7 @@ struct NodePrinter {
             startIndex += 1
             isAsync = true
         }
-        
+
         switch diffKind {
         case .forward:
             printer("@differentiable(_forward) ")
@@ -1908,37 +1912,37 @@ struct NodePrinter {
         case .nonDifferentiable:
             break
         }
-        
+
         if isSendable {
             printer("@Sendable ")
         }
-        
+
         try printFunctionParameters(labelList: labelList,
                                     parameterType: type.children(argumentIndex),
                                     depth: depth,
                                     showTypes: options.contains(.showFunctionArgumentTypes))
-        
+
         if !options.contains(.showFunctionArgumentTypes) {
             return
         }
-        
+
         if isAsync {
             printer(" async")
         }
-        
+
         if isThrows {
             printer(" throws")
         }
-        
+
         try printNode(type.children(argumentIndex + 1), depth: depth + 1)
     }
-    
+
     mutating func printFunctionParameters(labelList: Node? = nil, parameterType: Node, depth: Int, showTypes: Bool) throws {
         if parameterType.kind != .ArgumentTuple {
             setInvalid()
             return
         }
-        
+
         var parameters = parameterType.children(0)
         assert(parameters.kind == .Type)
         parameters = parameters.children(0)
@@ -1953,7 +1957,7 @@ struct NodePrinter {
             }
             return
         }
-        
+
         func getLabel(for param: Node, index: Int) -> String {
             guard let label = labelList?.children(index) else {
                 assertionFailure()
@@ -1962,14 +1966,14 @@ struct NodePrinter {
             assert(label.kind == .Identifier || label.kind == .FirstElementMarker)
             return label.kind == .Identifier ? label.text : "_"
         }
-        
+
         let hasLabels: Bool
         if let numberOfChildren = labelList?.numberOfChildren {
             hasLabels = numberOfChildren > 0
         } else {
             hasLabels = false
         }
-        
+
         printer("(")
         try parameters.copyOfChildren.interleave { (index, param) in
             assert(param.kind == .TupleElement)
@@ -1994,7 +1998,7 @@ struct NodePrinter {
         }
         printer(")")
     }
-    
+
     mutating func printSpecializationPrefix(node: Node, description: String, depth: Int, paramPrefix: String? = nil) throws {
         if !options.contains(.displayGenericSpecializations) {
             if (!isSpecializationPrefixPrinted) {
@@ -2038,7 +2042,7 @@ struct NodePrinter {
         }
         printer("> of ")
     }
-    
+
     mutating func printFunctionSigSpecializationParams(node: Node, depth: Int) throws {
         var index = 0
         let endIndex = node.numberOfChildren
@@ -2048,11 +2052,12 @@ struct NodePrinter {
                 if let kind = paramKindValue.kind {
                     switch kind {
                     case .BoxToValue,
-                         .BoxToStack:
+                            .BoxToStack,
+                            .InOutToOut:
                         try printNode(node.children(index), depth: depth + 1)
                         index += 1
                     case .ConstantPropFunction,
-                         .ConstantPropGlobal:
+                            .ConstantPropGlobal:
                         printer("[")
                         try printNode(node.children(index), depth: depth + 1)
                         index += 1
@@ -2066,7 +2071,7 @@ struct NodePrinter {
                         printer(demangleName.emptyToNil() ?? text)
                         printer("]")
                     case .ConstantPropInteger,
-                         .ConstantPropFloat:
+                            .ConstantPropFloat:
                         printer("[")
                         try printNode(node.children(index), depth: depth + 1)
                         index += 1
@@ -2086,6 +2091,20 @@ struct NodePrinter {
                         index += 1
                         printer("'")
                         printer("]")
+                    case .ConstantPropKeyPath:
+                        printer("[")
+                        try printNode(node.getChild(index), depth: depth + 1)
+                        index += 1
+                        printer(" : ")
+                        try printNode(node.getChild(index), depth: depth + 1)
+                        index += 1
+                        printer("<")
+                        try printNode(node.getChild(index), depth: depth + 1)
+                        index += 1
+                        printer(",")
+                        try printNode(node.getChild(index), depth: depth + 1)
+                        index += 1
+                        printer(">]")
                     case .ClosureProp:
                         printer("[")
                         try printNode(node.children(index), depth: depth + 1)
@@ -2102,7 +2121,7 @@ struct NodePrinter {
                             }
                             try printNode(child, depth: depth + 1)
                             index += 1
-                            
+
                             // If we are not done, print the ", ".
                             if index < node.numberOfChildren, node.children(index).text.emptyToNil() != nil {
                                 printer(", ")
@@ -2118,21 +2137,21 @@ struct NodePrinter {
             }
         }
     }
-    
+
     func needSpaceBeforeType(type: Node) -> Bool {
         switch type.kind {
         case .Type:
             return needSpaceBeforeType(type: type.children(0))
         case .FunctionType,
-             .NoEscapeFunctionType,
-             .UncurriedFunctionType,
-             .DependentGenericType:
+                .NoEscapeFunctionType,
+                .UncurriedFunctionType,
+                .DependentGenericType:
             return false
         default:
             return true
         }
     }
-    
+
     mutating func printBoundGenericNoSugar(node: Node, depth: Int) throws {
         guard node.numberOfChildren > 1 else {
             return
@@ -2143,7 +2162,7 @@ struct NodePrinter {
         try printChildren(typelist, depth: depth, separator: ", ")
         printer(">")
     }
-    
+
     mutating func printBoundGeneric(node: Node, depth: Int) throws {
         guard node.numberOfChildren > 1 else {
             return
@@ -2152,13 +2171,13 @@ struct NodePrinter {
             try printBoundGenericNoSugar(node: node, depth: depth)
             return
         }
-        
+
         if !options.contains(.synthesizeSugarOnTypes) || node.kind == .BoundGenericClass {
             // no sugar here
             try printBoundGenericNoSugar(node: node, depth: depth)
             return
         }
-        
+
         // Print the conforming type for a "bound" protocol node "as" the protocol
         // type.
         guard node.kind != .BoundGenericProtocol else {
@@ -2167,14 +2186,14 @@ struct NodePrinter {
             try printNode(node.children(0), depth: depth + 1)
             return
         }
-        
+
         let sugarType = findSugar(node)
-        
+
         switch sugarType {
         case .none:
             try printBoundGenericNoSugar(node: node, depth: depth)
         case .optional,
-             .implicitlyUnwrappedOptional:
+                .implicitlyUnwrappedOptional:
             let type = node.children(1).children(0)
             try printWithParens(type, depth: depth)
             printer(sugarType == .optional ? "?" : "!")
@@ -2194,7 +2213,7 @@ struct NodePrinter {
             break
         }
     }
-    
+
     mutating func printWithParens(_ type: Node, depth: Int) throws {
         let needsParens = !type.isSimpleType
         if needsParens {
@@ -2205,7 +2224,7 @@ struct NodePrinter {
             printer(")")
         }
     }
-    
+
     mutating func printAbstractStorage(node: Node, depth: Int, asPrefixContext: Bool, extraName: String) throws -> Node? {
         switch node.kind {
         case .Variable:
@@ -2232,13 +2251,13 @@ struct NodePrinter {
             throw SwiftDemangleError.nodePrinterError(description: "Not an abstract storage node", nodeDebugDescription: node.debugDescription)
         }
     }
-    
+
     mutating func printImplFunctionType(function: Node, depth: Int) throws {
         var patternSubs: Node?
         var invocationSubs: Node?
         enum State: Int, CaseIterable, Equatable {
             case attrs, inputs, results
-            
+
             var next: State? {
                 State(rawValue: self.rawValue + 1)
             }
@@ -2294,7 +2313,7 @@ struct NodePrinter {
         }
         try transitionTo(newState: .results)
         printer(")")
-        
+
         if let subs = patternSubs {
             printer(" for <")
             try printChildren(subs.children(1), depth: depth)
@@ -2306,23 +2325,23 @@ struct NodePrinter {
             printer(">")
         }
     }
-    
+
     func findSugar(_ node: Node) -> SugarType {
         if node.numberOfChildren == 1, node.kind == .Type {
             return findSugar(node.children(0))
         }
-        
+
         if node.numberOfChildren != 2 {
             return .none
         }
-        
+
         if node.kind != .BoundGenericEnum, node.kind != .BoundGenericStructure {
             return .none
         }
-        
+
         let unboundType = node.children(0).children(0) // drill through Type
         let typeArgs = node.children(1)
-        
+
         if node.kind == .BoundGenericEnum {
             // Swift.Optional
             if unboundType.children(1).isIdentifier(desired: "Optional"),
@@ -2330,43 +2349,43 @@ struct NodePrinter {
                unboundType.children(0).isSwiftModule {
                 return .optional
             }
-            
+
             // Swift.ImplicitlyUnwrappedOptional
             if unboundType.children(1).isIdentifier(desired: "ImplicitlyUnwrappedOptional"),
                typeArgs.numberOfChildren == 1,
                unboundType.children(0).isSwiftModule {
                 return .implicitlyUnwrappedOptional
             }
-            
+
             return .none
         }
-        
+
         assert(node.kind == .BoundGenericStructure)
-        
+
         // Array
         if unboundType.children(1).isIdentifier(desired: "Array"),
            typeArgs.numberOfChildren == 1,
            unboundType.children(0).isSwiftModule {
             return .array
         }
-        
+
         // Dictionary
         if unboundType.children(1).isIdentifier(desired: "Dictionary"),
            typeArgs.numberOfChildren == 2,
            unboundType.children(0).isSwiftModule {
             return .dictionary
         }
-        
+
         return .none
     }
-    
+
     mutating func printOptionalIndex(_ node: Node) {
         assert(node.kind == .Index || node.kind == .UnknownIndex)
         if let index = node.index {
             printer("#" + index.description + " ")
         }
     }
-    
+
     func quoted(text: String) -> String {
         var temp = "\""
         for character in text {
@@ -2394,11 +2413,11 @@ struct NodePrinter {
                 }
             }
         }
-        
+
         temp.append("\"")
         return temp
     }
-    
+
     func genericParameterName(depth: UInt64, index: UInt64) -> String {
         var name = ""
         var index = index
@@ -2417,9 +2436,9 @@ struct NodePrinter {
 }
 
 private extension NodePrinter {
-    
+
     enum TypePrinting {
         case noType, withColon, functionStyle
     }
-    
+
 }

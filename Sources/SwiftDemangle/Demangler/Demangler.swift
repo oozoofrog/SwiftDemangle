@@ -1705,13 +1705,15 @@ class Demangler: Demanglerable, Mangling {
             assert(KindNd?.getKind() == .FunctionSignatureSpecializationParamKind)
             let ParamKind = KindNd?.functionSigSpecializationParamKind
             switch ParamKind?.kind {
-            case .ConstantPropFunction, .ConstantPropGlobal, .ConstantPropString, .ClosureProp:
+            case .ConstantPropFunction, .ConstantPropGlobal, .ConstantPropString, .ConstantPropKeyPath, .ClosureProp:
                 let FixedChildren = Param?.getNumChildren() ?? 0
                 while let Ty = popNode(.Type) {
-                    if ParamKind?.kind != .ClosureProp {
+                    switch ParamKind?.kind {
+                    case .ClosureProp, .ConstantPropKeyPath:
+                        Param = addChild(Param, Ty)
+                    default:
                         return nil
                     }
-                    Param = addChild(Param, Ty)
                 }
                 guard let Name = popNode(.Identifier) else { return nil }
                 var Text = Name.getText()
@@ -1766,6 +1768,9 @@ class Demangler: Demanglerable, Mangling {
                 }
                 addChild(Param, createNode(.FunctionSignatureSpecializationParamKind, .ConstantPropString))
                 return addChild(Param, createNode(.FunctionSignatureSpecializationParamPayload, Encoding))
+            case "k":
+                // Consumes two types and a SHA1 identifier.
+                return addChild(Param, createNode(.FunctionSignatureSpecializationParamKind, .ConstantPropKeyPath))
             default:
                 return nil
             }
@@ -1815,6 +1820,8 @@ class Demangler: Demanglerable, Mangling {
             return addChild(Param, createNode(.FunctionSignatureSpecializationParamKind, .BoxToValue))
         case "s":
             return addChild(Param, createNode(.FunctionSignatureSpecializationParamKind, .BoxToStack))
+        case "r":
+            return addChild(Param, createNode(.FunctionSignatureSpecializationParamKind, .InOutToOut))
         default:
             return nil
         }
