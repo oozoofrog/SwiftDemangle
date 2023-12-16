@@ -72,4 +72,12 @@ final class SwiftDemangle591Tests: XCTestCase {
         // $s1t1fyyFSiAA3StrVcs7KeyPathCyADSiGcfu_SiADcfu0_33_556644b740b1b333fecb81e55a7cce98ADSiTf3npk_n
         XCTAssertEqual(try mangled.demangling(.defaultOptions, printDebugInformation: true), demangled)
     }
+    
+    func test$s21back_deploy_attribute0A12DeployedFuncyyFTwb() throws {
+        let mangled = "$s21back_deploy_attribute0A12DeployedFuncyyFTwb"
+        let demangled = "back deployment thunk for back_deploy_attribute.backDeployedFunc() -> ()"
+        // $s21back_deploy_attribute0A12DeployedFuncyyFTwb
+        XCTAssertEqual(try mangled.demangling(.defaultOptions, printDebugInformation: true), demangled)
+    }
+
 }
