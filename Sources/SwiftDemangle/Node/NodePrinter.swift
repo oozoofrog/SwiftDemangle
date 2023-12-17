@@ -158,6 +158,128 @@ struct NodePrinter {
             return try printEntity(entity: node, depth: depth, asPrefixContext: asPrefixContext, typePrinting: .functionStyle, hasName: true)
         case .Subscript:
             return try printEntity(entity: node, depth: depth, asPrefixContext: asPrefixContext, typePrinting: .functionStyle, hasName: false, extraName: "", extraIndex: -1, overwriteName: "subscript")
+        case .Macro:
+            if node.numberOfChildren == 3 {
+                return try printEntity(
+                    entity: node,
+                    depth: depth,
+                    asPrefixContext: asPrefixContext,
+                    typePrinting: .withColon,
+                    hasName: true
+                )
+            } else {
+                return try printEntity(
+                    entity: node,
+                    depth: depth,
+                    asPrefixContext: asPrefixContext,
+                    typePrinting: .functionStyle,
+                    hasName: true
+                )
+            }
+        case .AccessorAttachedMacroExpansion:
+            let macro = self.nodeToString(root: node.getChild(2))
+            let extraName = "accessor macro @\(macro) expansion #"
+            let extraIndex = Int((node.getChild(3).index ?? 0) + 1)
+            return try printEntity(
+                entity: node,
+                depth: depth,
+                asPrefixContext: asPrefixContext,
+                typePrinting: .noType,
+                hasName: true,
+                extraName: extraName,
+                extraIndex: extraIndex
+            )
+        case .FreestandingMacroExpansion:
+            let extraName = "freestanding macro expansion #"
+            let extraIndex = Int((node.getChild(2).index ?? 0) + 1)
+            return try printEntity(
+                entity: node,
+                depth: depth,
+                asPrefixContext: asPrefixContext,
+                typePrinting: .noType,
+                hasName: true,
+                extraName: extraName,
+                extraIndex: extraIndex
+            )
+        case .MemberAttributeAttachedMacroExpansion:
+            let macro = self.nodeToString(root: node.getChild(2))
+            let extraName = "member attribute macro @\(macro) expansion #"
+            let extraIndex = Int((node.getChild(3).index ?? 0) + 1)
+            return try printEntity(
+                entity: node,
+                depth: depth,
+                asPrefixContext: asPrefixContext,
+                typePrinting: .noType,
+                hasName: true,
+                extraName: extraName,
+                extraIndex: extraIndex
+            )
+        case .MemberAttachedMacroExpansion:
+            let macro = self.nodeToString(root: node.getChild(2))
+            let extraName = "member macro @\(macro) expansion #"
+            let extraIndex = Int((node.getChild(3).index ?? 0) + 1)
+            return try printEntity(
+                entity: node,
+                depth: depth,
+                asPrefixContext: asPrefixContext,
+                typePrinting: .noType,
+                hasName: true,
+                extraName: extraName,
+                extraIndex: extraIndex
+            )
+        case .PeerAttachedMacroExpansion:
+            let macro = self.nodeToString(root: node.getChild(2))
+            let extraName = "peer macro @\(macro) expansion #"
+            let extraIndex = Int((node.getChild(3).index ?? 0) + 1)
+            return try printEntity(
+                entity: node,
+                depth: depth,
+                asPrefixContext: asPrefixContext,
+                typePrinting: .noType,
+                hasName: true,
+                extraName: extraName,
+                extraIndex: extraIndex
+            )
+        case .ConformanceAttachedMacroExpansion:
+            let macro = self.nodeToString(root: node.getChild(2))
+            let extraName = "conformance macro @\(macro) expansion #"
+            let extraIndex = Int((node.getChild(3).index ?? 0) + 1)
+            return try printEntity(
+                entity: node,
+                depth: depth,
+                asPrefixContext: asPrefixContext,
+                typePrinting: .noType,
+                hasName: true,
+                extraName: extraName,
+                extraIndex: extraIndex
+            )
+
+        case .ExtensionAttachedMacroExpansion:
+            let macro = self.nodeToString(root: node.getChild(2))
+            let extraName = "extension macro @\(macro) expansion #"
+            let extraIndex = Int((node.getChild(3).index ?? 0) + 1)
+            return try printEntity(
+                entity: node,
+                depth: depth,
+                asPrefixContext: asPrefixContext,
+                typePrinting: .noType,
+                hasName: true,
+                extraName: extraName,
+                extraIndex: extraIndex
+            )
+        case .MacroExpansionUniqueName:
+            let extraName = "unique name #"
+            let extraIndex = Int((node.getChild(2).index ?? 0) + 1)
+            return try printEntity(
+                entity: node,
+                depth: depth,
+                asPrefixContext: asPrefixContext,
+                typePrinting: .noType,
+                hasName: true,
+                extraName: extraName,
+                extraIndex: extraIndex
+            )
+
         case .GenericTypeParamDecl:
             return try printEntity(entity: node, depth: depth, asPrefixContext: asPrefixContext, typePrinting: .noType, hasName: true)
         case .ExplicitClosure:
@@ -2441,4 +2563,16 @@ private extension NodePrinter {
         case noType, withColon, functionStyle
     }
 
+    func nodeToString(root: Node?) -> String {
+        guard let root else {
+            return ""
+        }
+        var printer = NodePrinter(options: self.options)
+        do {
+            return try printer.printRoot(root)
+        } catch {
+            debugPrint("[SwiftDemangle] nodeToString failed by \(error)")
+            return ""
+        }
+    }
 }

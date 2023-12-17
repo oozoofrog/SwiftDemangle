@@ -8,11 +8,11 @@
 import Foundation
 
 final class Node {
-    
+
     typealias IndexType = UInt64
-    
+
     private weak var parent: Node?
-    
+
     private(set) var kind: Kind
     private(set) var payload: Payload
     private(set) var _children: [Node] {
@@ -20,9 +20,9 @@ final class Node {
             _children.forEach({ $0.parent = self })
         }
     }
-    
+
     var copyOfChildren: [Node] { _children }
-    
+
     fileprivate var numberOfParent: Int {
         var count = 0
         var parent: Node? = self.parent
@@ -32,79 +32,79 @@ final class Node {
         }
         return count
     }
-    
+
     var numberOfChildren: Int { _children.count }
-    
+
     init(kind: Kind) {
         self.kind = kind
         self.payload = .none
         self._children = []
     }
-    
+
     convenience init(_ kind: Kind) {
         self.init(kind: kind)
     }
-    
+
     init(kind: Kind, text: String) {
         self.kind = kind
         self.payload = .text(text)
         self._children = []
     }
-    
+
     convenience init(_ kind: Kind, _ character: Character) {
         self.init(kind: kind, text: character.description)
     }
-    
+
     init(kind: Kind, functionParamKind: FunctionSigSpecializationParamKind.Kind) {
         self.kind = kind
         self.payload = .functionSigSpecializationParamKind(.init(kind: functionParamKind))
         self._children = []
     }
-    
+
     init(kind: Kind, functionParamOption: FunctionSigSpecializationParamKind.OptionSet) {
         self.kind = kind
         self.payload = .functionSigSpecializationParamKind(.init(optionSet: functionParamOption))
         self._children = []
     }
-    
+
     init<N>(kind: Kind, index: N) where N: BinaryInteger {
         self.kind = kind
         self.payload = .index(UInt64(index))
         self._children = []
     }
-    
+
     convenience init<N>(_ kind: Kind, _ index: N) where N: BinaryInteger {
         self.init(kind: kind, index: index)
     }
-    
+
     init(kind: Kind, payload: Payload) {
         self.kind = kind
         self.payload = payload
         self._children = []
     }
-    
+
     convenience init(_ kind: Kind, _ payload: Payload) {
         self.init(kind: kind, payload: payload)
     }
-    
+
     init(kind: Kind, children: Node?...) {
         self.kind = kind
         self.payload = .none
         self._children = children.flatten()
         self.updatePayloadForChildren()
     }
-    
+
     convenience init(kind: Kind, child: Node?) {
         self.init(kind: kind, children: child)
     }
-    
+
     func newNode(_ kind: Kind) -> Node {
         let node = Node(kind: kind)
         node.payload = payload
         node._children = _children
         return node
     }
-    
+
     func children(_ at: Int) -> Node {
         if at < self._children.count {
             return self._children[at]
@@ -113,11 +113,11 @@ final class Node {
             return Node(kind: .UnknownIndex)
         }
     }
-    
+
     func childIf(_ kind: Node.Kind) -> Node? {
         _children.first(where: { $0.kind == kind })
     }
-    
+
     private func updatePayloadForChildren() {
         switch self._children.count {
         case 1:
@@ -130,7 +130,7 @@ final class Node {
             payload = .none
         }
     }
-    
+
     func add(_ child: Node) {
         if payload.isChildren {
             self._children.append(child)
@@ -139,24 +139,24 @@ final class Node {
             assertionFailure("cannot add child to \(self)")
         }
     }
-    
+
     func add(_ childOrNil: Node?) {
         guard let child = childOrNil else { return }
         self.add(child)
     }
-    
+
     func add(_ kind: Node.Kind) {
         add(.init(kind: kind))
     }
-    
+
     func add(kind: Node.Kind, text: String) {
         add(.init(kind: kind, text: text))
     }
-    
+
     func add(kind: Node.Kind, payload: Payload) {
         add(Node(kind: kind, payload: payload))
     }
-    
+
     func adds<C>(_ children: C) where C: Collection, C.Element == Node {
         guard children.isNotEmpty else { return }
         if payload.isChildren {
@@ -166,38 +166,38 @@ final class Node {
             assertionFailure("cannot add child to \(self)")
         }
     }
-    
+
     func addFunctionSigSpecializationParamKind(kind: FunctionSigSpecializationParamKind.Kind, texts: String...) {
         add(Node(kind: .FunctionSignatureSpecializationParamKind, functionParamKind: kind))
         for text in texts {
             add(Node(kind: .FunctionSignatureSpecializationParamPayload, text: text))
         }
     }
-    
+
     func adding(_ children: Node?...) -> Self {
         self.adding(children.flatten())
     }
-    
+
     func adding(_ children: [Node]) -> Self {
         self.adds(children)
         return self
     }
-    
+
     func remove(_ child: Node) {
         if let index = _children.firstIndex(where: { $0 === child }) {
             self._children.remove(at: index)
         }
     }
-    
+
     func remove(_ at: Int) {
         guard at < numberOfChildren else { return }
         self._children.remove(at: at)
     }
-    
+
     func reverseChildren() {
         _children.reverse()
     }
-    
+
     func reverseChildren(_ fromAt: Int) {
         guard fromAt < numberOfChildren else { return }
         if fromAt == 0 {
@@ -208,20 +208,20 @@ final class Node {
             self._children = Array(prefix) + reversedSuffix
         }
     }
-    
+
     func replaceLast(_ child: Node) {
         self._children.removeLast()
         self._children.append(child)
     }
-    
+
     var isSwiftModule: Bool {
         kind == .Module && text == .STDLIB_NAME
     }
-    
+
     func isIdentifier(desired: String) -> Bool {
         kind == .Identifier && text == desired
     }
-    
+
     var text: String {
         if case let .text(text) = self.payload {
             return text
@@ -229,11 +229,11 @@ final class Node {
             return ""
         }
     }
-    
+
     var hasText: Bool {
         self.payload.isText
     }
-    
+
     var index: UInt64? {
         switch self.payload {
         case let .index(index):
@@ -242,7 +242,7 @@ final class Node {
             return nil
         }
     }
-    
+
     var functionSigSpecializationParamKind: FunctionSigSpecializationParamKind? {
         switch self.payload {
         case let .functionSigSpecializationParamKind(kind):
@@ -251,7 +251,7 @@ final class Node {
             return nil
         }
     }
-    
+
     var valueWitnessKind: ValueWitnessKind? {
         switch self.payload {
         case let .valueWitnessKind(w):
@@ -260,7 +260,7 @@ final class Node {
             return nil
         }
     }
-    
+
     var mangledDifferentiabilityKind: MangledDifferentiabilityKind? {
         switch self.payload {
         case let .mangledDifferentiabilityKind(kind):
@@ -271,15 +271,15 @@ final class Node {
             return nil
         }
     }
-    
+
     var firstChild: Node {
         children(0)
     }
-    
+
     var lastChild: Node {
         children(_children.endIndex - 1)
     }
-    
+
     var directness: Directness {
         if case let .directness(directness) = self.payload {
             return directness
@@ -297,9 +297,9 @@ extension Node {
         case .Type:
             return firstChild.isNeedSpaceBeforeType
         case .FunctionType,
-             .NoEscapeFunctionType,
-             .UncurriedFunctionType,
-             .DependentGenericType:
+                .NoEscapeFunctionType,
+                .UncurriedFunctionType,
+                .DependentGenericType:
             return false
         default:
             return true
@@ -309,43 +309,43 @@ extension Node {
     var isSimpleType: Bool {
         switch kind {
         case .AssociatedType,
-             .AssociatedTypeRef,
-             .BoundGenericClass,
-             .BoundGenericEnum,
-             .BoundGenericStructure,
-             .BoundGenericProtocol,
-             .BoundGenericOtherNominalType,
-             .BoundGenericTypeAlias,
-             .BoundGenericFunction,
-             .BuiltinTypeName,
-             .Class,
-             .DependentGenericType,
-             .DependentMemberType,
-             .DependentGenericParamType,
-             .DynamicSelf,
-             .Enum,
-             .ErrorType,
-             .ExistentialMetatype,
-             .Metatype,
-             .MetatypeRepresentation,
-             .Module,
-             .Tuple,
-             .Protocol,
-             .ProtocolSymbolicReference,
-             .ReturnType,
-             .SILBoxType,
-             .SILBoxTypeWithLayout,
-             .Structure,
-             .OtherNominalType,
-             .TupleElementName,
-             .TypeAlias,
-             .TypeList,
-             .LabelList,
-             .TypeSymbolicReference,
-             .SugaredOptional,
-             .SugaredArray,
-             .SugaredDictionary,
-             .SugaredParen:
+                .AssociatedTypeRef,
+                .BoundGenericClass,
+                .BoundGenericEnum,
+                .BoundGenericStructure,
+                .BoundGenericProtocol,
+                .BoundGenericOtherNominalType,
+                .BoundGenericTypeAlias,
+                .BoundGenericFunction,
+                .BuiltinTypeName,
+                .Class,
+                .DependentGenericType,
+                .DependentMemberType,
+                .DependentGenericParamType,
+                .DynamicSelf,
+                .Enum,
+                .ErrorType,
+                .ExistentialMetatype,
+                .Metatype,
+                .MetatypeRepresentation,
+                .Module,
+                .Tuple,
+                .Protocol,
+                .ProtocolSymbolicReference,
+                .ReturnType,
+                .SILBoxType,
+                .SILBoxTypeWithLayout,
+                .Structure,
+                .OtherNominalType,
+                .TupleElementName,
+                .TypeAlias,
+                .TypeList,
+                .LabelList,
+                .TypeSymbolicReference,
+                .SugaredOptional,
+                .SugaredArray,
+                .SugaredDictionary,
+                .SugaredParen:
             return true
         case .Type:
             return firstChild.isSimpleType
@@ -354,272 +354,281 @@ extension Node {
         case .ProtocolListWithAnyObject:
             return _children[0]._children[0].numberOfChildren == 0
         case .ProtocolListWithClass,
-             .AccessorFunctionReference,
-             .Allocator,
-             .ArgumentTuple,
-             .AssociatedConformanceDescriptor,
-             .AssociatedTypeDescriptor,
-             .AssociatedTypeMetadataAccessor,
-             .AssociatedTypeWitnessTableAccessor,
-             .AutoClosureType,
-             .BaseConformanceDescriptor,
-             .BaseWitnessTableAccessor,
-             .ClangType,
-             .ClassMetadataBaseOffset,
-             .CFunctionPointer,
-             .Constructor,
-             .CoroutineContinuationPrototype,
-             .CurryThunk,
-             .DispatchThunk,
-             .Deallocator,
-             .DeclContext,
-             .DefaultArgumentInitializer,
-             .DefaultAssociatedTypeMetadataAccessor,
-             .DefaultAssociatedConformanceAccessor,
-             .DependentAssociatedTypeRef,
-             .DependentGenericSignature,
-             .DependentGenericParamCount,
-             .DependentGenericConformanceRequirement,
-             .DependentGenericLayoutRequirement,
-             .DependentGenericSameTypeRequirement,
-             .DependentPseudogenericSignature,
-             .Destructor,
-             .DidSet,
-             .DirectMethodReferenceAttribute,
-             .Directness,
-             .DynamicAttribute,
-             .EscapingAutoClosureType,
-             .EscapingObjCBlock,
-             .NoEscapeFunctionType,
-             .ExplicitClosure,
-             .Extension,
-             .EnumCase,
-             .FieldOffset,
-             .FullObjCResilientClassStub,
-             .FullTypeMetadata,
-             .Function,
-             .FunctionSignatureSpecialization,
-             .FunctionSignatureSpecializationParam,
-             .FunctionSignatureSpecializationReturn,
-             .FunctionSignatureSpecializationParamKind,
-             .FunctionSignatureSpecializationParamPayload,
-             .FunctionType,
-             .GenericProtocolWitnessTable,
-             .GenericProtocolWitnessTableInstantiationFunction,
-             .GenericPartialSpecialization,
-             .GenericPartialSpecializationNotReAbstracted,
-             .GenericSpecialization,
-             .GenericSpecializationNotReAbstracted,
-             .GenericSpecializationInResilienceDomain,
-             .GenericSpecializationParam,
-             .GenericSpecializationPrespecialized,
-             .InlinedGenericFunction,
-             .GenericTypeMetadataPattern,
-             .Getter,
-             .Global,
-             .GlobalGetter,
-             .Identifier,
-             .Index,
-             .IVarInitializer,
-             .IVarDestroyer,
-             .ImplDifferentiabilityKind,
-             .ImplEscaping,
-             .ImplConvention,
-             .ImplParameterResultDifferentiability,
-             .ImplFunctionAttribute,
-             .ImplFunctionConvention,
-             .ImplFunctionConventionName,
-             .ImplFunctionType,
-             .ImplInvocationSubstitutions,
-             .ImplPatternSubstitutions,
-             .ImplicitClosure,
-             .ImplParameter,
-             .ImplResult,
-             .ImplYield,
-             .ImplErrorResult,
-             .InOut,
-             .InfixOperator,
-             .Initializer,
-             .Isolated,
-             .PropertyWrapperBackingInitializer,
-             .PropertyWrapperInitFromProjectedValue,
-             .KeyPathGetterThunkHelper,
-             .KeyPathSetterThunkHelper,
-             .KeyPathEqualsThunkHelper,
-             .KeyPathHashThunkHelper,
-             .LazyProtocolWitnessTableAccessor,
-             .LazyProtocolWitnessTableCacheVariable,
-             .LocalDeclName,
-             .MaterializeForSet,
-             .MergedFunction,
-             .Metaclass,
-             .MethodDescriptor,
-             .MethodLookupFunction,
-             .ModifyAccessor,
-             .NativeOwningAddressor,
-             .NativeOwningMutableAddressor,
-             .NativePinningAddressor,
-             .NativePinningMutableAddressor,
-             .NominalTypeDescriptor,
-             .NominalTypeDescriptorRecord,
-             .NonObjCAttribute,
-             .Number,
-             .ObjCAsyncCompletionHandlerImpl,
-             .ObjCAttribute,
-             .ObjCBlock,
-             .ObjCMetadataUpdateFunction,
-             .ObjCResilientClassStub,
-             .OpaqueTypeDescriptor,
-             .OpaqueTypeDescriptorRecord,
-             .OpaqueTypeDescriptorAccessor,
-             .OpaqueTypeDescriptorAccessorImpl,
-             .OpaqueTypeDescriptorAccessorKey,
-             .OpaqueTypeDescriptorAccessorVar,
-             .Owned,
-             .OwningAddressor,
-             .OwningMutableAddressor,
-             .PartialApplyForwarder,
-             .PartialApplyObjCForwarder,
-             .PostfixOperator,
-             .PredefinedObjCAsyncCompletionHandlerImpl,
-             .PrefixOperator,
-             .PrivateDeclName,
-             .PropertyDescriptor,
-             .ProtocolConformance,
-             .ProtocolConformanceDescriptor,
-             .ProtocolConformanceDescriptorRecord,
-             .MetadataInstantiationCache,
-             .ProtocolDescriptor,
-             .ProtocolDescriptorRecord,
-             .ProtocolRequirementsBaseDescriptor,
-             .ProtocolSelfConformanceDescriptor,
-             .ProtocolSelfConformanceWitness,
-             .ProtocolSelfConformanceWitnessTable,
-             .ProtocolWitness,
-             .ProtocolWitnessTable,
-             .ProtocolWitnessTableAccessor,
-             .ProtocolWitnessTablePattern,
-             .ReabstractionThunk,
-             .ReabstractionThunkHelper,
-             .ReabstractionThunkHelperWithSelf,
-             .ReabstractionThunkHelperWithGlobalActor,
-             .ReadAccessor,
-             .RelatedEntityDeclName,
-             .RetroactiveConformance,
-             .Setter,
-             .Shared,
-             .SILBoxLayout,
-             .SILBoxMutableField,
-             .SILBoxImmutableField,
-             .IsSerialized,
-             .SpecializationPassID,
-             .Static,
-             .Subscript,
-             .Suffix,
-             .ThinFunctionType,
-             .TupleElement,
-             .TypeMangling,
-             .TypeMetadata,
-             .TypeMetadataAccessFunction,
-             .TypeMetadataCompletionFunction,
-             .TypeMetadataInstantiationCache,
-             .TypeMetadataInstantiationFunction,
-             .TypeMetadataSingletonInitializationCache,
-             .TypeMetadataDemanglingCache,
-             .TypeMetadataLazyCache,
-             .UncurriedFunctionType,
-             .Weak,
-             .Unowned,
-             .Unmanaged,
-             .UnknownIndex,
-             .UnsafeAddressor,
-             .UnsafeMutableAddressor,
-             .ValueWitness,
-             .ValueWitnessTable,
-             .Variable,
-             .VTableAttribute,
-             .VTableThunk,
-             .WillSet,
-             .ReflectionMetadataBuiltinDescriptor,
-             .ReflectionMetadataFieldDescriptor,
-             .ReflectionMetadataAssocTypeDescriptor,
-             .ReflectionMetadataSuperclassDescriptor,
-             .ResilientProtocolWitnessTable,
-             .GenericTypeParamDecl,
-             .ConcurrentFunctionType,
-             .GlobalActorFunctionType,
-             .DifferentiableFunctionType,
-             .AsyncAnnotation,
-             .ThrowsAnnotation,
-             .EmptyList,
-             .FirstElementMarker,
-             .VariadicMarker,
-             .OutlinedBridgedMethod,
-             .OutlinedCopy,
-             .OutlinedConsume,
-             .OutlinedRetain,
-             .OutlinedRelease,
-             .OutlinedInitializeWithTake,
-             .OutlinedInitializeWithCopy,
-             .OutlinedAssignWithTake,
-             .OutlinedAssignWithCopy,
-             .OutlinedDestroy,
-             .OutlinedVariable,
-             .AssocTypePath,
-             .ModuleDescriptor,
-             .AnonymousDescriptor,
-             .AssociatedTypeGenericParamRef,
-             .ExtensionDescriptor,
-             .AnonymousContext,
-             .AnyProtocolConformanceList,
-             .ConcreteProtocolConformance,
-             .DependentAssociatedConformance,
-             .DependentProtocolConformanceAssociated,
-             .DependentProtocolConformanceInherited,
-             .DependentProtocolConformanceRoot,
-             .ProtocolConformanceRefInTypeModule,
-             .ProtocolConformanceRefInProtocolModule,
-             .ProtocolConformanceRefInOtherModule,
-             .DistributedThunk,
-             .DistributedAccessor,
-             .DynamicallyReplaceableFunctionKey,
-             .DynamicallyReplaceableFunctionImpl,
-             .DynamicallyReplaceableFunctionVar,
-             .OpaqueType,
-             .OpaqueTypeDescriptorSymbolicReference,
-             .OpaqueReturnType,
-             .OpaqueReturnTypeOf,
-             .CanonicalSpecializedGenericMetaclass,
-             .CanonicalSpecializedGenericTypeMetadataAccessFunction,
-             .NoncanonicalSpecializedGenericTypeMetadata,
-             .NoncanonicalSpecializedGenericTypeMetadataCache,
-             .GlobalVariableOnceDeclList,
-             .GlobalVariableOnceFunction,
-             .GlobalVariableOnceToken,
-             .CanonicalPrespecializedGenericTypeCachingOnceToken,
-             .AsyncFunctionPointer,
-             .AutoDiffFunction,
-             .AutoDiffDerivativeVTableThunk,
-             .AutoDiffSelfReorderingReabstractionThunk,
-             .AutoDiffSubsetParametersThunk,
-             .AutoDiffFunctionKind,
-             .DifferentiabilityWitness,
-             .NoDerivative,
-             .IndexSubset,
-             .AsyncAwaitResumePartialFunction,
-             .AsyncSuspendResumePartialFunction:
+                .AccessorAttachedMacroExpansion,
+                .AccessorFunctionReference,
+                .Allocator,
+                .ArgumentTuple,
+                .AssociatedConformanceDescriptor,
+                .AssociatedTypeDescriptor,
+                .AssociatedTypeMetadataAccessor,
+                .AssociatedTypeWitnessTableAccessor,
+                .AutoClosureType,
+                .BaseConformanceDescriptor,
+                .BaseWitnessTableAccessor,
+                .ClangType,
+                .ClassMetadataBaseOffset,
+                .CFunctionPointer,
+                .ConformanceAttachedMacroExpansion,
+                .Constructor,
+                .CoroutineContinuationPrototype,
+                .CurryThunk,
+                .DispatchThunk,
+                .Deallocator,
+                .DeclContext,
+                .DefaultArgumentInitializer,
+                .DefaultAssociatedTypeMetadataAccessor,
+                .DefaultAssociatedConformanceAccessor,
+                .DependentAssociatedTypeRef,
+                .DependentGenericSignature,
+                .DependentGenericParamCount,
+                .DependentGenericConformanceRequirement,
+                .DependentGenericLayoutRequirement,
+                .DependentGenericSameTypeRequirement,
+                .DependentPseudogenericSignature,
+                .Destructor,
+                .DidSet,
+                .DirectMethodReferenceAttribute,
+                .Directness,
+                .DynamicAttribute,
+                .EscapingAutoClosureType,
+                .EscapingObjCBlock,
+                .NoEscapeFunctionType,
+                .ExplicitClosure,
+                .Extension,
+                .ExtensionAttachedMacroExpansion,
+                .EnumCase,
+                .FieldOffset,
+                .FreestandingMacroExpansion,
+                .FullObjCResilientClassStub,
+                .FullTypeMetadata,
+                .Function,
+                .FunctionSignatureSpecialization,
+                .FunctionSignatureSpecializationParam,
+                .FunctionSignatureSpecializationReturn,
+                .FunctionSignatureSpecializationParamKind,
+                .FunctionSignatureSpecializationParamPayload,
+                .FunctionType,
+                .GenericProtocolWitnessTable,
+                .GenericProtocolWitnessTableInstantiationFunction,
+                .GenericPartialSpecialization,
+                .GenericPartialSpecializationNotReAbstracted,
+                .GenericSpecialization,
+                .GenericSpecializationNotReAbstracted,
+                .GenericSpecializationInResilienceDomain,
+                .GenericSpecializationParam,
+                .GenericSpecializationPrespecialized,
+                .InlinedGenericFunction,
+                .GenericTypeMetadataPattern,
+                .Getter,
+                .Global,
+                .GlobalGetter,
+                .Identifier,
+                .Index,
+                .IVarInitializer,
+                .IVarDestroyer,
+                .ImplDifferentiabilityKind,
+                .ImplEscaping,
+                .ImplConvention,
+                .ImplParameterResultDifferentiability,
+                .ImplFunctionAttribute,
+                .ImplFunctionConvention,
+                .ImplFunctionConventionName,
+                .ImplFunctionType,
+                .ImplInvocationSubstitutions,
+                .ImplPatternSubstitutions,
+                .ImplicitClosure,
+                .ImplParameter,
+                .ImplResult,
+                .ImplYield,
+                .ImplErrorResult,
+                .InOut,
+                .InfixOperator,
+                .Initializer,
+                .Isolated,
+                .PropertyWrapperBackingInitializer,
+                .PropertyWrapperInitFromProjectedValue,
+                .KeyPathGetterThunkHelper,
+                .KeyPathSetterThunkHelper,
+                .KeyPathEqualsThunkHelper,
+                .KeyPathHashThunkHelper,
+                .LazyProtocolWitnessTableAccessor,
+                .LazyProtocolWitnessTableCacheVariable,
+                .LocalDeclName,
+                .Macro,
+                .MacroExpansionUniqueName,
+                .MaterializeForSet,
+                .MemberAttributeAttachedMacroExpansion,
+                .MemberAttachedMacroExpansion,
+                .MergedFunction,
+                .Metaclass,
+                .MethodDescriptor,
+                .MethodLookupFunction,
+                .ModifyAccessor,
+                .NativeOwningAddressor,
+                .NativeOwningMutableAddressor,
+                .NativePinningAddressor,
+                .NativePinningMutableAddressor,
+                .NominalTypeDescriptor,
+                .NominalTypeDescriptorRecord,
+                .NonObjCAttribute,
+                .Number,
+                .ObjCAsyncCompletionHandlerImpl,
+                .ObjCAttribute,
+                .ObjCBlock,
+                .ObjCMetadataUpdateFunction,
+                .ObjCResilientClassStub,
+                .OpaqueTypeDescriptor,
+                .OpaqueTypeDescriptorRecord,
+                .OpaqueTypeDescriptorAccessor,
+                .OpaqueTypeDescriptorAccessorImpl,
+                .OpaqueTypeDescriptorAccessorKey,
+                .OpaqueTypeDescriptorAccessorVar,
+                .Owned,
+                .OwningAddressor,
+                .OwningMutableAddressor,
+                .PartialApplyForwarder,
+                .PartialApplyObjCForwarder,
+                .PeerAttachedMacroExpansion,
+                .PostfixOperator,
+                .PredefinedObjCAsyncCompletionHandlerImpl,
+                .PrefixOperator,
+                .PrivateDeclName,
+                .PropertyDescriptor,
+                .ProtocolConformance,
+                .ProtocolConformanceDescriptor,
+                .ProtocolConformanceDescriptorRecord,
+                .MetadataInstantiationCache,
+                .ProtocolDescriptor,
+                .ProtocolDescriptorRecord,
+                .ProtocolRequirementsBaseDescriptor,
+                .ProtocolSelfConformanceDescriptor,
+                .ProtocolSelfConformanceWitness,
+                .ProtocolSelfConformanceWitnessTable,
+                .ProtocolWitness,
+                .ProtocolWitnessTable,
+                .ProtocolWitnessTableAccessor,
+                .ProtocolWitnessTablePattern,
+                .ReabstractionThunk,
+                .ReabstractionThunkHelper,
+                .ReabstractionThunkHelperWithSelf,
+                .ReabstractionThunkHelperWithGlobalActor,
+                .ReadAccessor,
+                .RelatedEntityDeclName,
+                .RetroactiveConformance,
+                .Setter,
+                .Shared,
+                .SILBoxLayout,
+                .SILBoxMutableField,
+                .SILBoxImmutableField,
+                .IsSerialized,
+                .SpecializationPassID,
+                .Static,
+                .Subscript,
+                .Suffix,
+                .ThinFunctionType,
+                .TupleElement,
+                .TypeMangling,
+                .TypeMetadata,
+                .TypeMetadataAccessFunction,
+                .TypeMetadataCompletionFunction,
+                .TypeMetadataInstantiationCache,
+                .TypeMetadataInstantiationFunction,
+                .TypeMetadataSingletonInitializationCache,
+                .TypeMetadataDemanglingCache,
+                .TypeMetadataLazyCache,
+                .UncurriedFunctionType,
+                .Weak,
+                .Unowned,
+                .Unmanaged,
+                .UnknownIndex,
+                .UnsafeAddressor,
+                .UnsafeMutableAddressor,
+                .ValueWitness,
+                .ValueWitnessTable,
+                .Variable,
+                .VTableAttribute,
+                .VTableThunk,
+                .WillSet,
+                .ReflectionMetadataBuiltinDescriptor,
+                .ReflectionMetadataFieldDescriptor,
+                .ReflectionMetadataAssocTypeDescriptor,
+                .ReflectionMetadataSuperclassDescriptor,
+                .ResilientProtocolWitnessTable,
+                .GenericTypeParamDecl,
+                .ConcurrentFunctionType,
+                .GlobalActorFunctionType,
+                .DifferentiableFunctionType,
+                .AsyncAnnotation,
+                .ThrowsAnnotation,
+                .EmptyList,
+                .FirstElementMarker,
+                .VariadicMarker,
+                .OutlinedBridgedMethod,
+                .OutlinedCopy,
+                .OutlinedConsume,
+                .OutlinedRetain,
+                .OutlinedRelease,
+                .OutlinedInitializeWithTake,
+                .OutlinedInitializeWithCopy,
+                .OutlinedAssignWithTake,
+                .OutlinedAssignWithCopy,
+                .OutlinedDestroy,
+                .OutlinedVariable,
+                .AssocTypePath,
+                .ModuleDescriptor,
+                .AnonymousDescriptor,
+                .AssociatedTypeGenericParamRef,
+                .ExtensionDescriptor,
+                .AnonymousContext,
+                .AnyProtocolConformanceList,
+                .ConcreteProtocolConformance,
+                .DependentAssociatedConformance,
+                .DependentProtocolConformanceAssociated,
+                .DependentProtocolConformanceInherited,
+                .DependentProtocolConformanceRoot,
+                .ProtocolConformanceRefInTypeModule,
+                .ProtocolConformanceRefInProtocolModule,
+                .ProtocolConformanceRefInOtherModule,
+                .DistributedThunk,
+                .DistributedAccessor,
+                .DynamicallyReplaceableFunctionKey,
+                .DynamicallyReplaceableFunctionImpl,
+                .DynamicallyReplaceableFunctionVar,
+                .OpaqueType,
+                .OpaqueTypeDescriptorSymbolicReference,
+                .OpaqueReturnType,
+                .OpaqueReturnTypeOf,
+                .CanonicalSpecializedGenericMetaclass,
+                .CanonicalSpecializedGenericTypeMetadataAccessFunction,
+                .NoncanonicalSpecializedGenericTypeMetadata,
+                .NoncanonicalSpecializedGenericTypeMetadataCache,
+                .GlobalVariableOnceDeclList,
+                .GlobalVariableOnceFunction,
+                .GlobalVariableOnceToken,
+                .CanonicalPrespecializedGenericTypeCachingOnceToken,
+                .AsyncFunctionPointer,
+                .AutoDiffFunction,
+                .AutoDiffDerivativeVTableThunk,
+                .AutoDiffSelfReorderingReabstractionThunk,
+                .AutoDiffSubsetParametersThunk,
+                .AutoDiffFunctionKind,
+                .DifferentiabilityWitness,
+                .NoDerivative,
+                .IndexSubset,
+                .AsyncAwaitResumePartialFunction,
+                .AsyncSuspendResumePartialFunction:
             return false
         default:
             return false
         }
     }
-    
+
     var isExistentialType: Bool {
         [Kind.ExistentialMetatype, .ProtocolList, .ProtocolListWithClass, .ProtocolListWithAnyObject].contains(kind)
     }
-    
+
     var isClassType: Bool { kind == .Class }
-    
+
     var isAlias: Bool {
         switch self.kind {
         case .Type:
@@ -630,7 +639,7 @@ extension Node {
             return false
         }
     }
-    
+
     var isClass: Bool {
         switch self.kind {
         case .Type:
@@ -641,7 +650,7 @@ extension Node {
             return false
         }
     }
-    
+
     var isEnum: Bool {
         switch self.kind {
         case .Type:
@@ -652,7 +661,7 @@ extension Node {
             return false
         }
     }
-    
+
     var isProtocol: Bool {
         switch self.kind {
         case .Type:
@@ -663,7 +672,7 @@ extension Node {
             return false
         }
     }
-    
+
     var isStruct: Bool {
         switch self.kind {
         case .Type:
@@ -674,23 +683,23 @@ extension Node {
             return false
         }
     }
-    
+
     var isConsumesGenericArgs: Bool {
         switch kind {
         case .Variable,
-             .Subscript,
-             .ImplicitClosure,
-             .ExplicitClosure,
-             .DefaultArgumentInitializer,
-             .Initializer,
-             .PropertyWrapperBackingInitializer,
-             .PropertyWrapperInitFromProjectedValue:
+                .Subscript,
+                .ImplicitClosure,
+                .ExplicitClosure,
+                .DefaultArgumentInitializer,
+                .Initializer,
+                .PropertyWrapperBackingInitializer,
+                .PropertyWrapperInitFromProjectedValue:
             return false
         default:
             return true
         }
     }
-    
+
     var isSpecialized: Bool {
         switch kind {
         case .BoundGenericStructure,.BoundGenericEnum,.BoundGenericClass,.BoundGenericOtherNominalType,.BoundGenericTypeAlias,.BoundGenericProtocol,.BoundGenericFunction:
@@ -703,7 +712,7 @@ extension Node {
             return false
         }
     }
-    
+
     func unspecialized() -> Node? {
         var NumToCopy = 2
         switch kind {
@@ -723,7 +732,7 @@ extension Node {
                 }
             }
             return result
-            
+
         case .BoundGenericStructure, .BoundGenericEnum, .BoundGenericClass, .BoundGenericProtocol, .BoundGenericOtherNominalType, .BoundGenericTypeAlias:
             let unboundType = getChild(0)
             assert(unboundType.getKind() == .Type)
@@ -771,7 +780,7 @@ extension Node {
         case onechild
         case twochildren
         case manychildren
-        
+
         var isChildren: Bool {
             switch self {
             case .none, .onechild, .twochildren, .manychildren:
@@ -780,7 +789,7 @@ extension Node {
                 return false
             }
         }
-        
+
         var isText: Bool {
             switch self {
             case .text: return true
@@ -788,7 +797,7 @@ extension Node {
             }
         }
     }
-    
+
     public enum Kind: String, Equatable {//}, CustomStringConvertible, CustomDebugStringConvertible {
         case Allocator
         case AnonymousContext
@@ -798,6 +807,7 @@ extension Node {
         case AssociatedTypeRef
         case AssociatedTypeMetadataAccessor
         case DefaultAssociatedTypeMetadataAccessor
+        case AccessorAttachedMacroExpansion
         case AssociatedTypeWitnessTableAccessor
         case BaseWitnessTableAccessor
         case AutoClosureType
@@ -814,6 +824,7 @@ extension Node {
         case Class
         case ClassMetadataBaseOffset
         case ConcreteProtocolConformance
+        case ConformanceAttachedMacroExpansion
         case Constructor
         case CoroutineContinuationPrototype
         case Deallocator
@@ -855,7 +866,9 @@ extension Node {
         case ExistentialMetatype
         case ExplicitClosure
         case Extension
+        case ExtensionAttachedMacroExpansion
         case FieldOffset
+        case FreestandingMacroExpansion
         case FullTypeMetadata
         case Function
         case FunctionSignatureSpecialization
@@ -912,7 +925,11 @@ extension Node {
         case LazyProtocolWitnessTableAccessor
         case LazyProtocolWitnessTableCacheVariable
         case LocalDeclName
+        case Macro
+        case MacroExpansionUniqueName
         case MaterializeForSet
+        case MemberAttachedMacroExpansion
+        case MemberAttributeAttachedMacroExpansion
         case MergedFunction
         case Metatype
         case MetatypeRepresentation
@@ -941,6 +958,7 @@ extension Node {
         case OwningMutableAddressor
         case PartialApplyForwarder
         case PartialApplyObjCForwarder
+        case PeerAttachedMacroExpansion
         case PostfixOperator
         case PrefixOperator
         case PrivateDeclName
@@ -1061,7 +1079,7 @@ extension Node {
         case SugaredArray
         case SugaredDictionary
         case SugaredParen
-        
+
         // Added in Swift 5.1
         case AccessorFunctionReference
         case OpaqueType
@@ -1074,7 +1092,7 @@ extension Node {
         case OpaqueTypeDescriptorAccessorVar
         case OpaqueReturnType
         case OpaqueReturnTypeOf
-        
+
         // Added in Swift 5.4
         case CanonicalSpecializedGenericMetaclass
         case CanonicalSpecializedGenericTypeMetadataAccessFunction
@@ -1085,7 +1103,7 @@ extension Node {
         case GlobalVariableOnceToken
         case GlobalVariableOnceDeclList
         case CanonicalPrespecializedGenericTypeCachingOnceToken
-        
+
         // Added in Swift 5.5
         case AsyncFunctionPointer
         case AutoDiffFunction
@@ -1125,14 +1143,14 @@ extension Node {
         }
 
     }
-    
+
     public enum IsVariadic {
         case yes, no
     }
-    
+
     public enum Directness {
         case direct, indirect, unknown
-        
+
         var text: String {
             switch self {
             case .direct:
@@ -1144,7 +1162,7 @@ extension Node {
             }
         }
     }
-    
+
     public enum ValueWitnessKind {
         case AllocateBuffer
         case AssignWithCopy
@@ -1170,7 +1188,7 @@ extension Node {
         case DestructiveInjectEnumTag
         case GetEnumTagSinglePayload
         case StoreEnumTagSinglePayload
-        
+
         init?(code: String) {
             switch code {
             case "al": self = .AllocateBuffer
@@ -1201,7 +1219,7 @@ extension Node {
                 return nil
             }
         }
-        
+
         var name: String {
             switch self {
             case .AllocateBuffer:
@@ -1259,21 +1277,21 @@ extension Node {
 
 // MARK: - Debugging
 extension Node: CustomDebugStringConvertible {
-    
+
     public var debugDescription: String {
-//        let kind = self.kind
-//        let payload = self.payload
-//        let children = self._children
-//        let numberOfParent = self.numberOfParent
-//        let prefix = [String](repeating: "  ", count: numberOfParent).joined()
-//        if numberOfChildren > 0 {
-//            return "\(numberOfParent > 0 ? "\n" : "")\(prefix)Kind: \(kind) \(children.map(\.debugDescription).joined(separator: ", "))"
-//        } else {
-//            return "\(numberOfParent > 0 ? "\n" : "")\(prefix)Kind: \(kind), Payload: \(payload)"
-//        }
+        //        let kind = self.kind
+        //        let payload = self.payload
+        //        let children = self._children
+        //        let numberOfParent = self.numberOfParent
+        //        let prefix = [String](repeating: "  ", count: numberOfParent).joined()
+        //        if numberOfChildren > 0 {
+        //            return "\(numberOfParent > 0 ? "\n" : "")\(prefix)Kind: \(kind) \(children.map(\.debugDescription).joined(separator: ", "))"
+        //        } else {
+        //            return "\(numberOfParent > 0 ? "\n" : "")\(prefix)Kind: \(kind), Payload: \(payload)"
+        //        }
         printHierarchy()
     }
-    
+
     // Node와 그 자식들의 kind와 계층 관계를 출력하는 메서드
     func printHierarchy(level: Int = 0) -> String {
         var string = "\(String(repeating: "  ", count: level))\(kind.rawValue)\(self.hasText ? (", text:" + self.text) : "")\n"
@@ -1283,11 +1301,11 @@ extension Node: CustomDebugStringConvertible {
 }
 
 extension Node.Kind {
-    
+
     private static func array(_ kind: Node.Kind...) -> [Node.Kind] {
         kind
     }
-    
+
     private static let declNames: [Node.Kind] = array(.Identifier, .LocalDeclName, .PrivateDeclName, .RelatedEntityDeclName, .PrefixOperator, .PostfixOperator, .InfixOperator, .TypeSymbolicReference, .ProtocolSymbolicReference)
     private static let anyGenerics: [Node.Kind] = array(.Structure, .Class, .Enum, .Protocol, .ProtocolSymbolicReference, .OtherNominalType, .TypeAlias, .TypeSymbolicReference)
     private static let requirements = array(.DependentGenericSameTypeRequirement, .DependentGenericLayoutRequirement, .DependentGenericConformanceRequirement)
@@ -1326,15 +1344,15 @@ extension Node.Kind {
         .HasSymbolQuery,
         .RuntimeDiscoverableAttributeRecord
     )
-    
+
     var isDeclName: Bool {
         Self.declNames.contains(self)
     }
-    
+
     var isAnyGeneric: Bool {
         Self.anyGenerics.contains(self)
     }
-    
+
     var isEntity: Bool {
         if self == .Type {
             return true
@@ -1342,18 +1360,33 @@ extension Node.Kind {
             return isContext
         }
     }
-    
+
     var isRequirement: Bool {
         Self.requirements.contains(self)
     }
-    
-    
+
+
     var isContext: Bool {
         Self.contexts.contains(self)
     }
-    
+
     var isFunctionAttr: Bool {
         Self.functionAttrs.contains(self)
+    }
+
+    var isMacroExpandion: Bool {
+        switch self {
+        case .AccessorAttachedMacroExpansion,
+                .MemberAttributeAttachedMacroExpansion,
+                .FreestandingMacroExpansion,
+                .MemberAttachedMacroExpansion,
+                .PeerAttachedMacroExpansion,
+                .ConformanceAttachedMacroExpansion,
+                .ExtensionAttachedMacroExpansion:
+            return true
+        default:
+            return false
+        }
     }
 }
 

@@ -2222,6 +2222,10 @@ class Demangler: Demanglerable, Mangling {
         case "a":
             Args = .ContextArg
             Kind = .RuntimeAttributeGenerator
+        case "m": 
+            return demangleEntity(.Macro)
+        case "M":
+            return demangleMacroExpansion()
         case "p":
             return demangleEntity(.GenericTypeParamDecl)
         case "P":
@@ -2525,6 +2529,78 @@ class Demangler: Demanglerable, Mangling {
         return Node.ValueWitnessKind(code: CodeStr)
     }
     
+    func demangleMacroExpansion() -> Node? {
+        let kind: Node.Kind
+        let isAttached: Bool
+        let isFreestanding: Bool
+      switch (nextChar()) {
+      case "a":
+          kind = .AccessorAttachedMacroExpansion
+        isAttached = true
+        isFreestanding = false
+      case "r":
+          kind = .MemberAttributeAttachedMacroExpansion
+        isAttached = true
+        isFreestanding = false
+      case "f":
+          kind = .FreestandingMacroExpansion;
+          isAttached = false
+          isFreestanding = true
+      case "m":
+          kind = .MemberAttachedMacroExpansion
+          isAttached = true
+          isFreestanding = false
+      case "p":
+          kind = .PeerAttachedMacroExpansion
+          isAttached = true
+          isFreestanding = false
+      case "c":
+          kind = .ConformanceAttachedMacroExpansion
+          isAttached = true
+          isFreestanding = false
+      case "e":
+          kind = .ExtensionAttachedMacroExpansion
+          isAttached = true
+          isFreestanding = false
+      case "u":
+          kind = .MacroExpansionUniqueName
+          isAttached = false
+          isFreestanding = false
+      default:
+        return nil
+      }
+
+        var macroName = popNode(.Identifier)
+        var privateDiscriminator: Node?
+        if isFreestanding {
+            privateDiscriminator = popNode(.PrivateDeclName)
+        }
+        var attachedName: Node?
+        if isAttached {
+            attachedName = popNode(isDeclName)
+        }
+
+        var context = popNode { kind in
+            kind.isMacroExpandion
+        }
+
+        if context == nil {
+            context = popContext()
+        }
+        let discriminator = demangleIndexAsNode()
+        var result: Node?
+        if isAttached {
+            result = createWithChildren(
+                kind, context, attachedName, macroName, discriminator)
+        } else {
+            result = createWithChildren(kind, context, macroName, discriminator);
+        }
+        if let privateDiscriminator {
+            result?.add(privateDiscriminator)
+        }
+        return result
+    }
+
     @discardableResult
     func nextIf(_ str: String) -> Bool {
         guard mangled.hasPrefix(str) else { return false }
