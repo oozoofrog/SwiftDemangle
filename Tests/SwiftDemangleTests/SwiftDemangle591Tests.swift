@@ -89,4 +89,12 @@ final class SwiftDemangle591Tests: XCTestCase {
         // (1) await resume partial function for partial apply forwarder for reabstraction thunk helper <A, B where A: Swift.Sendable, B == Swift.Never> from @escaping @callee_guaranteed @Sendable @async () -> (@out A) to @escaping @callee_guaranteed @async () -> (@out A, @error @owned Swift.Error)
         XCTAssertEqual(result, demangled)
     }
+
+    func test$s14swift_ide_test14myColorLiteral3red5green4blue5alphaAA0E0VSf_S3ftcfm() throws {
+        let mangled = "$s14swift_ide_test14myColorLiteral3red5green4blue5alphaAA0E0VSf_S3ftcfm"
+        let demangled = "swift_ide_test.myColorLiteral(red: Swift.Float, green: Swift.Float, blue: Swift.Float, alpha: Swift.Float) -> swift_ide_test.Color"
+        let result = try mangled.demangling(.defaultOptions, printDebugInformation: true)
+        // $s14swift_ide_test14myColorLiteral3red5green4blue5alphaAA0E0VSf_S3ftcfm
+        XCTAssertEqual(result, demangled)
+    }
 }
