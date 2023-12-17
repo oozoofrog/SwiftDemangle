@@ -41,7 +41,8 @@ final class SwiftDemangleTests: XCTestCase {
             var result = catchTry(try mangled.demangling(opts), or: mangled)
             if result != demangled {
                 opts.isClassify = true
-                result = catchTry(try mangled.demangling(opts), or: mangled)
+                let classifiedResult = catchTry(try mangled.demangling(opts), or: mangled)
+                result = classifiedResult
             }
             if result != demangled {
                 print("[TEST] demangling for \(line):  \(mangled) failed")

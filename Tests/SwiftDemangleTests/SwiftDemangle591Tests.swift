@@ -6,7 +6,7 @@
 //
 
 import XCTest
-import SwiftDemangle
+@testable import SwiftDemangle
 
 final class SwiftDemangle591Tests: XCTestCase {
 
@@ -83,7 +83,9 @@ final class SwiftDemangle591Tests: XCTestCase {
     func test$sxIeghHr_xs5Error_pIegHrzo_s8SendableRzs5NeverORs_r0_lTRTATQ0_() throws {
         let mangled = "$sxIeghHr_xs5Error_pIegHrzo_s8SendableRzs5NeverORs_r0_lTRTATQ0_"
         let demangled = "{T:$sxIeghHr_xs5Error_pIegHrzo_s8SendableRzs5NeverORs_r0_lTR} (1) await resume partial function for partial apply forwarder for reabstraction thunk helper <A, B where A: Swift.Sendable, B == Swift.Never> from @escaping @callee_guaranteed @Sendable @async () -> (@out A) to @escaping @callee_guaranteed @async () -> (@out A, @error @owned Swift.Error)"
-        let result = try mangled.demangling(.defaultOptions, printDebugInformation: true)
+        var opts: DemangleOptions = .defaultOptions
+        opts.isClassify = true
+        let result = try mangled.demangling(opts, printDebugInformation: true)
         // (1) await resume partial function for partial apply forwarder for reabstraction thunk helper <A, B where A: Swift.Sendable, B == Swift.Never> from @escaping @callee_guaranteed @Sendable @async () -> (@out A) to @escaping @callee_guaranteed @async () -> (@out A, @error @owned Swift.Error)
         XCTAssertEqual(result, demangled)
     }

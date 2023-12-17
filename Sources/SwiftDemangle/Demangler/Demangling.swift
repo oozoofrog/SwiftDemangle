@@ -43,9 +43,11 @@ extension Demangling where Self: StringProtocol, Self: Mangling {
     }
     
     internal var isThunkSymbol: Bool {
+
         let name = String(self)
         if name.isMangledName {
-            let MangledName = name.strippingSuffix()
+            let stripped = name.strippingSuffix()
+            let MangledName = stripAsyncContinuation(stripped)
             // First do a quick check
             if (MangledName.hasSuffix("TA") ||  // partial application forwarder
                     MangledName.hasSuffix("Ta") ||  // ObjC partial application forwarder
@@ -60,7 +62,14 @@ extension Demangling where Self: StringProtocol, Self: Mangling {
                 guard let Nd = MangledName.demangleSymbol(printDebugInformation: false), Nd.getKind() == .Global, Nd.numberOfChildren > 0 else { return false }
 
                 switch Nd.firstChild.kind {
-                case .ObjCAttribute, .NonObjCAttribute, .PartialApplyObjCForwarder, .PartialApplyForwarder, .ReabstractionThunkHelper, .ReabstractionThunk, .ProtocolWitness, .Allocator:
+                case .ObjCAttribute,
+                        .NonObjCAttribute,
+                        .PartialApplyObjCForwarder,
+                        .PartialApplyForwarder,
+                        .ReabstractionThunkHelper,
+                        .ReabstractionThunk,
+                        .ProtocolWitness,
+                        .Allocator:
                     return true
                 default:
                     break
@@ -96,7 +105,26 @@ extension Demangling where Self: StringProtocol, Self: Mangling {
         }
         return name
     }
-    
+
+    internal func stripAsyncContinuation(_ name: String) -> String {
+        guard name.hasSuffix("_") else {
+            return name
+        }
+
+        var stripped: [Character] = name.dropLast()
+
+        while stripped.isNotEmpty, let last = stripped.last, last.isNumber {
+            stripped = stripped.dropLast()
+        }
+
+        let strippedStr = String(stripped)
+        if strippedStr.hasSuffix("TQ") || strippedStr.hasSuffix("TY") {
+            return String(stripped.dropLast(2))
+        }
+
+        return name
+    }
+
     internal func demangleSymbolAsNode(printDebugInformation: Bool) -> Node? {
         if isMangledName {
             return demangleSymbol(printDebugInformation: printDebugInformation)
@@ -159,7 +187,7 @@ extension Demangling where Self: StringProtocol, Self: Mangling {
     }
     
     private func thunkTarget() -> String {
-        let MangledName = String(self)
+        var MangledName = String(self)
         if !MangledName.isThunkSymbol {
             return ""
         }
@@ -169,7 +197,9 @@ extension Demangling where Self: StringProtocol, Self: Mangling {
             if MangledName.strippingSuffix() != MangledName {
                 return ""
             }
-            
+
+            MangledName = stripAsyncContinuation(MangledName)
+
             // The targets of those thunks not derivable from the mangling.
             if (MangledName.hasSuffix("TR") ||
                     MangledName.hasSuffix("Tr") ||
