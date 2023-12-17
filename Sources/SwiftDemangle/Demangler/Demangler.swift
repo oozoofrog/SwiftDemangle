@@ -208,6 +208,7 @@ class Demangler: Demanglerable, Mangling {
             case "H":
                 switch nextChar() {
                 case "A": return demangleDependentProtocolConformanceAssociated()
+                case "a": return createNode(.RuntimeDiscoverableAttributeRecord)
                 case "C": return demangleConcreteProtocolConformance()
                 case "D": return demangleDependentProtocolConformanceRoot()
                 case "I": return demangleDependentProtocolConformanceInherited()

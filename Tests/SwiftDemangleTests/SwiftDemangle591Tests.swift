@@ -97,4 +97,12 @@ final class SwiftDemangle591Tests: XCTestCase {
         // $s14swift_ide_test14myColorLiteral3red5green4blue5alphaAA0E0VSf_S3ftcfm
         XCTAssertEqual(result, demangled)
     }
+
+    func test$s4main4FlagVHa() throws {
+        let mangled = "$s4main4FlagVHa"
+        let demangled = "runtime discoverable attribute record for main.Flag"
+        let result = try mangled.demangling(.defaultOptions, printDebugInformation: true)
+        // $s4main4FlagVHa
+        XCTAssertEqual(result, demangled)
+    }
 }

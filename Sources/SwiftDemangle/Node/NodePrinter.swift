@@ -1734,7 +1734,7 @@ struct NodePrinter {
         case .HasSymbolQuery:
             printer("#_hasSymbol query for ")
         case .RuntimeDiscoverableAttributeRecord:
-            if options.contains(.shortenThunk) {
+            if options.contains(.shortenThunk) == false {
                 printer("runtime discoverable attribute record for ")
             }
         case .RuntimeAttributeGenerator:
