@@ -122,6 +122,8 @@ final class SwiftDemangleTests: XCTestCase {
             guard let rangePair = range else { continue }
             let mangled = String(mangledPair[mangledPair.startIndex..<rangePair.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
             let demangled = String(mangledPair[rangePair.upperBound..<mangledPair.endIndex])
+            print("mangled -> \(mangled)")
+            print("demangled -> \(demangled)")
             try handler(offset, mangled, demangled)
         }
     }

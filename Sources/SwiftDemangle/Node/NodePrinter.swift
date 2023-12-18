@@ -1768,6 +1768,8 @@ struct NodePrinter {
                                       overwriteName: String? = nil) throws -> Node? {
         var entity = entity
         var typePrinting = typePrinting
+        var extraIndex = extraIndex
+        var extraName = extraName
         var genericFunctionTypeList: Node?
         if entity.kind == .BoundGenericFunction {
             genericFunctionTypeList = entity.children(1)
@@ -1805,12 +1807,14 @@ struct NodePrinter {
             }
         }
         if hasName || overwriteName.isNotEmpty {
-            assert(extraIndex < 0, "Can't have a name and extra index")
-            var extraName = extraName
             if let name = extraName?.emptyToNil(), multiWordName {
                 printer(name)
+                if extraIndex >= 0 {
+                    printerIndex(extraIndex)
+                }
                 printer(" of ")
                 extraName = ""
+                extraIndex = -1
             }
             let currentPos = printText.count
             if let name = overwriteName?.emptyToNil() {
