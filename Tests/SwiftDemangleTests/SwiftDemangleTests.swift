@@ -67,7 +67,16 @@ final class SwiftDemangleTests: XCTestCase {
             if result != demangled {
                 print("[TEST] simplified demangle for \(line): \(mangled) failed")
             }
-            XCTAssertEqual(result, demangled, "\n\(line): \(mangled) ---> \n\(result)\n\(demangled)")
+            XCTAssertEqual(result, demangled, """
+
+            func test\(mangled)() throws {
+                let mangled = "\(mangled)"
+                let demangled = "\(demangled)"
+                let result = try mangled.demangling(.simplifiedOptions, printDebugInformation: true)
+                // \(result)
+                XCTAssertEqual(result, demangled)
+            }
+            """)
         }
     }
     

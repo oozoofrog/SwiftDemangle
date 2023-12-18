@@ -121,4 +121,12 @@ final class SwiftDemangle591Tests: XCTestCase {
         // {N} @__swiftmacro_1a13testStringifyAA1bySi_SitF9stringifyfMf_
         XCTAssertEqual(result, demangled)
     }
+
+    func test_$s4main1fSiyYaFTQ0_() throws {
+        let mangled = "_$s4main1fSiyYaFTQ0_"
+        let demangled = "f()"
+        let result = try mangled.demangling(.simplifiedOptions, printDebugInformation: true)
+        // (1) await resume partial function for f()
+        XCTAssertEqual(result, demangled)
+    }
 }
