@@ -284,13 +284,13 @@ class Demangler: Demanglerable, Mangling {
     }
     
     func demangleNatural() -> Int {
-        if !peekChar().isDigit {
+        if !peekChar().isNumber {
             return -1000
         }
         var num = 0
         while true {
             let c = peekChar()
-            if !c.isDigit {
+            if !c.isNumber {
                 return num
             }
             let newNum = (10 * num) + (c - "0")
@@ -396,7 +396,7 @@ class Demangler: Demanglerable, Mangling {
         var hasWordSubsts = false
         var isPunycoded = false
         let c = peekChar()
-        if !c.isDigit {
+        if !c.isNumber {
             return nil
         }
         if c == "0" {
@@ -2571,7 +2571,7 @@ class Demangler: Demanglerable, Mangling {
         return nil
       }
 
-        var macroName = popNode(.Identifier)
+        let macroName = popNode(.Identifier)
         var privateDiscriminator: Node?
         if isFreestanding {
             privateDiscriminator = popNode(.PrivateDeclName)
@@ -3176,7 +3176,7 @@ class Demangler: Demanglerable, Mangling {
     func addFuncSpecParamNumber(_ Param: Node?, _ Kind: FunctionSigSpecializationParamKind) -> Node? {
         Param?.addChild(createNode(.FunctionSignatureSpecializationParamKind, Kind))
         var str = ""
-        while peekChar().isDigit {
+        while peekChar().isNumber {
             str.append(nextChar())
         }
         if str.isEmpty {

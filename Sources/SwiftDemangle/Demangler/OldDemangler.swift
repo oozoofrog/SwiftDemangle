@@ -1204,7 +1204,7 @@ class OldDemangler: Demanglerable {
 
         // A dependent member type begins with a non-index, non-'d' character.
         let c = peek()
-        if c != "d", c != "_", !c.isDigit {
+        if c != "d", c != "_", !c.isNumber {
             guard let baseType = demangleType() else { return nil }
             return demangleDependentMemberTypeName(base: baseType)
         }

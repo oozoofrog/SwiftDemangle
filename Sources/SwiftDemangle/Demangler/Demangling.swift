@@ -98,7 +98,7 @@ extension Demangling where Self: StringProtocol, Self: Mangling {
     internal func strippingSuffix() -> String {
         var name = String(self)
         guard name.isNotEmpty else { return name }
-        if name.last?.isDigit ?? false {
+        if name.last?.isNumber ?? false {
             if let dotPos = name.range(of: ".") {
                 name = String(name[name.startIndex..<dotPos.lowerBound])
             }
