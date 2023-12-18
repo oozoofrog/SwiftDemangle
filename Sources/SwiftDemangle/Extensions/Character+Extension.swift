@@ -10,11 +10,7 @@ import Foundation
 extension Character {
     
     static let zero: Character = Character(.init(UInt8.zero))
-    
-    var isDigit: Bool {
-        self.unicodeScalars.first.map(CharacterSet.decimalDigits.contains) ?? false
-    }
-    
+
     func isWordEnd(prevChar: Character? = nil) -> Bool {
         if self == "_" || self == .zero {
             return true
@@ -26,7 +22,7 @@ extension Character {
     }
     
     var isWordStart: Bool {
-        !isDigit && self != "_" && self != .zero
+        !isNumber && self != "_" && self != .zero
     }
     
     func number<Number>(_ type: Number.Type) -> Number? where Number: FixedWidthInteger {

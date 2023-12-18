@@ -16,10 +16,13 @@ class OldDemangler: Demanglerable {
     private(set) var substitutions: [Node] = []
     
     private(set) var printerName: String = ""
-    
-    required init(_ mangled: String) {
+
+    private let printDebugInformation: Bool
+
+    required init(_ mangled: String, printDebugInformation: Bool = false) {
         self.mangled = mangled.data(using: .ascii) ?? Data()
         self.mangledOriginal = Data(self.mangled)
+        self.printDebugInformation = printDebugInformation
     }
     
     func demangleTopLevel() -> Node? {
@@ -1201,7 +1204,7 @@ class OldDemangler: Demanglerable {
 
         // A dependent member type begins with a non-index, non-'d' character.
         let c = peek()
-        if c != "d", c != "_", !c.isDigit {
+        if c != "d", c != "_", !c.isNumber {
             guard let baseType = demangleType() else { return nil }
             return demangleDependentMemberTypeName(base: baseType)
         }
@@ -1549,7 +1552,7 @@ class OldDemangler: Demanglerable {
                     if nextIf("f") {
                         var size: Node.IndexType = .zero
                         guard demangleBuiltinSize(number: &size) else { return nil }
-                        return Node(kind: .BuiltinTypeName, text: "Builtin.Vec\(elts)xFloat\(size)")
+                        return Node(kind: .BuiltinTypeName, text: "Builtin.Vec\(elts)xFPIEEE\(size)")
                     }
                     if nextIf("p") {
                         return Node(kind: .BuiltinTypeName, text: "Builtin.Vec\(elts)xRawPointer")

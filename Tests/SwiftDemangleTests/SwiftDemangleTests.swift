@@ -12,7 +12,7 @@ func catchTry<R>(_ procedure: @autoclosure () throws -> R, or: R) -> R {
 final class SwiftDemangleTests: XCTestCase {
     
     override func setUpWithError() throws {
-        continueAfterFailure = true
+        continueAfterFailure = false
     }
     
     func testPunycode() {
@@ -41,12 +41,22 @@ final class SwiftDemangleTests: XCTestCase {
             var result = catchTry(try mangled.demangling(opts), or: mangled)
             if result != demangled {
                 opts.isClassify = true
-                result = catchTry(try mangled.demangling(opts), or: mangled)
+                let classifiedResult = catchTry(try mangled.demangling(opts), or: mangled)
+                result = classifiedResult
             }
             if result != demangled {
                 print("[TEST] demangling for \(line):  \(mangled) failed")
             }
-            XCTAssertEqual(result, demangled, "\n\(line): \(mangled) ---> expect: (\(demangled)), result: (\(result))")
+            XCTAssertEqual(result, demangled, """
+
+            func test\(mangled)() throws {
+                let mangled = "\(mangled)"
+                let demangled = "\(demangled)"
+                let result = try mangled.demangling(.defaultOptions, printDebugInformation: true)
+                // \(result)
+                XCTAssertEqual(result, demangled)
+            }
+            """)
         }
     }
     
@@ -57,7 +67,16 @@ final class SwiftDemangleTests: XCTestCase {
             if result != demangled {
                 print("[TEST] simplified demangle for \(line): \(mangled) failed")
             }
-            XCTAssertEqual(result, demangled, "\n\(line): \(mangled) ---> \n\(result)\n\(demangled)")
+            XCTAssertEqual(result, demangled, """
+
+            func test\(mangled)() throws {
+                let mangled = "\(mangled)"
+                let demangled = "\(demangled)"
+                let result = try mangled.demangling(.simplifiedOptions, printDebugInformation: true)
+                // \(result)
+                XCTAssertEqual(result, demangled)
+            }
+            """)
         }
     }
     
@@ -108,18 +127,14 @@ final class SwiftDemangleTests: XCTestCase {
         let path = bundle.path(forResource: inputFileName, ofType: "")!
         let tests = try String(contentsOfFile: path)
         for (offset, mangledPair) in tests.split(separator: "\n").enumerated() where mangledPair.isNotEmpty && !mangledPair.hasPrefix("//") {
-            var range = mangledPair.range(of: " ---> ")
-            if range == nil {
-                range = mangledPair.range(of: " --> ")
-            }
-            if range == nil {
-                range = mangledPair.range(of: " -> ")
-            }
+            let range = mangledPair.range(of: " ---> ")
             guard let rangePair = range else { continue }
             let mangled = String(mangledPair[mangledPair.startIndex..<rangePair.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
             let demangled = String(mangledPair[rangePair.upperBound..<mangledPair.endIndex])
+            print("mangled -> \(mangled)")
+            print("demangled -> \(demangled)")
             try handler(offset, mangled, demangled)
         }
     }
-    
+
 }
