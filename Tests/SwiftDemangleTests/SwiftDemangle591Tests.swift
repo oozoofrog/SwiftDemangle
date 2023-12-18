@@ -112,4 +112,13 @@ final class SwiftDemangle591Tests: XCTestCase {
         let result = try mangled.demangling(.defaultOptions, printDebugInformation: true)
         XCTAssertEqual(result, demangled)
     }
+
+    // test@__swiftmacro_1a13testStringifyAA1bySi_SitF9stringifyfMf_
+    func test__swiftmacro_1a13testStringifyAA1bySi_SitF9stringifyfMf_() throws {
+        let mangled = "@__swiftmacro_1a13testStringifyAA1bySi_SitF9stringifyfMf_"
+        let demangled = "freestanding macro expansion #1 of stringify in a.testStringify(a: Swift.Int, b: Swift.Int) -> ()"
+        let result = try mangled.demangling(.defaultOptions, printDebugInformation: true)
+        // {N} @__swiftmacro_1a13testStringifyAA1bySi_SitF9stringifyfMf_
+        XCTAssertEqual(result, demangled)
+    }
 }
