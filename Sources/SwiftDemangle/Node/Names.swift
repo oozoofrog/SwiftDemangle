@@ -2,7 +2,7 @@
 //  Names.swift
 //  Demangling
 //
-//  Created by spacefrog on 2021/03/30.
+//  Created by oozoofrog on 2021/03/30.
 //
 
 import Foundation

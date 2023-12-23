@@ -60,9 +60,19 @@ public struct DemangleOptions: OptionSet {
     ]
     
     public static let simplifiedOptions: DemangleOptions = [
-        .synthesizeSugarOnTypes, .qualifyEntities, .displayLocalNameContexts, shortenPartialApply, .shortenThunk, .shortenValueWitness, .shortenArchetype, .displayDebuggerGeneratedModule, .displayStdlibModule, .displayObjCModule, .showAsyncResumePartial
+        .synthesizeSugarOnTypes,
+        .qualifyEntities,
+        .displayLocalNameContexts,
+        .shortenPartialApply,
+        .shortenThunk,
+        .shortenValueWitness,
+        .shortenArchetype,
+        .displayDebuggerGeneratedModule,
+        .displayStdlibModule,
+        .displayObjCModule,
+//        .showAsyncResumePartial,
     ]
-    
+
     func genericParameterName(depth: UInt64, index: UInt64) -> String {
         var name = ""
         var index = index

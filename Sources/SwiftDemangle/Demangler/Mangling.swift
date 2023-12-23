@@ -26,9 +26,10 @@ extension Mangling {
             return 0
         } else {
             let prefixes = [
-                "_T0",          // swift 4
-                "$S", "_$S",    // swift 4.*
-                "$s", "_$s"     // swift 5+.*
+                "_T0",              // Swift 4
+                "$S", "_$S",        // Swift 4.*
+                "$s", "_$s",        // Swift 5+.*
+                "@__swiftmacro_"    // Swift 5+ for filenames
             ]
             for prefix in prefixes where mangled.hasPrefix(prefix){
                 return prefix.count

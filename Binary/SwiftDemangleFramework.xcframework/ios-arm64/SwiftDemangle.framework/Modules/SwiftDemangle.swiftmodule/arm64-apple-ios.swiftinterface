@@ -1,0 +1,75 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 5.6.1 (swiftlang-5.6.0.323.66 clang-1316.0.20.12)
+// swift-module-flags: -target arm64-apple-ios12.0 -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -module-name SwiftDemangle
+import Foundation
+import Swift
+import _Concurrency
+public struct DemangleOptions : Swift.OptionSet {
+  public let rawValue: Swift.Int
+  public init(rawValue: Swift.Int)
+  public static let synthesizeSugarOnTypes: SwiftDemangle.DemangleOptions
+  public static let qualifyEntities: SwiftDemangle.DemangleOptions
+  public static let displayExtensionContexts: SwiftDemangle.DemangleOptions
+  public static let displayUnmangledSuffix: SwiftDemangle.DemangleOptions
+  public static let displayModuleNames: SwiftDemangle.DemangleOptions
+  public static let displayGenericSpecializations: SwiftDemangle.DemangleOptions
+  public static let displayProtocolConformances: SwiftDemangle.DemangleOptions
+  public static let displayWhereClauses: SwiftDemangle.DemangleOptions
+  public static let displayEntityTypes: SwiftDemangle.DemangleOptions
+  public static let displayLocalNameContexts: SwiftDemangle.DemangleOptions
+  public static let shortenPartialApply: SwiftDemangle.DemangleOptions
+  public static let shortenThunk: SwiftDemangle.DemangleOptions
+  public static let shortenValueWitness: SwiftDemangle.DemangleOptions
+  public static let shortenArchetype: SwiftDemangle.DemangleOptions
+  public static let showPrivateDiscriminators: SwiftDemangle.DemangleOptions
+  public static let showFunctionArgumentTypes: SwiftDemangle.DemangleOptions
+  public static let displayDebuggerGeneratedModule: SwiftDemangle.DemangleOptions
+  public static let displayStdlibModule: SwiftDemangle.DemangleOptions
+  public static let displayObjCModule: SwiftDemangle.DemangleOptions
+  public static let printForTypeName: SwiftDemangle.DemangleOptions
+  public static let showAsyncResumePartial: SwiftDemangle.DemangleOptions
+  public static let defaultOptions: SwiftDemangle.DemangleOptions
+  public static let simplifiedOptions: SwiftDemangle.DemangleOptions
+  public typealias ArrayLiteralElement = SwiftDemangle.DemangleOptions
+  public typealias Element = SwiftDemangle.DemangleOptions
+  public typealias RawValue = Swift.Int
+}
+extension Swift.String {
+  public var demangled: Swift.String {
+    get
+  }
+  public func demangling(_ options: SwiftDemangle.DemangleOptions) throws -> Swift.String
+}
+public enum SwiftDemangleError : Swift.Error {
+  case oldDemanglerError(description: Swift.String, nodeDebugDescription: Swift.String)
+  case newDemanglerError(description: Swift.String, nodeDebugDescription: Swift.String)
+  case nodePrinterError(description: Swift.String, nodeDebugDescription: Swift.String)
+}
+public protocol StringIntegerIndexable : Swift.StringProtocol {
+  subscript(indexRange: Swift.Range<Swift.Int>) -> Swift.Substring { get }
+  subscript(r: Swift.Range<Self.Index>) -> Swift.Substring { get }
+}
+extension SwiftDemangle.StringIntegerIndexable {
+  public subscript(index: Swift.Int) -> Swift.Character {
+    get
+  }
+  public subscript(indexRange: Swift.Range<Swift.Int>) -> Swift.Substring {
+    get
+  }
+}
+extension Swift.String : SwiftDemangle.StringIntegerIndexable {
+}
+extension Swift.Substring : SwiftDemangle.StringIntegerIndexable {
+}
+public enum PrintingError : Swift.String, Swift.Error {
+  case shouldBeHandleInPrintSpecializationPrefix
+  case unexpectedCaseNonDifferentiable
+  public init?(rawValue: Swift.String)
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+extension SwiftDemangle.PrintingError : Swift.Equatable {}
+extension SwiftDemangle.PrintingError : Swift.Hashable {}
+extension SwiftDemangle.PrintingError : Swift.RawRepresentable {}

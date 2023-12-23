@@ -25,9 +25,12 @@ class Demangler: Demanglerable, Mangling {
     typealias SymbolicReferenceResolver_t = (SymbolicReferenceKind, Node.Directness, Int, String) -> Node?
     private var SymbolicReferenceResolver: SymbolicReferenceResolver_t?
     
-    required init(_ mangled: String) {
+    private let printDebugInformation: Bool
+
+    required init(_ mangled: String, printDebugInformation: Bool) {
         self.mangled = mangled.data(using: .ascii) ?? Data()
         self.mangledOriginal = Data(self.mangled)
+        self.printDebugInformation = printDebugInformation
     }
     
     func demangleOldSymbolAsNode(_ mangled: String) -> Node? {
@@ -54,6 +57,9 @@ class Demangler: Demanglerable, Mangling {
         // If any other prefixes are accepted, please update Mangler::verify.
         
         if !parseAndPushNodes() {
+            if printDebugInformation {
+                debugPrint("[DEMANGLER] progressed chars -> \(parsedChars)")
+            }
             return nil
         }
         
@@ -172,11 +178,15 @@ class Demangler: Demanglerable, Mangling {
             return demangleDifferentiableFunctionType()
         case "k":
             return createType(createWithChild(.NoDerivative, popTypeAndGetChild()))
+        case "t":
+            return createType(createWithChild(.CompileTimeConst, popTypeAndGetChild()))
         default:
             return nil
         }
     }
-    
+
+    var parsedChars: String = ""
+
     func demangleOperator() -> Node? {
         while true {
             let c = nextChar()
@@ -198,6 +208,7 @@ class Demangler: Demanglerable, Mangling {
             case "H":
                 switch nextChar() {
                 case "A": return demangleDependentProtocolConformanceAssociated()
+                case "a": return createNode(.RuntimeDiscoverableAttributeRecord)
                 case "C": return demangleConcreteProtocolConformance()
                 case "D": return demangleDependentProtocolConformanceRoot()
                 case "I": return demangleDependentProtocolConformanceInherited()
@@ -205,6 +216,16 @@ class Demangler: Demanglerable, Mangling {
                     return createWithChild(.ProtocolConformanceRefInTypeModule, popProtocol())
                 case "p":
                     return createWithChild(.ProtocolConformanceRefInProtocolModule, popProtocol())
+                case "c":
+                    return createWithChild(.ProtocolConformanceDescriptorRecord, popProtocolConformance())
+                case "n":
+                    return createWithPoppedType(.NominalTypeDescriptorRecord)
+                case "o": // XXX
+                    return createWithChild(.OpaqueTypeDescriptorRecord, popNode())
+                case "r":
+                    return createWithChild(.ProtocolDescriptorRecord, popProtocol())
+                case "F":
+                    return createNode(.AccessibleFunctionRecord)
                 default:
                     pushBack()
                     pushBack()
@@ -263,13 +284,13 @@ class Demangler: Demanglerable, Mangling {
     }
     
     func demangleNatural() -> Int {
-        if !peekChar().isDigit {
+        if !peekChar().isNumber {
             return -1000
         }
         var num = 0
         while true {
             let c = peekChar()
-            if !c.isDigit {
+            if !c.isNumber {
                 return num
             }
             let newNum = (10 * num) + (c - "0")
@@ -375,7 +396,7 @@ class Demangler: Demanglerable, Mangling {
         var hasWordSubsts = false
         var isPunycoded = false
         let c = peekChar()
-        if !c.isDigit {
+        if !c.isNumber {
             return nil
         }
         if c == "0" {
@@ -593,7 +614,36 @@ class Demangler: Demanglerable, Mangling {
         }
         return Ext
     }
-    
+
+    @discardableResult
+    func setParentForOpaqueReturnTypeNodes(parent: Node?, visitedNode: Node?) -> Node? {
+        guard let parent, let visitedNode else {
+            return nil
+        }
+        if visitedNode.kind == .OpaqueReturnType {
+            if visitedNode.numberOfChildren > 0, visitedNode.lastChild.getKind() == .OpaqueReturnTypeParent {
+                return parent
+            }
+            visitedNode.add(createNode(.OpaqueReturnTypeParent, parent.index ?? 0))
+            return parent
+        }
+
+        // If this node is one that may in turn define its own opaque return type,
+        // stop recursion, since any opaque return type nodes underneath would refer
+        // to the nested declaration rather than the one we're looking at.
+        switch visitedNode.kind {
+        case .Function,
+                .Variable,
+                .Subscript:
+            return parent
+        default:
+            for index in 0..<visitedNode.numberOfChildren {
+                setParentForOpaqueReturnTypeNodes(parent: parent, visitedNode: visitedNode.children(index))
+            }
+            return parent
+        }
+    }
+
     func demanglePlainFunction() -> Node? {
         let GenSig = popNode(.DependentGenericSignature)
         var type = popFunctionType(.FunctionType)
@@ -606,11 +656,15 @@ class Demangler: Demanglerable, Mangling {
         let Name = popNode(isDeclName)
         let Ctx = popContext()
         
+        var result: Node?
         if LabelList.hasValue {
-            return createWithChildren(.Function, Ctx, Name, LabelList, type)
+            result = createWithChildren(.Function, Ctx, Name, LabelList, type)
+        } else {
+            result = createWithChildren(.Function, Ctx, Name, type)
         }
-        
-        return createWithChildren(.Function, Ctx, Name, type)
+
+        result = setParentForOpaqueReturnTypeNodes(parent: result, visitedNode: type)
+        return result
     }
     
     func demangleRetroactiveProtocolConformanceRef() -> Node? {
@@ -706,9 +760,15 @@ class Demangler: Demanglerable, Mangling {
         var RetroactiveConformances: Node?
         var TypeListList: [Node] = []
         
-        guard demangleBoundGenerics(&TypeListList, &RetroactiveConformances) else { return nil }
-        guard let Nominal = popTypeAndGetAnyGeneric() else { return nil }
-        guard let BoundNode = demangleBoundGenericArgs(Nominal, &TypeListList, 0) else { return nil }
+        guard demangleBoundGenerics(&TypeListList, &RetroactiveConformances) else {
+            return nil
+        }
+        guard let Nominal = popTypeAndGetAnyGeneric() else {
+            return nil
+        }
+        guard let BoundNode = demangleBoundGenericArgs(Nominal, &TypeListList, 0) else {
+            return nil
+        }
         addChild(BoundNode, RetroactiveConformances)
         let NTy = createType(BoundNode)
         addSubstitution(NTy)
@@ -1228,6 +1288,9 @@ class Demangler: Demanglerable, Mangling {
         if nextIf("z") {
             return getDependentGenericParamType(0, 0)
         }
+        if nextIf("s") {
+            return createNode(.ConstrainedExistentialSelf);
+          }
         return getDependentGenericParamType(0, demangleIndex() + 1)
     }
     
@@ -1248,6 +1311,10 @@ class Demangler: Demanglerable, Mangling {
             return createNode(.DynamicAttribute)
         case "d":
             return createNode(.DirectMethodReferenceAttribute)
+        case "E": 
+            return createNode(.DistributedThunk)
+        case "F":
+            return createNode(.DistributedAccessor)
         case "a":
             return createNode(.PartialApplyObjCForwarder)
         case "A":
@@ -1424,7 +1491,11 @@ class Demangler: Demanglerable, Mangling {
             if Idx < 0 {
                 return nil
             }
-            return createNode(.OutlinedVariable, Idx)
+            if nextChar() == "r" {
+                return createNode(.OutlinedReadOnlyObject, Idx)
+            } else {
+                return createNode(.OutlinedVariable, Idx)
+            }
         case "e":
             let Params = demangleBridgedMethodParams()
             if Params.isEmpty {
@@ -1455,6 +1526,14 @@ class Demangler: Demanglerable, Mangling {
             default:
                 return demangleAutoDiffFunctionOrSimpleThunk(.AutoDiffFunction)
             }
+        case "w":
+              switch (nextChar()) {
+              case "b": return createNode(.BackDeploymentThunk)
+              case "B": return createNode(.BackDeploymentFallback)
+              case "S": return createNode(.HasSymbolQuery)
+              default:
+                return nil
+              }
         default:
             return nil
         }
@@ -1635,13 +1714,15 @@ class Demangler: Demanglerable, Mangling {
             assert(KindNd?.getKind() == .FunctionSignatureSpecializationParamKind)
             let ParamKind = KindNd?.functionSigSpecializationParamKind
             switch ParamKind?.kind {
-            case .ConstantPropFunction, .ConstantPropGlobal, .ConstantPropString, .ClosureProp:
+            case .ConstantPropFunction, .ConstantPropGlobal, .ConstantPropString, .ConstantPropKeyPath, .ClosureProp:
                 let FixedChildren = Param?.getNumChildren() ?? 0
                 while let Ty = popNode(.Type) {
-                    if ParamKind?.kind != .ClosureProp {
+                    switch ParamKind?.kind {
+                    case .ClosureProp, .ConstantPropKeyPath:
+                        Param = addChild(Param, Ty)
+                    default:
                         return nil
                     }
-                    Param = addChild(Param, Ty)
                 }
                 guard let Name = popNode(.Identifier) else { return nil }
                 var Text = Name.getText()
@@ -1696,6 +1777,9 @@ class Demangler: Demanglerable, Mangling {
                 }
                 addChild(Param, createNode(.FunctionSignatureSpecializationParamKind, .ConstantPropString))
                 return addChild(Param, createNode(.FunctionSignatureSpecializationParamPayload, Encoding))
+            case "k":
+                // Consumes two types and a SHA1 identifier.
+                return addChild(Param, createNode(.FunctionSignatureSpecializationParamKind, .ConstantPropKeyPath))
             default:
                 return nil
             }
@@ -1745,18 +1829,26 @@ class Demangler: Demanglerable, Mangling {
             return addChild(Param, createNode(.FunctionSignatureSpecializationParamKind, .BoxToValue))
         case "s":
             return addChild(Param, createNode(.FunctionSignatureSpecializationParamKind, .BoxToStack))
+        case "r":
+            return addChild(Param, createNode(.FunctionSignatureSpecializationParamKind, .InOutToOut))
         default:
             return nil
         }
     }
     
     func demangleSpecAttributes(_ SpecKind: Node.Kind) -> Node? {
+        let metatypeParamsRemoved = nextIf("m")
         let isSerialized = nextIf("q")
         
         let PassID = nextChar() - "0"
         guard (0...9).contains(PassID) else { return nil }
         
         let SpecNd = createNode(SpecKind)
+
+        if metatypeParamsRemoved {
+            SpecNd.addChild(createNode(.MetatypeParamsRemoved))
+        }
+
         if isSerialized {
             SpecNd.addChild(createNode(.IsSerialized))
         }
@@ -1938,6 +2030,10 @@ class Demangler: Demanglerable, Mangling {
             return createType(createWithChildren(.ExistentialMetatype, MTR, Type))
         case "p":
             return createType(createWithChild(.ExistentialMetatype, popNode(.Type)))
+        case "P":
+            let Reqs = demangleConstrainedExistentialRequirementList()
+            let Base = popNode(.Type)
+            return createType(createWithChildren(.ConstrainedExistential, Base, Reqs))
         case "c":
             let Superclass = popNode(.Type)
             let Protocols = demangleProtocolList()
@@ -2086,7 +2182,7 @@ class Demangler: Demanglerable, Mangling {
     }
     
     enum Args {
-        case None, TypeAndMaybePrivateName, TypeAndIndex, Index
+        case None, TypeAndMaybePrivateName, TypeAndIndex, Index, ContextArg
     }
     
     func demangleFunctionEntity() -> Node? {
@@ -2124,6 +2220,13 @@ class Demangler: Demanglerable, Mangling {
         case "A":
             Args = .Index
             Kind = .DefaultArgumentInitializer
+        case "a":
+            Args = .ContextArg
+            Kind = .RuntimeAttributeGenerator
+        case "m": 
+            return demangleEntity(.Macro)
+        case "M":
+            return demangleMacroExpansion()
         case "p":
             return demangleEntity(.GenericTypeParamDecl)
         case "P":
@@ -2140,6 +2243,7 @@ class Demangler: Demanglerable, Mangling {
         var NameOrIndex: Node?
         var ParamType: Node?
         var LabelList: Node?
+        var Context: Node?
         switch Args {
         case .None:
             break
@@ -2152,7 +2256,10 @@ class Demangler: Demanglerable, Mangling {
             ParamType = popNode(.Type)
         case .Index:
             NameOrIndex = demangleIndexAsNode()
+        case .ContextArg:
+            Context = popNode()
         }
+
         var Entity: Node? = createWithChild(Kind, popContext())
         switch Args {
         case .None:
@@ -2166,6 +2273,8 @@ class Demangler: Demanglerable, Mangling {
         case .TypeAndIndex:
             Entity = addChild(Entity, NameOrIndex)
             Entity = addChild(Entity, ParamType)
+        case .ContextArg:
+            Entity = addChild(Entity, Context)
         }
         return Entity
     }
@@ -2218,7 +2327,22 @@ class Demangler: Demanglerable, Mangling {
         let ProtoList = demangleProtocolList()
         return createType(ProtoList)
     }
-    
+
+    func demangleConstrainedExistentialRequirementList() -> Node? {
+        let ReqList = createNode(.ConstrainedExistentialRequirementList)
+        var firstElem = false
+        repeat {
+            firstElem = popNode(.FirstElementMarker) != nil
+            guard let Req = popNode(isRequirement) else {
+                return nil
+            }
+            ReqList.add(Req)
+        } while firstElem == false
+
+        ReqList.reverseChildren()
+        return ReqList
+    }
+
     func demangleGenericSignature(_ hasParamCounts: Bool) -> Node? {
         let Sig = createNode(.DependentGenericSignature)
         if hasParamCounts {
@@ -2406,6 +2530,78 @@ class Demangler: Demanglerable, Mangling {
         return Node.ValueWitnessKind(code: CodeStr)
     }
     
+    func demangleMacroExpansion() -> Node? {
+        let kind: Node.Kind
+        let isAttached: Bool
+        let isFreestanding: Bool
+      switch (nextChar()) {
+      case "a":
+          kind = .AccessorAttachedMacroExpansion
+        isAttached = true
+        isFreestanding = false
+      case "r":
+          kind = .MemberAttributeAttachedMacroExpansion
+        isAttached = true
+        isFreestanding = false
+      case "f":
+          kind = .FreestandingMacroExpansion;
+          isAttached = false
+          isFreestanding = true
+      case "m":
+          kind = .MemberAttachedMacroExpansion
+          isAttached = true
+          isFreestanding = false
+      case "p":
+          kind = .PeerAttachedMacroExpansion
+          isAttached = true
+          isFreestanding = false
+      case "c":
+          kind = .ConformanceAttachedMacroExpansion
+          isAttached = true
+          isFreestanding = false
+      case "e":
+          kind = .ExtensionAttachedMacroExpansion
+          isAttached = true
+          isFreestanding = false
+      case "u":
+          kind = .MacroExpansionUniqueName
+          isAttached = false
+          isFreestanding = false
+      default:
+        return nil
+      }
+
+        let macroName = popNode(.Identifier)
+        var privateDiscriminator: Node?
+        if isFreestanding {
+            privateDiscriminator = popNode(.PrivateDeclName)
+        }
+        var attachedName: Node?
+        if isAttached {
+            attachedName = popNode(isDeclName)
+        }
+
+        var context = popNode { kind in
+            kind.isMacroExpandion
+        }
+
+        if context == nil {
+            context = popContext()
+        }
+        let discriminator = demangleIndexAsNode()
+        var result: Node?
+        if isAttached {
+            result = createWithChildren(
+                kind, context, attachedName, macroName, discriminator)
+        } else {
+            result = createWithChildren(kind, context, macroName, discriminator);
+        }
+        if let privateDiscriminator {
+            result?.add(privateDiscriminator)
+        }
+        return result
+    }
+
     @discardableResult
     func nextIf(_ str: String) -> Bool {
         guard mangled.hasPrefix(str) else { return false }
@@ -2421,6 +2617,9 @@ class Demangler: Demanglerable, Mangling {
     @discardableResult
     func nextChar() -> Character {
         guard let first = mangled.first else { return .zero }
+        if printDebugInformation {
+            parsedChars.append(first.character)
+        }
         mangled = Data(mangled.dropFirst())
         return first.character
     }
@@ -2479,13 +2678,22 @@ class Demangler: Demanglerable, Mangling {
     
     func nodeConsumesGenericArgs(_ node: Node) -> Bool {
         switch node.getKind() {
-        case .Variable, .Subscript, .ImplicitClosure, .ExplicitClosure, .DefaultArgumentInitializer, .Initializer, .PropertyWrapperBackingInitializer, .PropertyWrapperInitFromProjectedValue:
+        case .Variable, 
+                .Subscript,
+                .ImplicitClosure,
+                .ExplicitClosure,
+                .DefaultArgumentInitializer,
+                .Initializer,
+                .PropertyWrapperBackingInitializer,
+                .PropertyWrapperInitFromProjectedValue,
+                .Static,
+                .RuntimeAttributeGenerator:
             return false
         default:
             return true
         }
     }
-    
+
     func popNode() -> Node? {
         guard nodeStack.isNotEmpty else { return nil }
         return nodeStack.removeLast()
@@ -2968,7 +3176,7 @@ class Demangler: Demanglerable, Mangling {
     func addFuncSpecParamNumber(_ Param: Node?, _ Kind: FunctionSigSpecializationParamKind) -> Node? {
         Param?.addChild(createNode(.FunctionSignatureSpecializationParamKind, Kind))
         var str = ""
-        while peekChar().isDigit {
+        while peekChar().isNumber {
             str.append(nextChar())
         }
         if str.isEmpty {

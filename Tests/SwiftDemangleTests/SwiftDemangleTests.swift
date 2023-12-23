@@ -12,7 +12,7 @@ func catchTry<R>(_ procedure: @autoclosure () throws -> R, or: R) -> R {
 final class SwiftDemangleTests: XCTestCase {
     
     override func setUpWithError() throws {
-        continueAfterFailure = true
+        continueAfterFailure = false
     }
     
     func testPunycode() {
@@ -28,18 +28,35 @@ final class SwiftDemangleTests: XCTestCase {
         XCTAssertEqual(result, demangled, "\(mangled) ---> expect: (\(demangled)), result: (\(result))")
     }
     
+    func testDemanglingInAngleQuotationMarks() throws {
+        let mangled = "<_TtC4TestP33_EBDFD10FF4CF0D65A8576F5ADD7EC0FF8TestView: 0x0; frame = (0 0; 404 67.3333); layer = <CALayer: 0x0>>"
+        let demangled = "<Test.(TestView in _EBDFD10FF4CF0D65A8576F5ADD7EC0FF): 0x0; frame = (0 0; 404 67.3333); layer = <CALayer: 0x0>>"
+        let result = mangled.demangled
+        XCTAssertEqual(result, demangled, "\(mangled) ---> expect: (\(demangled)), result: (\(result))")
+    }
+    
     func testManglings() throws {
         try loadAndForEachMangles("manglings.txt") { line, mangled, demangled in
             var opts: DemangleOptions = .defaultOptions
             var result = catchTry(try mangled.demangling(opts), or: mangled)
             if result != demangled {
                 opts.isClassify = true
-                result = catchTry(try mangled.demangling(opts), or: mangled)
+                let classifiedResult = catchTry(try mangled.demangling(opts), or: mangled)
+                result = classifiedResult
             }
             if result != demangled {
                 print("[TEST] demangling for \(line):  \(mangled) failed")
             }
-            XCTAssertEqual(result, demangled, "\n\(line): \(mangled) ---> expect: (\(demangled)), result: (\(result))")
+            XCTAssertEqual(result, demangled, """
+
+            func test\(mangled)() throws {
+                let mangled = "\(mangled)"
+                let demangled = "\(demangled)"
+                let result = try mangled.demangling(.defaultOptions, printDebugInformation: true)
+                // \(result)
+                XCTAssertEqual(result, demangled)
+            }
+            """)
         }
     }
     
@@ -50,7 +67,16 @@ final class SwiftDemangleTests: XCTestCase {
             if result != demangled {
                 print("[TEST] simplified demangle for \(line): \(mangled) failed")
             }
-            XCTAssertEqual(result, demangled, "\n\(line): \(mangled) ---> \n\(result)\n\(demangled)")
+            XCTAssertEqual(result, demangled, """
+
+            func test\(mangled)() throws {
+                let mangled = "\(mangled)"
+                let demangled = "\(demangled)"
+                let result = try mangled.demangling(.simplifiedOptions, printDebugInformation: true)
+                // \(result)
+                XCTAssertEqual(result, demangled)
+            }
+            """)
         }
     }
     
@@ -97,22 +123,18 @@ final class SwiftDemangleTests: XCTestCase {
     }
     
     func loadAndForEachMangles(_ inputFileName: String, forEach handler: (_ line: Int, _ mangled: String, _ demangled: String) throws -> Void) throws {
-        let bundle = Bundle(for: SwiftDemangleTests.self)
+        let bundle = Bundle.module
         let path = bundle.path(forResource: inputFileName, ofType: "")!
         let tests = try String(contentsOfFile: path)
         for (offset, mangledPair) in tests.split(separator: "\n").enumerated() where mangledPair.isNotEmpty && !mangledPair.hasPrefix("//") {
-            var range = mangledPair.range(of: " ---> ")
-            if range == nil {
-                range = mangledPair.range(of: " --> ")
-            }
-            if range == nil {
-                range = mangledPair.range(of: " -> ")
-            }
+            let range = mangledPair.range(of: " ---> ")
             guard let rangePair = range else { continue }
             let mangled = String(mangledPair[mangledPair.startIndex..<rangePair.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
             let demangled = String(mangledPair[rangePair.upperBound..<mangledPair.endIndex])
+            print("mangled -> \(mangled)")
+            print("demangled -> \(demangled)")
             try handler(offset, mangled, demangled)
         }
     }
-    
+
 }

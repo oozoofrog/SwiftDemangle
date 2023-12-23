@@ -38,7 +38,9 @@ struct FunctionSigSpecializationParamKind: Equatable {
         case ClosureProp = 5
         case BoxToValue = 6
         case BoxToStack = 7
-        
+        case InOutToOut = 8
+        case ConstantPropKeyPath = 9
+
         var description: String {
             switch self {
             case .ConstantPropFunction:
@@ -57,6 +59,10 @@ struct FunctionSigSpecializationParamKind: Equatable {
                 return "FunctionSigSpecializationParamKind.BoxToValue"
             case .BoxToStack:
                 return "FunctionSigSpecializationParamKind.BoxToStack"
+            case .InOutToOut:
+                return "FunctionSigSpecializationParamKind.InOutToOut"
+            case .ConstantPropKeyPath:
+                return "FunctionSigSpecializationParamKind.ConstantPropKeyPath"
             }
         }
         
@@ -117,7 +123,7 @@ struct FunctionSigSpecializationParamKind: Equatable {
     }
     
     var optionSet: OptionSet {
-        guard rawValue > 7 else { return [] }
+        guard rawValue > 9 else { return [] }
         return OptionSet(rawValue: rawValue)
     }
     
