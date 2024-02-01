@@ -40,12 +40,12 @@ import SwiftDemangle
 
 // Example 1: Demangling a Builtin Vector Type
 let mangledVector = "_TtBv4Bf16_"
-let demangledVector = SwiftDemangle.demangle(mangledVector)
+let demangledVector = mangledVector.demangled
 print(demangledVector)  // Output: Builtin.Vec4xFPIEEE16
 
 // Example 2: Demangling a Protocol Descriptor
 let mangledProtocol = "$ss6SimpleHr"
-let demangledProtocol = SwiftDemangle.demangle(mangledProtocol)
+let demangledProtocol = mangledProtocol.demangled
 print(demangledProtocol)  // Output: protocol descriptor runtime record for Swift.Simple
 ```
 
