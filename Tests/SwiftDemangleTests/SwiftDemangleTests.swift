@@ -1,3 +1,4 @@
+import Testing
 import XCTest
 @testable import SwiftDemangle
 
@@ -9,32 +10,35 @@ func catchTry<R>(_ procedure: @autoclosure () throws -> R, or: R) -> R {
     }
 }
 
-final class SwiftDemangleTests: XCTestCase {
+final class SwiftDemangleTests {
     
-    override func setUpWithError() throws {
-        continueAfterFailure = false
-    }
-    
+    @Test
     func testPunycode() {
         let punycoded = "Proprostnemluvesky_uybCEdmaEBa"
         let encoded = "Pročprostěnemluvíčesky"
-        XCTAssertEqual(Punycode(string: punycoded).decode(), encoded)
+        // XCTAssertEqual(Punycode(string: punycoded).decode(), encoded)
+        #expect(Punycode(string: punycoded).decode() == encoded)
     }
     
+    @Test
     func testDemangle() throws {
         let mangled = "s7example1fyyYjfYaKF"
         let demangled = #"$s7example1fyyYjfYaKF"#
         let result = mangled.demangled
-        XCTAssertEqual(result, demangled, "\(mangled) ---> expect: (\(demangled)), result: (\(result))")
+//        XCTAssertEqual(result, demangled, "\(mangled) ---> expect: (\(demangled)), result: (\(result))")
+        #expect(result == demangled)
     }
     
+    @Test
     func testDemanglingInAngleQuotationMarks() throws {
         let mangled = "<_TtC4TestP33_EBDFD10FF4CF0D65A8576F5ADD7EC0FF8TestView: 0x0; frame = (0 0; 404 67.3333); layer = <CALayer: 0x0>>"
         let demangled = "<Test.(TestView in _EBDFD10FF4CF0D65A8576F5ADD7EC0FF): 0x0; frame = (0 0; 404 67.3333); layer = <CALayer: 0x0>>"
         let result = mangled.demangled
-        XCTAssertEqual(result, demangled, "\(mangled) ---> expect: (\(demangled)), result: (\(result))")
+//        XCTAssertEqual(result, demangled, "\(mangled) ---> expect: (\(demangled)), result: (\(result))")
+        #expect(result == demangled)
     }
     
+    @Test
     func testManglings() throws {
         try loadAndForEachMangles("manglings.txt") { line, mangled, demangled in
             var opts: DemangleOptions = .defaultOptions
@@ -47,16 +51,7 @@ final class SwiftDemangleTests: XCTestCase {
             if result != demangled {
                 print("[TEST] demangling for \(line):  \(mangled) failed")
             }
-            XCTAssertEqual(result, demangled, """
-
-            func test\(mangled)() throws {
-                let mangled = "\(mangled)"
-                let demangled = "\(demangled)"
-                let result = try mangled.demangling(.defaultOptions, printDebugInformation: true)
-                // \(result)
-                XCTAssertEqual(result, demangled)
-            }
-            """)
+            #expect(result == demangled)
         }
     }
     
@@ -131,8 +126,7 @@ final class SwiftDemangleTests: XCTestCase {
             guard let rangePair = range else { continue }
             let mangled = String(mangledPair[mangledPair.startIndex..<rangePair.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
             let demangled = String(mangledPair[rangePair.upperBound..<mangledPair.endIndex])
-            print("mangled -> \(mangled)")
-            print("demangled -> \(demangled)")
+            print("\(mangled) ---> \(demangled)")
             try handler(offset, mangled, demangled)
         }
     }
