@@ -1,4 +1,4 @@
-// swift-tools-version:5.4
+// swift-tools-version:6.0
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -6,8 +6,8 @@ import PackageDescription
 let package = Package(
     name: "SwiftDemangle",
     platforms: [
-        .macOS(SupportedPlatform.MacOSVersion.v11),
-        .iOS(.v13)
+        .macOS(.v14),
+        .iOS(.v16)
     ],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
@@ -34,5 +34,5 @@ let package = Package(
         .binaryTarget(name: "SwiftDemangleFramework",
                       path: "Binary/SwiftDemangleFramework.xcframework"),
     ],
-    swiftLanguageVersions: [.v5]
+    swiftLanguageModes: [.v6]
 )
