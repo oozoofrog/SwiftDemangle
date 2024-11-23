@@ -7,9 +7,8 @@
 
 import Foundation
 
-public struct DemangleOptions: OptionSet {
+public struct DemangleOptions: OptionSet, Sendable {
     
-    static var hidingCurrentModule: String?
     var isClassify: Bool = false
     
     public let rawValue: Int

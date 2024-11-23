@@ -1949,9 +1949,6 @@ struct NodePrinter {
             if context.text == .MANGLING_MODULE_OBJC {
                 return options.contains(.displayObjCModule)
             }
-            if context.text == DemangleOptions.hidingCurrentModule {
-                return false
-            }
             if context.text.hasPrefix(.LLDB_EXPRESSIONS_MODULE_NAME_PREFIX) {
                 return options.contains(.displayDebuggerGeneratedModule)
             }
