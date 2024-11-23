@@ -26,7 +26,7 @@ class Demangler: Demanglerable, Mangling {
     private var SymbolicReferenceResolver: SymbolicReferenceResolver_t?
     
     private let printDebugInformation: Bool
-
+    
     required init(_ mangled: String, printDebugInformation: Bool) {
         self.mangled = mangled.data(using: .ascii) ?? Data()
         self.mangledOriginal = Data(self.mangled)
@@ -112,7 +112,7 @@ class Demangler: Demanglerable, Mangling {
         let type = popNode(.Type)
         let LabelList = popFunctionParamLabels(type)
         var TypeMangling: Node? = createNode(.TypeMangling)
-
+        
         addChild(TypeMangling, LabelList)
         TypeMangling = addChild(TypeMangling, type)
         return TypeMangling
@@ -168,6 +168,8 @@ class Demangler: Demanglerable, Mangling {
         switch nextChar() {
         case "a":
             return createNode(.AsyncAnnotation)
+        case "A":
+            return createNode(.IsolatedAnyFunctionType)
         case "b":
             return createNode(.ConcurrentFunctionType)
         case "c":
@@ -178,15 +180,19 @@ class Demangler: Demanglerable, Mangling {
             return demangleDifferentiableFunctionType()
         case "k":
             return createType(createWithChild(.NoDerivative, popTypeAndGetChild()))
-        case "t":
-            return createType(createWithChild(.CompileTimeConst, popTypeAndGetChild()))
+        case "K":
+            return createWithChild(.TypedThrowsAnnotation, popTypeAndGetChild())
+        case "T":
+            return createNode(.SendingResultFunctionType)
+        case "u":
+            return createType(createWithChild(.Sending, popTypeAndGetChild()))
         default:
             return nil
         }
     }
-
+    
     var parsedChars: String = ""
-
+    
     func demangleOperator() -> Node? {
         while true {
             let c = nextChar()
@@ -208,7 +214,6 @@ class Demangler: Demanglerable, Mangling {
             case "H":
                 switch nextChar() {
                 case "A": return demangleDependentProtocolConformanceAssociated()
-                case "a": return createNode(.RuntimeDiscoverableAttributeRecord)
                 case "C": return demangleConcreteProtocolConformance()
                 case "D": return demangleDependentProtocolConformanceRoot()
                 case "I": return demangleDependentProtocolConformanceInherited()
@@ -216,6 +221,8 @@ class Demangler: Demanglerable, Mangling {
                     return createWithChild(.ProtocolConformanceRefInTypeModule, popProtocol())
                 case "p":
                     return createWithChild(.ProtocolConformanceRefInProtocolModule, popProtocol())
+                case "X":
+                    return demanglePackProtocolConformance()
                 case "c":
                     return createWithChild(.ProtocolConformanceDescriptorRecord, popProtocolConformance())
                 case "n":
@@ -590,6 +597,10 @@ class Demangler: Demanglerable, Mangling {
             Ty = createNode(.BuiltinTypeName, .BUILTIN_TYPE_NAME_SILTOKEN)
         case "w":
             Ty = createNode(.BuiltinTypeName, .BUILTIN_TYPE_NAME_WORD)
+        case "P":
+            Ty = createNode(.BuiltinTypeName, .BUILTIN_TYPE_NAME_PACKINDEX)
+        case "T":
+            Ty = createNode(.BuiltinTupleType)
         default:
             return nil
         }
@@ -614,7 +625,7 @@ class Demangler: Demanglerable, Mangling {
         }
         return Ext
     }
-
+    
     @discardableResult
     func setParentForOpaqueReturnTypeNodes(parent: Node?, visitedNode: Node?) -> Node? {
         guard let parent, let visitedNode else {
@@ -627,7 +638,7 @@ class Demangler: Demanglerable, Mangling {
             visitedNode.add(createNode(.OpaqueReturnTypeParent, parent.index ?? 0))
             return parent
         }
-
+        
         // If this node is one that may in turn define its own opaque return type,
         // stop recursion, since any opaque return type nodes underneath would refer
         // to the nested declaration rather than the one we're looking at.
@@ -643,7 +654,7 @@ class Demangler: Demanglerable, Mangling {
             return parent
         }
     }
-
+    
     func demanglePlainFunction() -> Node? {
         let GenSig = popNode(.DependentGenericSignature)
         var type = popFunctionType(.FunctionType)
@@ -662,7 +673,7 @@ class Demangler: Demanglerable, Mangling {
         } else {
             result = createWithChildren(.Function, Ctx, Name, type)
         }
-
+        
         result = setParentForOpaqueReturnTypeNodes(parent: result, visitedNode: type)
         return result
     }
@@ -687,6 +698,12 @@ class Demangler: Demanglerable, Mangling {
         
         let type = popNode(.Type)
         return createWithChildren(.ConcreteProtocolConformance, type, conformanceRef, conditionalConformanceList)
+    }
+    
+    func demanglePackProtocolConformance() -> Node? {
+        let patternConformanceList = popAnyProtocolConformanceList()
+        
+        return createWithChild(.PackProtocolConformance, patternConformanceList)
     }
     
     func demangleDependentProtocolConformanceRoot() -> Node? {
@@ -898,6 +915,14 @@ class Demangler: Demanglerable, Mangling {
         }
         return createWithChild(ConvKind, createNode(.ImplConvention, attr))
     }
+
+    func demangleImplParameterSending() -> Node? {
+        // Empty string represents default differentiability.
+        if !nextIf("T") {
+            return nil
+        }
+        return createNode(.ImplParameterSending, "sending")
+}
     
     func demangleImplParameterResultDifferentiability() -> Node? {
         // Empty string represents default differentiability.
@@ -960,6 +985,10 @@ class Demangler: Demanglerable, Mangling {
         
         if nextIf("e") { type.addChild(createNode(.ImplEscaping)) }
         
+        if nextIf("A") {
+            type.addChild(createNode(.ImplErasedIsolation))
+        }
+        
         switch MangledDifferentiabilityKind(rawValue: peekChar().description) {
         case .normal,  // "d"
                 .linear,  // "l"
@@ -1009,10 +1038,15 @@ class Demangler: Demanglerable, Mangling {
         }
         
         var CoroAttr: String?
-        if nextIf("A") { CoroAttr = "@yield_once" }
-        else if nextIf("G") { CoroAttr = "@yield_many" }
+        if nextIf("A") {
+            CoroAttr = "@yield_once"
+        } else if nextIf("I") {
+            CoroAttr = "@yield_once_2"
+        } else if nextIf("G") {
+            CoroAttr = "@yield_many"
+        }
         if let CoroAttr = CoroAttr {
-            type.addChild(createNode(.ImplFunctionAttribute, CoroAttr))
+            type.addChild(createNode(.ImplCoroutineKind, CoroAttr))
         }
         
         if nextIf("h") {
@@ -1028,15 +1062,20 @@ class Demangler: Demanglerable, Mangling {
         var NumTypesToAdd = 0
         var Param: Node?
         while let param = demangleImplParamConvention(.ImplParameter) {
-            type = addChild(type, param)
+            type = addChild(type, Param)
             if let Diff = demangleImplParameterResultDifferentiability() {
-                Param = addChild(param, Diff)
+                Param = addChild(Param, Diff)
             }
-            ++NumTypesToAdd
-            if Param == nil {
-                break
+            if let Sending = demangleImplParameterSending() {
+                Param = addChild(Param, Sending)
             }
+            NumTypesToAdd += 1
         }
+
+        if nextIf("T") {
+            type.addChild(createNode(.ImplSendingResult))
+        }
+
         var Result: Node?
         while let result = demangleImplResultConvention(.ImplResult) {
             type = addChild(type, result)
@@ -1290,7 +1329,7 @@ class Demangler: Demanglerable, Mangling {
         }
         if nextIf("s") {
             return createNode(.ConstrainedExistentialSelf);
-          }
+        }
         return getDependentGenericParamType(0, demangleIndex() + 1)
     }
     
@@ -1311,7 +1350,7 @@ class Demangler: Demanglerable, Mangling {
             return createNode(.DynamicAttribute)
         case "d":
             return createNode(.DirectMethodReferenceAttribute)
-        case "E": 
+        case "E":
             return createNode(.DistributedThunk)
         case "F":
             return createNode(.DistributedAccessor)
@@ -1527,13 +1566,13 @@ class Demangler: Demanglerable, Mangling {
                 return demangleAutoDiffFunctionOrSimpleThunk(.AutoDiffFunction)
             }
         case "w":
-              switch (nextChar()) {
-              case "b": return createNode(.BackDeploymentThunk)
-              case "B": return createNode(.BackDeploymentFallback)
-              case "S": return createNode(.HasSymbolQuery)
-              default:
+            switch (nextChar()) {
+            case "b": return createNode(.BackDeploymentThunk)
+            case "B": return createNode(.BackDeploymentFallback)
+            case "S": return createNode(.HasSymbolQuery)
+            default:
                 return nil
-              }
+            }
         default:
             return nil
         }
@@ -1839,18 +1878,19 @@ class Demangler: Demanglerable, Mangling {
     func demangleSpecAttributes(_ SpecKind: Node.Kind) -> Node? {
         let metatypeParamsRemoved = nextIf("m")
         let isSerialized = nextIf("q")
+        let asyncRemoved = nextIf("a")
         
         let PassID = nextChar() - "0"
         guard (0...9).contains(PassID) else { return nil }
         
         let SpecNd = createNode(SpecKind)
-
-        if metatypeParamsRemoved {
-            SpecNd.addChild(createNode(.MetatypeParamsRemoved))
-        }
-
+        
         if isSerialized {
             SpecNd.addChild(createNode(.IsSerialized))
+        }
+        
+        if asyncRemoved {
+            SpecNd.addChild(createNode(.AsyncRemoved))
         }
         
         SpecNd.addChild(createNode(.SpecializationPassID, PassID))
@@ -2144,8 +2184,14 @@ class Demangler: Demanglerable, Mangling {
             Kind = .DidSet
         case "r":
             Kind = .ReadAccessor
+        case "y":
+            Kind = .Read2Accessor
         case "M":
             Kind = .ModifyAccessor
+        case "x":
+            Kind = .Modify2Accessor
+        case "i":
+            Kind = .InitAccessor
         case "a":
             switch nextChar() {
             case "O":
@@ -2196,6 +2242,9 @@ class Demangler: Demanglerable, Mangling {
         case "d":
             Args = .None
             Kind = .Destructor
+        case "Z":
+            Args = .None
+            Kind = .IsolatedDeallocator
         case "E":
             Args = .None
             Kind = .IVarDestroyer
@@ -2220,10 +2269,7 @@ class Demangler: Demanglerable, Mangling {
         case "A":
             Args = .Index
             Kind = .DefaultArgumentInitializer
-        case "a":
-            Args = .ContextArg
-            Kind = .RuntimeAttributeGenerator
-        case "m": 
+        case "m":
             return demangleEntity(.Macro)
         case "M":
             return demangleMacroExpansion()
@@ -2259,7 +2305,7 @@ class Demangler: Demanglerable, Mangling {
         case .ContextArg:
             Context = popNode()
         }
-
+        
         var Entity: Node? = createWithChild(Kind, popContext())
         switch Args {
         case .None:
@@ -2327,7 +2373,7 @@ class Demangler: Demanglerable, Mangling {
         let ProtoList = demangleProtocolList()
         return createType(ProtoList)
     }
-
+    
     func demangleConstrainedExistentialRequirementList() -> Node? {
         let ReqList = createNode(.ConstrainedExistentialRequirementList)
         var firstElem = false
@@ -2338,11 +2384,11 @@ class Demangler: Demanglerable, Mangling {
             }
             ReqList.add(Req)
         } while firstElem == false
-
+        
         ReqList.reverseChildren()
         return ReqList
     }
-
+    
     func demangleGenericSignature(_ hasParamCounts: Bool) -> Node? {
         let Sig = createNode(.DependentGenericSignature)
         if hasParamCounts {
@@ -2367,27 +2413,39 @@ class Demangler: Demanglerable, Mangling {
         return Sig
     }
     
-    enum TypeKind { case Generic, Assoc, CompoundAssoc, Substitution }
-    enum ConstraintKind { case `Protocol`, BaseClass, SameType, Layout }
+    enum TypeKind {
+        case Generic
+        case Assoc
+        case CompoundAssoc
+        case Substitution
+    }
+    enum ConstraintKind {
+        case `Protocol`
+        case BaseClass
+        case SameType
+        case SameShape
+        case Layout
+        case PackMarker
+        case Inverse
+        case ValueMarker
+    }
     
     func demangleGenericRequirement() -> Node? {
         
         let TypeKind: TypeKind
         let ConstraintKind: ConstraintKind
         
-        switch nextChar() {
+        var inverseKind: Node?
+        switch (nextChar()) {
+        case "V":
+            ConstraintKind = .ValueMarker
+            TypeKind = .Generic
+        case "v":
+            ConstraintKind = .PackMarker
+            TypeKind = .Generic
         case "c":
             ConstraintKind = .BaseClass
             TypeKind = .Assoc
-        case "C":
-            ConstraintKind = .BaseClass
-            TypeKind = .CompoundAssoc
-        case "b":
-            ConstraintKind = .BaseClass
-            TypeKind = .Generic
-        case "B":
-            ConstraintKind = .BaseClass
-            TypeKind = .Substitution
         case "t":
             ConstraintKind = .SameType
             TypeKind = .Assoc
@@ -2413,18 +2471,31 @@ class Demangler: Demanglerable, Mangling {
             ConstraintKind = .Layout
             TypeKind = .Substitution
         case "p":
-            ConstraintKind = .Protocol
-            TypeKind = .Assoc
-        case "P":
-            ConstraintKind = .Protocol
-            TypeKind = .CompoundAssoc
-        case "Q":
-            ConstraintKind = .Protocol
+            ConstraintKind = .SameShape
+            TypeKind = .Generic
+        case "h":
+            ConstraintKind = .SameShape
+            TypeKind = .Generic
+        case "i":
+            ConstraintKind = .Inverse
+            TypeKind = .Generic
+            let inverseKind = demangleIndexAsNode()
+            if inverseKind == nil {
+                return nil
+            }
+        case "I":
+            ConstraintKind = .Inverse
             TypeKind = .Substitution
+            let inverseKind = demangleIndexAsNode()
+            if inverseKind == nil {
+                return nil
+            }
+            break
         default:
             ConstraintKind = .Protocol
             TypeKind = .Generic
             pushBack()
+            break
         }
         
         let ConstrTy: Node?
@@ -2443,55 +2514,71 @@ class Demangler: Demanglerable, Mangling {
         }
         
         switch ConstraintKind {
+        case .ValueMarker:
+            return createWithChildren(.DependentGenericParamValueMarker, ConstrTy, popNode(.Type))
+        case .PackMarker:
+            return createWithChildren(.DependentGenericParamPackMarker, ConstrTy)
         case .Protocol:
             return createWithChildren(.DependentGenericConformanceRequirement, ConstrTy, popProtocol())
+        case .Inverse:
+            return createWithChildren(.DependentGenericInverseConformanceRequirement, ConstrTy, inverseKind)
         case .BaseClass:
             return createWithChildren(.DependentGenericConformanceRequirement, ConstrTy, popNode(.Type))
         case .SameType:
             return createWithChildren(.DependentGenericSameTypeRequirement, ConstrTy, popNode(.Type))
+        case .SameShape:
+            return createWithChildren(.DependentGenericSameShapeRequirement, ConstrTy, popNode(.Type))
         case .Layout:
             let c = nextChar()
             var size: Node?
             var alignment: Node?
-            let name: String
-            if (c == "U") {
+            var name: String
+            if c == "U" {
                 name = "U"
-            } else if (c == "R") {
+            } else if c == "R" {
                 name = "R"
-            } else if (c == "N") {
+            } else if c == "N" {
                 name = "N"
-            } else if (c == "C") {
+            } else if c == "C" {
                 name = "C"
-            } else if (c == "D") {
+            } else if c == "D" {
                 name = "D"
-            } else if (c == "T") {
+            } else if c == "T" {
                 name = "T"
-            } else if (c == "E") {
+            } else if c == "B" {
+                name = "B"
+            } else if c == "E" {
                 size = demangleIndexAsNode()
                 if size == nil {
                     return nil
                 }
                 alignment = demangleIndexAsNode()
                 name = "E"
-            } else if (c == "e") {
+            } else if c == "e" {
                 size = demangleIndexAsNode()
                 if size == nil {
                     return nil
                 }
                 name = "e"
-            } else if (c == "M") {
+            } else if c == "M" {
                 size = demangleIndexAsNode()
                 if size == nil {
                     return nil
                 }
                 alignment = demangleIndexAsNode()
                 name = "M"
-            } else if (c == "m") {
+            } else if c == "m" {
                 size = demangleIndexAsNode()
                 if size == nil {
                     return nil
                 }
                 name = "m"
+            } else if c == "S" {
+                size = demangleIndexAsNode()
+                if size == nil {
+                    return nil
+                }
+                name = "S"
             } else {
                 // Unknown layout constraint.
                 return nil
@@ -2499,10 +2586,10 @@ class Demangler: Demanglerable, Mangling {
             
             let NameNode = createNode(.Identifier, name)
             let LayoutRequirement = createWithChildren(.DependentGenericLayoutRequirement, ConstrTy, NameNode)
-            if let size = size {
+            if let size {
                 addChild(LayoutRequirement, size)
             }
-            if let alignment = alignment {
+            if let alignment {
                 addChild(LayoutRequirement, alignment)
             }
             return LayoutRequirement
@@ -2534,43 +2621,43 @@ class Demangler: Demanglerable, Mangling {
         let kind: Node.Kind
         let isAttached: Bool
         let isFreestanding: Bool
-      switch (nextChar()) {
-      case "a":
-          kind = .AccessorAttachedMacroExpansion
-        isAttached = true
-        isFreestanding = false
-      case "r":
-          kind = .MemberAttributeAttachedMacroExpansion
-        isAttached = true
-        isFreestanding = false
-      case "f":
-          kind = .FreestandingMacroExpansion;
-          isAttached = false
-          isFreestanding = true
-      case "m":
-          kind = .MemberAttachedMacroExpansion
-          isAttached = true
-          isFreestanding = false
-      case "p":
-          kind = .PeerAttachedMacroExpansion
-          isAttached = true
-          isFreestanding = false
-      case "c":
-          kind = .ConformanceAttachedMacroExpansion
-          isAttached = true
-          isFreestanding = false
-      case "e":
-          kind = .ExtensionAttachedMacroExpansion
-          isAttached = true
-          isFreestanding = false
-      case "u":
-          kind = .MacroExpansionUniqueName
-          isAttached = false
-          isFreestanding = false
-      default:
-        return nil
-      }
-
+        switch (nextChar()) {
+        case "a":
+            kind = .AccessorAttachedMacroExpansion
+            isAttached = true
+            isFreestanding = false
+        case "r":
+            kind = .MemberAttributeAttachedMacroExpansion
+            isAttached = true
+            isFreestanding = false
+        case "f":
+            kind = .FreestandingMacroExpansion;
+            isAttached = false
+            isFreestanding = true
+        case "m":
+            kind = .MemberAttachedMacroExpansion
+            isAttached = true
+            isFreestanding = false
+        case "p":
+            kind = .PeerAttachedMacroExpansion
+            isAttached = true
+            isFreestanding = false
+        case "c":
+            kind = .ConformanceAttachedMacroExpansion
+            isAttached = true
+            isFreestanding = false
+        case "e":
+            kind = .ExtensionAttachedMacroExpansion
+            isAttached = true
+            isFreestanding = false
+        case "u":
+            kind = .MacroExpansionUniqueName
+            isAttached = false
+            isFreestanding = false
+        default:
+            return nil
+        }
+        
         let macroName = popNode(.Identifier)
         var privateDiscriminator: Node?
         if isFreestanding {
@@ -2580,11 +2667,11 @@ class Demangler: Demanglerable, Mangling {
         if isAttached {
             attachedName = popNode(isDeclName)
         }
-
+        
         var context = popNode { kind in
             kind.isMacroExpandion
         }
-
+        
         if context == nil {
             context = popContext()
         }
@@ -2601,7 +2688,7 @@ class Demangler: Demanglerable, Mangling {
         }
         return result
     }
-
+    
     @discardableResult
     func nextIf(_ str: String) -> Bool {
         guard mangled.hasPrefix(str) else { return false }
@@ -2678,7 +2765,7 @@ class Demangler: Demanglerable, Mangling {
     
     func nodeConsumesGenericArgs(_ node: Node) -> Bool {
         switch node.getKind() {
-        case .Variable, 
+        case .Variable,
                 .Subscript,
                 .ImplicitClosure,
                 .ExplicitClosure,
@@ -2686,14 +2773,13 @@ class Demangler: Demanglerable, Mangling {
                 .Initializer,
                 .PropertyWrapperBackingInitializer,
                 .PropertyWrapperInitFromProjectedValue,
-                .Static,
-                .RuntimeAttributeGenerator:
+                .Static:
             return false
         default:
             return true
         }
     }
-
+    
     func popNode() -> Node? {
         guard nodeStack.isNotEmpty else { return nil }
         return nodeStack.removeLast()
@@ -2701,7 +2787,7 @@ class Demangler: Demanglerable, Mangling {
     
     func popNode(_ kind: Node.Kind) -> Node? {
         guard nodeStack.isNotEmpty else { return nil }
-
+        
         if let lastKind = nodeStack.last?.kind {
             if lastKind != kind {
                 return nil
@@ -2778,18 +2864,23 @@ class Demangler: Demanglerable, Mangling {
     }
     
     func popFunctionType(_ kind: Node.Kind, _ hasClangType: Bool = false) -> Node? {
-        var FuncType: Node? = createNode(kind)
+        let FuncType = createNode(kind)
         var ClangType: Node?
         if hasClangType {
             ClangType = demangleClangType()
         }
         addChild(FuncType, ClangType)
         addChild(FuncType, popNode(.GlobalActorFunctionType))
+        addChild(FuncType, popNode(.IsolatedAnyFunctionType))
+        addChild(FuncType, popNode(.SendingResultFunctionType))
         addChild(FuncType, popNode(.DifferentiableFunctionType))
-        addChild(FuncType, popNode(.ThrowsAnnotation))
+        addChild(FuncType, popNode({ kind in
+            return kind == .ThrowsAnnotation ||
+                kind == .TypedThrowsAnnotation
+        }))
         addChild(FuncType, popNode(.ConcurrentFunctionType))
         addChild(FuncType, popNode(.AsyncAnnotation))
-        
+
         FuncType = addChild(FuncType, popFunctionParams(.ArgumentTuple))
         FuncType = addChild(FuncType, popFunctionParams(.ReturnType))
         return createType(FuncType)
@@ -2804,31 +2895,38 @@ class Demangler: Demanglerable, Mangling {
         }
         return createWithChild(kind, ParamsType)
     }
-    
+
     func popFunctionParamLabels(_ Type: Node?) -> Node? {
         if !IsOldFunctionTypeMangling, popNode(.EmptyList).hasValue {
             return createNode(.LabelList)
         }
-        
+
         guard let Type = Type, Type.getKind() == .Type else { return nil }
-        
+
         var FuncType = Type.getFirstChild()
         if FuncType.getKind() == .DependentGenericType {
             FuncType = FuncType.getChild(1).getFirstChild()
         }
-        
-        if FuncType.getKind() != .FunctionType && FuncType.getKind() != .NoEscapeFunctionType {
+
+        if FuncType.getKind() != .FunctionType, FuncType.getKind() != .NoEscapeFunctionType {
             return nil
         }
-        
+
         var FirstChildIdx = 0
         if FuncType.getChild(FirstChildIdx).getKind() == .GlobalActorFunctionType {
+            ++FirstChildIdx
+        }
+        if FuncType.getChild(FirstChildIdx).getKind() == .IsolatedAnyFunctionType {
+            ++FirstChildIdx
+        }
+        if FuncType.getChild(FirstChildIdx).getKind() == .SendingResultFunctionType {
             ++FirstChildIdx
         }
         if FuncType.getChild(FirstChildIdx).getKind() == .DifferentiableFunctionType {
             ++FirstChildIdx
         }
-        if FuncType.getChild(FirstChildIdx).getKind() == .ThrowsAnnotation {
+        if FuncType.getChild(FirstChildIdx).getKind() == .ThrowsAnnotation ||
+            FuncType.getChild(FirstChildIdx).getKind() == .TypedThrowsAnnotation {
             ++FirstChildIdx
         }
         if FuncType.getChild(FirstChildIdx).getKind() == .ConcurrentFunctionType {
@@ -2838,27 +2936,30 @@ class Demangler: Demanglerable, Mangling {
             ++FirstChildIdx
         }
         let ParameterType = FuncType.getChild(FirstChildIdx)
-        
+
         assert(ParameterType.getKind() == .ArgumentTuple)
-        
+
+        assert(ParameterType.getKind() == .ArgumentTuple)
+
         let ParamsType = ParameterType.getFirstChild()
         assert(ParamsType.getKind() == .Type)
         let Params = ParamsType.getFirstChild()
         let NumParams = Params.getKind() == .Tuple ? Params.getNumChildren() : 1
-        
+
         if NumParams == 0 {
             return nil
         }
-        
+
         func getChildIf(_ node: Node, _ filterBy: Node.Kind) -> (offset: Int, element: Node)? {
-            for node in node.copyOfChildren.enumerated() {
-                if node.element.getKind() == filterBy {
-                    return node
+            for i in 0..<node.getNumChildren() {
+                let Child = node.getChild(i)
+                if Child.getKind() == filterBy {
+                    return (i, Child)
                 }
             }
             return nil
         }
-        
+
         func getLabel(_ Params: Node, _ Idx: Int) -> Node? {
             // Old-style function type mangling has labels as part of the argument.
             if IsOldFunctionTypeMangling {
@@ -2867,42 +2968,43 @@ class Demangler: Demanglerable, Mangling {
                     Param.removeChildAt(Label.offset)
                     return createNodeWithAllocatedText(.Identifier, Label.element.getText())
                 }
-                
+
                 return createNode(.FirstElementMarker)
             }
-            
+
             return popNode()
         }
-        
+
         let LabelList = createNode(.LabelList)
         let Tuple = ParameterType.getFirstChild().getFirstChild()
-        
+
         if IsOldFunctionTypeMangling && Tuple.getKind() != .Tuple {
             return LabelList
         }
-        
+
         var hasLabels = false
         for i in 0..<NumParams {
             guard let Label = getLabel(Tuple, i) else { return nil }
-            
+
             if Label.getKind() != .Identifier && Label.getKind() != .FirstElementMarker {
                 return nil
             }
-            
+
             LabelList.addChild(Label)
-            hasLabels = hasLabels || Label.getKind() != .FirstElementMarker
+
+            hasLabels |= Label.getKind() != .FirstElementMarker
         }
-        
+
         // Old style label mangling can produce label list without
         // actual labels, we need to support that case specifically.
         if !hasLabels {
             return createNode(.LabelList)
         }
-        
+
         if !IsOldFunctionTypeMangling {
             LabelList.reverseChildren()
         }
-        
+
         return LabelList
     }
     
@@ -2979,14 +3081,19 @@ class Demangler: Demanglerable, Mangling {
     }
     
     func popAnyProtocolConformance() -> Node? {
-        return popNode({ kind in
-            switch (kind) {
-            case .ConcreteProtocolConformance, .DependentProtocolConformanceRoot, .DependentProtocolConformanceInherited, .DependentProtocolConformanceAssociated:
-                return true
-            default:
-                return false
-            }
-        })
+        return popNode(
+            { kind in
+                switch (kind) {
+                case .ConcreteProtocolConformance,
+                        .PackProtocolConformance,
+                        .DependentProtocolConformanceRoot,
+                        .DependentProtocolConformanceInherited,
+                        .DependentProtocolConformanceAssociated:
+                    return true
+                default:
+                    return false
+                }
+            })
     }
     
     

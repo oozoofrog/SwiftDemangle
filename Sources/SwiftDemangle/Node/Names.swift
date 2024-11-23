@@ -88,4 +88,6 @@ extension String {
     static let BUILTIN_TYPE_NAME_SILTOKEN = "Builtin.SILToken"
     /// The name of the Builtin type for Word
     static let BUILTIN_TYPE_NAME_WORD = "Builtin.Word"
+    /// The name of the Builtin type for PackIndex
+    static let  BUILTIN_TYPE_NAME_PACKINDEX = "Builtin.PackIndex"
 }

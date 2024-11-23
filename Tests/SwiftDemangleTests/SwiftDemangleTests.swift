@@ -38,6 +38,7 @@ final class SwiftDemangleTests {
         #expect(result == demangled)
     }
     
+    @MainActor
     @Test
     func testManglings() throws {
         try loadAndForEachMangles("manglings.txt") { line, mangled, demangled in
