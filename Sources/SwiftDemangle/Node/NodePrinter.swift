@@ -58,7 +58,11 @@ struct NodePrinter {
             return nil
         }
         let kind = node.kind
-        print("Kind: \(kind), depth: \(depth)")
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["PRINT_NODE_AND_DEPTH"] == "true" {
+            print("Kind: \(kind), depth: \(depth)")
+        }
+        #endif
         switch kind {
         case .Static:
             printer("static ")

@@ -975,14 +975,14 @@ class Demangler: Demanglerable, Mangling {
             }
             type.addChild(subsNode)
         }
-        
+
         if nextIf("I") {
             var Substitutions: [Node] = []
             var SubstitutionRetroConformances: Node?
             if !demangleBoundGenerics(&Substitutions, &SubstitutionRetroConformances) { return nil }
-            
+
             let subsNode = createNode(.ImplInvocationSubstitutions)
-            assert(Substitutions.size() == 1)
+            if Substitutions.size() != 1 { return nil }
             subsNode.addChild(Substitutions[0])
             if SubstitutionRetroConformances.hasValue {
                 subsNode.addChild(SubstitutionRetroConformances)

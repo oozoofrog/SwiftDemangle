@@ -10,6 +10,7 @@ func catchTry<R>(_ procedure: @autoclosure () throws -> R, or: R) -> R {
     }
 }
 
+@MainActor
 final class SwiftDemangleTests {
     
     @Test
@@ -38,7 +39,6 @@ final class SwiftDemangleTests {
         #expect(result == demangled)
     }
     
-    @MainActor
     @Test
     func testManglings() throws {
         try loadAndForEachMangles("manglings.txt") { line, mangled, demangled in
@@ -56,6 +56,7 @@ final class SwiftDemangleTests {
         }
     }
     
+    @Test
     func testSimplifiedManglings() throws {
         try loadAndForEachMangles("simplified-manglings.txt") { line, mangled, demangled in
             let opts: DemangleOptions = .simplifiedOptions
@@ -76,6 +77,7 @@ final class SwiftDemangleTests {
         }
     }
     
+    @Test
     func testManglingsWithClangTypes() throws {
         try loadAndForEachMangles("manglings-with-clang-types.txt") { line, mangled, demangled in
             let result = mangled.demangled
@@ -86,6 +88,7 @@ final class SwiftDemangleTests {
         }
     }
     
+    @Test
     func testFunctionSigSpecializationParamKind() throws {
         typealias Kind = FunctionSigSpecializationParamKind
         
