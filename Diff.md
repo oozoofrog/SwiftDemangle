@@ -42,7 +42,7 @@
 - [x] OutlinedInitializeWithCopyNoValueWitness - outlined initialize with copy no value witness
 - [x] OutlinedAssignWithTakeNoValueWitness - outlined assign with take(ownership) no value witness
 - [x] OutlinedAssignWithCopyNoValueWitness - outlined assign with copy no value witness
-- [ ] OutlinedDestroyNoValueWitness
+- [x] OutlinedDestroyNoValueWitness - outlined destroy no value witness
 - [ ] DependentGenericInverseConformanceRequirement
 // Added in Swift 6.TBD
 - [ ] Integer
