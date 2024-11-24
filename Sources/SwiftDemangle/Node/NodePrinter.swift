@@ -1163,11 +1163,10 @@ struct NodePrinter {
         case .ImplErasedIsolation:
             printer("@isolated(any)")
         case .ImplCoroutineKind:
-            let text = node.text
-            if text.isEmpty {
+            guard let text = node.text.emptyToNil() else {
                 break
             }
-            printer(text)
+            printer(text + " ")
         case .ImplSendingResult:
             printer("sending")
         case .ImplConvention:

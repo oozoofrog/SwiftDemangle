@@ -7,7 +7,7 @@
 - [x] ImplErasedIsolation - isolation for any actor
 - [x] ImplSendingResult
 - [x] ImplParameterSending
-- [ ] ImplCoroutineKind
+- [x] ImplCoroutineKind
 - [ ] InitAccessor
 - [ ] IsolatedDeallocator
 - [ ] Sending

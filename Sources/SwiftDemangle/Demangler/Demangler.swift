@@ -1055,7 +1055,7 @@ class Demangler: Demanglerable, Mangling {
         } else if nextIf("G") {
             CoroAttr = "@yield_many"
         }
-        if let CoroAttr = CoroAttr {
+        if let CoroAttr {
             type.addChild(createNode(.ImplCoroutineKind, CoroAttr))
         }
         
