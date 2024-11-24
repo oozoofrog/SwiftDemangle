@@ -52,9 +52,9 @@
       allowLocationSimulation = "YES">
       <EnvironmentVariables>
          <EnvironmentVariable
-            key = "PRINT_NODE_AND_DEPTH"
-            value = "true"
-            isEnabled = "YES">
+            key = "SWIFT_DEMANGLE_DEBUG"
+            value = "1"
+            isEnabled = "NO">
          </EnvironmentVariable>
       </EnvironmentVariables>
    </LaunchAction>

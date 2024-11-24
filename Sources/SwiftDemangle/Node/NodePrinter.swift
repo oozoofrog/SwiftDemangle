@@ -59,7 +59,8 @@ struct NodePrinter {
         }
         let kind = node.kind
         #if DEBUG
-        if ProcessInfo.processInfo.environment["PRINT_NODE_AND_DEPTH"] == "true" {
+        if ProcessInfo.processInfo.environment["SWIFT_DEMANGLE_DEBUG"] == "1" {
+            print("\"\(printText)\"")
             print("Kind: \(kind), depth: \(depth)")
         }
         #endif
@@ -1176,7 +1177,7 @@ struct NodePrinter {
             guard let text = node.text.emptyToNil() else {
                 break
             }
-            printer(text + " ")
+            printer("@\(text)")
         case .ImplSendingResult:
             printer("sending")
         case .ImplConvention:
@@ -1216,7 +1217,7 @@ struct NodePrinter {
             printer("<ERROR TYPE>")
         case .DependentPseudogenericSignature,
                 .DependentGenericSignature:
-            printGenericSignature(node: node, depth: depth)
+            try printGenericSignature(node: node, depth: depth)
         case .DependentGenericParamCount,
                 .DependentGenericParamPackMarker,
                 .DependentGenericParamValueMarker:
@@ -1992,7 +1993,7 @@ struct NodePrinter {
     mutating func printChildren(nodes: [Node], depth: Int, separator: String? = nil) throws {
         for (offset, node) in nodes.enumerated() {
             try printNode(node, depth: depth + 1)
-            if let separator = separator, offset > 0 {
+            if let separator, offset < nodes.count - 1 {
                 printer(separator)
             }
         }
@@ -2540,8 +2541,8 @@ struct NodePrinter {
         }
     }
     
-    mutating func printGenericSignature(node: Node, depth: Int) {
-        printer(">")
+    mutating func printGenericSignature(node: Node, depth: Int) throws {
+        printer("<")
         
         let numChildren = node.numberOfChildren
         
@@ -2640,7 +2641,7 @@ struct NodePrinter {
                     
                     if let node = value {
                         printer(": ")
-                        print(node, depth + 1)
+                        try printNode(node, depth: depth + 1)
                     }
                 }
             }
@@ -2653,7 +2654,7 @@ struct NodePrinter {
                     if i > firstRequirement {
                         printer(", ")
                     }
-                    print(node.children(i), depth + 1)
+                    try printNode(node.children(i), depth: depth + 1)
                 }
             }
         }

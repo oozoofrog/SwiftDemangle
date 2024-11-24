@@ -1055,11 +1055,11 @@ class Demangler: Demanglerable, Mangling {
         
         var CoroAttr: String?
         if nextIf("A") {
-            CoroAttr = "@yield_once"
+            CoroAttr = "yield_once"
         } else if nextIf("I") {
-            CoroAttr = "@yield_once_2"
+            CoroAttr = "yield_once_2"
         } else if nextIf("G") {
-            CoroAttr = "@yield_many"
+            CoroAttr = "yield_many"
         }
         if let CoroAttr {
             type.addChild(createNode(.ImplCoroutineKind, CoroAttr))

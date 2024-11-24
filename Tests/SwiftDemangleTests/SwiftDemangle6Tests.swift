@@ -17,6 +17,8 @@ struct SwiftDemangle6Tests {
     func coroutineContinuationPrototype() {
         let mangled = "$sxSo8_NSRangeVRlzCRl_Cr0_llySo12ModelRequestCyxq_GIsPetWAlYl_TC"
         let demangled = "coroutine continuation prototype for @escaping @convention(thin) @convention(witness_method) @yield_once <A, B where A: AnyObject, B: AnyObject> @substituted <A> (@inout A) -> (@yields @inout __C._NSRange) for <__C.ModelRequest<A, B>>"
+        print("R:" + mangled.demangled)
+        print("E:" + demangled)
         #expect(mangled.demangled == demangled)
     }
     
