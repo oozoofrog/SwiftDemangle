@@ -26,8 +26,8 @@
 - [x] PackElementLevel - pack element level
 /// note: old mangling only
 - [x] VTableAttribute - override attribute
-- [ ] SILThunkIdentity
-- [ ] SILThunkHopToMainActorIfNeeded
+- [x] SILThunkIdentity - identity thunk for ABI
+- [x] SILThunkHopToMainActorIfNeeded - hop to main actor thunk
 - [ ] TypedThrowsAnnotation
 - [ ] SugaredParen // Removed in Swift 6.TBD
 - [ ] DroppedArgument

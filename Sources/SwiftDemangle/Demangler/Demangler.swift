@@ -1359,6 +1359,16 @@ class Demangler: Demanglerable, Mangling {
     func demangleThunkOrSpecialization() -> Node? {
         let c = nextChar()
         switch c {
+        case "T": {
+            switch nextChar() {
+            case "I":
+                return createWithChild(.SILThunkIdentity, popNode(isEntity))
+            case "H":
+                return createWithChild(.SILThunkHopToMainActorIfNeeded, popNode(isEntity))
+            default:
+                return nil
+            }
+        }
         case "c":
             return createWithChild(.CurryThunk, popNode(isEntity))
         case "j":
