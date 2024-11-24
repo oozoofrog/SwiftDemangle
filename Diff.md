@@ -5,7 +5,7 @@
 - [x] DependentGenericSameShapeRequirement - requirement that two generic types must have the same structural characteristics (e.g., identical property structure or memory layout)
 - [x] DependentGenericParamPackMarker - marker for a variadic generic parameter pack
 - [x] ImplErasedIsolation - isolation for any actor
-- [ ] ImplSendingResult
+- [x] ImplSendingResult
 - [ ] ImplParameterSending
 - [ ] ImplCoroutineKind
 - [ ] InitAccessor
