@@ -917,6 +917,9 @@ class OldDemangler: Demanglerable {
         if nextIf("D") {
             entityKind = .Deallocator
             hasType = false
+        } else if nextIf("Z") {
+            entityKind = .IsolatedDeallocator;
+            hasType = false
         } else if nextIf("d") {
             entityKind = .Destructor
             hasType = false

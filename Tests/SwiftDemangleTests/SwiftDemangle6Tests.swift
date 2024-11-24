@@ -66,7 +66,7 @@ struct SwiftDemangle6Tests {
      */
     @Test func testIsolatedDeallocatingDeinitFailed() async throws {
         let mangled = "_TFC3foo3barZ"
-        let demangled = "foo.bar.__isolated_deallocating_deinit failed"
+        let demangled = "foo.bar.__isolated_deallocating_deinit"
         print("R:" + mangled.demangled)
         print("E:" + demangled)
         #expect(mangled.demangled == demangled)
