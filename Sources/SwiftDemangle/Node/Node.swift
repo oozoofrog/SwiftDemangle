@@ -379,7 +379,6 @@ extension Node {
                 .AutoClosureType,
                 .BaseConformanceDescriptor,
                 .BaseWitnessTableAccessor,
-                .BodyAttachedMacroExpansion,
                 .ClangType,
                 .ClassMetadataBaseOffset,
                 .CFunctionPointer,

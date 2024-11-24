@@ -2031,6 +2031,7 @@ struct NodePrinter {
         var startIndex: Int = 0
         var isSendable = false
         var isAsync = false
+        var hasSendingResult = false
         var diffKind = MangledDifferentiabilityKind.nonDifferentiable
         if type.getChild(startIndex).kind == .ClangType {
             startIndex += 1
@@ -2101,7 +2102,11 @@ struct NodePrinter {
         if let throwsAnnotation {
             try printNode(throwsAnnotation, depth: depth + 1)
         }
-        
+        printer(" -> ")
+
+        if hasSendingResult {
+            printer("sending ")
+        }
         try printNode(type.children(argumentIndex + 1), depth: depth + 1)
     }
     
@@ -2463,23 +2468,28 @@ struct NodePrinter {
             }
         }
         for child in function.copyOfChildren {
-            if child.kind == .ImplParameter {
+            switch child.kind {
+            case .ImplParameter:
                 if currentState == .inputs {
                     printer(", ")
                 }
                 try transitionTo(newState: .inputs)
                 try printNode(child, depth: depth + 1)
-            } else if [Node.Kind.ImplResult, .ImplYield, .ImplErrorResult].contains(child.kind) {
+            case .ImplResult,
+                    .ImplYield,
+                    .ImplErrorResult:
                 if currentState == .results {
                     printer(", ")
                 }
                 try transitionTo(newState: .results)
                 try printNode(child, depth: depth + 1)
-            } else if child.kind == .ImplPatternSubstitutions {
+            case .ImplPatternSubstitutions:
                 patternSubs = child
-            } else if child.kind == .ImplSendingResult {
+            case .ImplInvocationSubstitutions:
+                invocationSubs = child
+            case .ImplSendingResult:
                 sendingResult = child
-            } else {
+            default:
                 assert(currentState == .attrs)
                 try printNode(child, depth: depth + 1)
                 printer(" ")
@@ -2573,8 +2583,7 @@ struct NodePrinter {
             return (false, nil)
         }
         
-        var gpDepth = 0
-        for _ in 0..<numGenericParams {
+        for gpDepth in 0..<numGenericParams {
             if gpDepth != 0 {
                 printer("><")
             }

@@ -2874,7 +2874,7 @@ class Demangler: Demanglerable, Mangling {
     }
     
     func popFunctionType(_ kind: Node.Kind, _ hasClangType: Bool = false) -> Node? {
-        let FuncType = createNode(kind)
+        var FuncType: Node? = createNode(kind)
         var ClangType: Node?
         if hasClangType {
             ClangType = demangleClangType()
