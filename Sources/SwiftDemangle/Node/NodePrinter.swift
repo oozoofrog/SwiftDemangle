@@ -1812,7 +1812,7 @@ struct NodePrinter {
         case .Integer:
             printer(node.index.or(0).description)
         case .NegativeInteger:
-            printer(node.index.or(0).description)
+            printer("-" + node.index.or(0).description)
         }
         return nil
     }
