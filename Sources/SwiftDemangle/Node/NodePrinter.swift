@@ -1332,9 +1332,9 @@ struct NodePrinter {
             printer("reflection metadata superclass descriptor ")
             try printNode(node.children(0), depth: depth + 1)
         case .AsyncAnnotation:
-            printer(" async ")
+            printer(" async")
         case .ThrowsAnnotation:
-            printer(" throws ")
+            printer(" throws")
         case .TypedThrowsAnnotation:
             printer(" throws(")
             if node.numberOfChildren == 1 {

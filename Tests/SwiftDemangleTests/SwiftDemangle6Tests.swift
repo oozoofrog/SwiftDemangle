@@ -71,5 +71,14 @@ struct SwiftDemangle6Tests {
         print("E:" + demangled)
         #expect(mangled.demangled == demangled)
     }
+    
+    /**
+     _TFC3red11BaseClassEHcfzT1aSi_S0_ ---> red.BaseClassEH.init(a: Swift.Int) throws -> red.BaseClassEH
+     */
+    @Test func testBaseClassEH() async throws {
+        let mangled = "_TFC3red11BaseClassEHcfzT1aSi_S0_"
+        let demangled = "red.BaseClassEH.init(a: Swift.Int) throws -> red.BaseClassEH"
+        #expect(mangled.demangled == demangled)
+    }
 }
     
