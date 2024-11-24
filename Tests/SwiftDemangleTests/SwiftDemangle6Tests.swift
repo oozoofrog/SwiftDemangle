@@ -31,5 +31,15 @@ struct SwiftDemangle6Tests {
         let demangled = "$SyyySGSS_IIxxxxx____xsIyFSySIxx_@xIxx____xxI"
         #expect(mangled.demangled == demangled)
     }
+    
+    /**
+     _TtbSiSu ---> @convention(block) (Swift.Int) -> Swift.UInt
+     */
+    @Test
+    func testConventionBlock() {
+        let mangled = "_TtbSiSu"
+        let demangled = "@convention(block) (Swift.Int) -> Swift.UInt"
+        #expect(mangled.demangled == demangled)
+    }
 }
     

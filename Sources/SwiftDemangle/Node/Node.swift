@@ -69,7 +69,7 @@ final class Node {
     
     init<N>(kind: Kind, index: N) where N: BinaryInteger {
         self.kind = kind
-        self.payload = .index(UInt64(index))
+        self.payload = .index(UInt64(truncatingIfNeeded: index))
         self._children = []
     }
     
