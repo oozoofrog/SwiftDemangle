@@ -2,9 +2,9 @@
 - [x] BuiltinTupleType - builtin tuple type for swift compiler
 - [x] BuiltinFixedArray - builtin fixed array type for swift compiler
 - [x] PackProtocolConformance - variadic generic pack protocol conformance
-- [x] DependentGenericSameShapeRequirement
-- [ ] DependentGenericParamPackMarker
-- [ ] ImplErasedIsolation
+- [x] DependentGenericSameShapeRequirement - requirement that two generic types must have the same structural characteristics (e.g., identical property structure or memory layout)
+- [x] DependentGenericParamPackMarker - marker for a variadic generic parameter pack
+- [x] ImplErasedIsolation - isolation for any actor
 - [ ] ImplSendingResult
 - [ ] ImplParameterSending
 - [ ] ImplCoroutineKind
