@@ -932,7 +932,7 @@ class Demangler: Demanglerable, Mangling {
             return nil
         }
         return createNode(.ImplParameterSending, "sending")
-}
+    }
     
     func demangleImplParameterResultDifferentiability() -> Node? {
         // Empty string represents default differentiability.
@@ -2010,6 +2010,26 @@ class Demangler: Demanglerable, Mangling {
             return createWithChildren(.BaseWitnessTableAccessor, Conf, ProtoTy)
         case "O":
             switch nextChar() {
+            case "C":
+                if let sig = popNode(.DependentGenericSignature) {
+                    return createWithChildren(.OutlinedInitializeWithCopyNoValueWitness, popNode(.Type), sig)
+                }
+                return createWithChild(.OutlinedInitializeWithCopyNoValueWitness, popNode(.Type))
+            case "D":
+                if let sig = popNode(.DependentGenericSignature) {
+                    return createWithChildren(.OutlinedAssignWithTakeNoValueWitness, popNode(.Type), sig)
+                }
+                return createWithChild(.OutlinedAssignWithTakeNoValueWitness, popNode(.Type))
+            case "F":
+                if let sig = popNode(.DependentGenericSignature) {
+                    return createWithChildren(.OutlinedAssignWithCopyNoValueWitness, popNode(.Type), sig)
+                }
+                return createWithChild(.OutlinedAssignWithCopyNoValueWitness, popNode(.Type))
+            case "H":
+                if let sig = popNode(.DependentGenericSignature) {
+                    return createWithChildren(.OutlinedDestroyNoValueWitness, popNode(.Type), sig)
+                }
+                return createWithChild(.OutlinedDestroyNoValueWitness, popNode(.Type))
             case "y":
                 if let sig = popNode(.DependentGenericSignature) {
                     return createWithChildren(.OutlinedCopy, popNode(.Type), sig)

@@ -39,7 +39,7 @@
 - [x] AsyncRemoved
 // Added in Swift 5.TBD
 - [x] ObjectiveCProtocolSymbolicReference - objective-c protocol symbolic reference
-- [ ] OutlinedInitializeWithCopyNoValueWitness
+- [x] OutlinedInitializeWithCopyNoValueWitness
 - [ ] OutlinedAssignWithTakeNoValueWitness
 - [ ] OutlinedAssignWithCopyNoValueWitness
 - [ ] OutlinedDestroyNoValueWitness
