@@ -1359,7 +1359,7 @@ class Demangler: Demanglerable, Mangling {
     func demangleThunkOrSpecialization() -> Node? {
         let c = nextChar()
         switch c {
-        case "T": {
+        case "T":
             switch nextChar() {
             case "I":
                 return createWithChild(.SILThunkIdentity, popNode(isEntity))
@@ -1368,7 +1368,6 @@ class Demangler: Demanglerable, Mangling {
             default:
                 return nil
             }
-        }
         case "c":
             return createWithChild(.CurryThunk, popNode(isEntity))
         case "j":
@@ -1446,6 +1445,8 @@ class Demangler: Demanglerable, Mangling {
             return demangleGenericSpecialization(.GenericSpecializationNotReAbstracted)
         case "B":
             return demangleGenericSpecialization(.GenericSpecializationInResilienceDomain)
+        case "t":
+            return demangleGenericSpecializationWithDroppedArguments()
         case "s":
             return demangleGenericSpecialization(.GenericSpecializationPrespecialized)
         case "i":
@@ -1750,8 +1751,11 @@ class Demangler: Demanglerable, Mangling {
         return Str
     }
     
-    func demangleGenericSpecialization(_ SpecKind: Node.Kind) -> Node? {
+    func demangleGenericSpecialization(_ SpecKind: Node.Kind, _ droppedArguments: Node? = nil) -> Node? {
         guard let Spec = demangleSpecAttributes(SpecKind) else { return nil }
+        if let droppedArguments {
+            Spec.addChild(droppedArguments)
+        }
         guard let TyList = popTypeList() else { return nil }
         for Ty in TyList.copyOfChildren {
             Spec.addChild(createWithChild(.GenericSpecializationParam, Ty))
@@ -1759,6 +1763,27 @@ class Demangler: Demanglerable, Mangling {
         return Spec
     }
     
+    func demangleGenericSpecializationWithDroppedArguments() -> Node? {
+        pushBack()
+        let tmp = createNode(.GenericSpecialization)
+        while nextIf("t") {
+            let n = demangleNatural()
+            addChild(tmp, createNode(.DroppedArgument, n < 0 ? 0 : n + 1))
+        }
+        let specKind: Node.Kind
+        switch nextChar() {
+        case "g":
+            specKind = .GenericSpecialization
+        case "G":
+            specKind = .GenericSpecializationNotReAbstracted
+        case "B":
+            specKind = .GenericSpecializationInResilienceDomain
+        default:
+            return nil
+        }
+        return demangleGenericSpecialization(specKind, tmp)
+    }
+
     func demangleFunctionSpecialization() -> Node? {
         var Spec = demangleSpecAttributes(.FunctionSignatureSpecialization)
         while Spec.hasValue, !nextIf("_") {
@@ -3102,7 +3127,7 @@ class Demangler: Demanglerable, Mangling {
 
         if !popNode(.EmptyList) {
             var firstElem = false
-            do {
+            repeat {
                 firstElem = popNode(.FirstElementMarker).hasValue
                 guard let Ty = popNode(.Type) else { return nil }
                 Root?.addChild(Ty)
