@@ -42,11 +42,9 @@ final class SwiftDemangleTests {
     @Test
     func testManglings() throws {
         try loadAndForEachMangles("manglings.txt") { line, mangled, demangled in
-            var opts: DemangleOptions = .defaultOptions
-            var result = try mangled.demangling(opts)
+            var result = try mangled.demangling(.defaultOptions)
             if result != demangled {
-                opts.isClassify = true
-                let classifiedResult = try mangled.demangling(opts)
+                let classifiedResult = try mangled.demangling(.defaultOptions.classified())
                 result = classifiedResult
             }
             if result != demangled {

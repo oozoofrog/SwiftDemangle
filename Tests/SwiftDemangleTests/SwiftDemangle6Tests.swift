@@ -60,5 +60,16 @@ struct SwiftDemangle6Tests {
         let demangled = "{T:} partial apply forwarder for closure #1 () -> () in main.foo(Swift.Int) -> () with unmangled suffix \".1\""
         #expect(try mangled.demangling(.defaultOptions.classified()) == demangled)
     }
+    
+    /**
+     _TFC3foo3barZ ---> foo.bar.__isolated_deallocating_deinit failed
+     */
+    @Test func testIsolatedDeallocatingDeinitFailed() async throws {
+        let mangled = "_TFC3foo3barZ"
+        let demangled = "foo.bar.__isolated_deallocating_deinit failed"
+        print("R:" + mangled.demangled)
+        print("E:" + demangled)
+        #expect(mangled.demangled == demangled)
+    }
 }
     
