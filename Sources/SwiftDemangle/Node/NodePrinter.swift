@@ -62,6 +62,7 @@ struct NodePrinter {
         if ProcessInfo.processInfo.environment["SWIFT_DEMANGLE_DEBUG"] == "1" {
             print("\"\(printText)\"")
             print("Kind: \(kind), depth: \(depth)")
+            print()
         }
         #endif
         switch kind {
@@ -492,9 +493,8 @@ struct NodePrinter {
             throw SwiftDemangleError.nodePrinterError(description: "should be handled in Node.Kind.PackElement", nodeDebugDescription: node.debugDescription)
         case .ReturnType:
             if node.copyOfChildren.isEmpty {
-                printer(" -> " + node.text)
+                printer(node.text)
             } else {
-                printer(" -> ")
                 try printChildren(node, depth: depth)
             }
         case .RetroactiveConformance:

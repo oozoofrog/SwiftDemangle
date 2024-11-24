@@ -54,7 +54,7 @@
          <EnvironmentVariable
             key = "SWIFT_DEMANGLE_DEBUG"
             value = "1"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </EnvironmentVariable>
       </EnvironmentVariables>
    </LaunchAction>
