@@ -582,10 +582,10 @@ class Demangler: Demanglerable, Mangling {
             name.append(EltType.getText().substr(String.BUILTIN_TYPE_NAME_PREFIX.size()))
             Ty = createNode(.BuiltinTypeName, name)
         case "V":
-            if let element = popNode(.Type) {
+            guard let element = popNode(.Type) else {
                 return nil
             }
-            if let size = popNode(.Type) {
+            guard let size = popNode(.Type) else {
                 return nil
             }
             Ty = createNode(.BuiltinFixedArray)
@@ -3002,7 +3002,7 @@ class Demangler: Demanglerable, Mangling {
 
             LabelList.addChild(Label)
 
-            hasLabels |= Label.getKind() != .FirstElementMarker
+            hasLabels = hasLabels || Label.getKind() != .FirstElementMarker
         }
 
         // Old style label mangling can produce label list without
