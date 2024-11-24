@@ -283,6 +283,8 @@ class Demangler: Demanglerable, Mangling {
                 // outlined copy functions. We treat such a suffix as "unmangled suffix".
                 pushBack()
                 return createNode(.Suffix, consumeAll())
+            case "$":
+                return demangleIntegerType()
             default:
                 pushBack()
                 return demangleIdentifier()
@@ -1026,8 +1028,12 @@ class Demangler: Demanglerable, Mangling {
         case "C": FConv = "c"
         case "z":
             switch nextChar() {
-            case "B": hasClangType = true; FConv = "block"
-            case "C": hasClangType = true; FConv = "c"
+            case "B":
+                hasClangType = true
+                FConv = "block"
+            case "C":
+                hasClangType = true
+                FConv = "c"
             default:
                 pushBack()
                 pushBack()
@@ -1351,7 +1357,7 @@ class Demangler: Demanglerable, Mangling {
             return getDependentGenericParamType(0, 0)
         }
         if nextIf("s") {
-            return createNode(.ConstrainedExistentialSelf);
+            return createNode(.ConstrainedExistentialSelf)
         }
         return getDependentGenericParamType(0, demangleIndex() + 1)
     }
@@ -2728,7 +2734,7 @@ class Demangler: Demanglerable, Mangling {
             isAttached = true
             isFreestanding = false
         case "f":
-            kind = .FreestandingMacroExpansion;
+            kind = .FreestandingMacroExpansion
             isAttached = false
             isFreestanding = true
         case "m":
@@ -2787,12 +2793,25 @@ class Demangler: Demanglerable, Mangling {
             result = createWithChildren(
                 kind, context, attachedName, macroName, discriminator)
         } else {
-            result = createWithChildren(kind, context, macroName, discriminator);
+            result = createWithChildren(kind, context, macroName, discriminator)
         }
         if let privateDiscriminator {
             result?.add(privateDiscriminator)
         }
         return result
+    }
+
+    func demangleIntegerType() -> Node? {
+        var integer: Node?
+
+        switch (peekChar()) {
+        case "n":
+            nextChar()
+            integer = createNode(.NegativeInteger, -demangleIndex())
+        default:
+            integer = createNode(.Integer, demangleIndex())
+        }
+        return createType(integer)
     }
     
     @discardableResult

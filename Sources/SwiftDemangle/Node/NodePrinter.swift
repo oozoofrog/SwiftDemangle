@@ -853,7 +853,7 @@ struct NodePrinter {
             try printNode(node.children(0), depth: depth + 1)
         case .ProtocolConformanceDescriptorRecord:
             printer("protocol conformance descriptor runtime record for ")
-            try printNode(node.getChild(0), depth: depth + 1);
+            try printNode(node.getChild(0), depth: depth + 1)
         case .ProtocolDescriptor:
             printer("protocol descriptor for ")
             try printNode(node.children(0), depth: depth + 1)
@@ -951,7 +951,7 @@ struct NodePrinter {
             try printNode(node.children(0), depth: depth + 1)
         case .OpaqueTypeDescriptorRecord:
             printer("opaque type descriptor runtime record for ")
-            try printNode(node.getChild(0), depth: depth + 1);
+            try printNode(node.getChild(0), depth: depth + 1)
         case .OpaqueTypeDescriptorAccessor:
             printer("opaque type descriptor accessor for ")
             try printNode(node.children(0), depth: depth + 1)
@@ -1809,6 +1809,10 @@ struct NodePrinter {
             break
         case .OpaqueReturnTypeParent:
             break
+        case .Integer:
+            printer(node.index.or(0).description)
+        case .NegativeInteger:
+            printer(node.index.or(0).description)
         }
         return nil
     }

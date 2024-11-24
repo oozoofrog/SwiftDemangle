@@ -377,7 +377,7 @@ class OldDemangler: Demanglerable {
         }
         
         // Unknown constant prop specialization
-        return false;
+        return false
     }
     
     func demangleFuncSigSpecializationClosureProp(parent: inout Node) -> Bool {
@@ -506,7 +506,7 @@ class OldDemangler: Demanglerable {
         }
         
         // decl-name ::= identifier
-        return demangleIdentifier();
+        return demangleIdentifier()
     }
     
     func demangleIdentifier(kind _kind: Node.Kind? = nil) -> Node? {
@@ -946,7 +946,7 @@ class OldDemangler: Demanglerable {
             guard let node = demangleDeclName() else { return nil }
             name = node
         } else if nextIf("l") {
-            wrapEntity = true;
+            wrapEntity = true
             if nextIf("O") {
                 entityKind = .OwningAddressor
             } else if nextIf("o") {
@@ -966,37 +966,37 @@ class OldDemangler: Demanglerable {
             guard let node = demangleDeclName() else { return nil }
             name = node
         } else if nextIf("G") {
-            wrapEntity = true;
+            wrapEntity = true
             entityKind = .GlobalGetter
             guard let node = demangleDeclName() else { return nil }
             name = node
         } else if nextIf("s") {
-            wrapEntity = true;
+            wrapEntity = true
             entityKind = .Setter
             guard let node = demangleDeclName() else { return nil }
             name = node
         } else if nextIf("m") {
-            wrapEntity = true;
+            wrapEntity = true
             entityKind = .MaterializeForSet
             guard let node = demangleDeclName() else { return nil }
             name = node
         } else if nextIf("w") {
-            wrapEntity = true;
+            wrapEntity = true
             entityKind = .WillSet
             guard let node = demangleDeclName() else { return nil }
             name = node
         } else if nextIf("W") {
-            wrapEntity = true;
+            wrapEntity = true
             entityKind = .DidSet
             guard let node = demangleDeclName() else { return nil }
             name = node
         } else if nextIf("r") {
-            wrapEntity = true;
+            wrapEntity = true
             entityKind = .ReadAccessor
             guard let node = demangleDeclName() else { return nil }
             name = node
         } else if nextIf("M") {
-            wrapEntity = true;
+            wrapEntity = true
             entityKind = .ModifyAccessor
             guard let node = demangleDeclName() else { return nil }
             name = node
@@ -1020,7 +1020,7 @@ class OldDemangler: Demanglerable {
             }
             hasType = false
         } else {
-            entityKind = entityBasicKind;
+            entityKind = entityBasicKind
             guard let node = demangleDeclName() else { return nil }
             name = node
         }
@@ -1035,7 +1035,7 @@ class OldDemangler: Demanglerable {
             switch name?.kind {
             case .Identifier:
                 if name?.text == "subscript" {
-                    isSubscript = true;
+                    isSubscript = true
                     // Subscripts have no 'subscript' identifier name
                     name = nil
                 }
@@ -1603,7 +1603,7 @@ class OldDemangler: Demanglerable {
             return demangleFunctionType(kind: .UncurriedFunctionType)
         }
         if c == "G" {
-            return demangleBoundGenericType();
+            return demangleBoundGenericType()
         }
         if c == "X" {
             if nextIf("b") {
@@ -1698,7 +1698,7 @@ class OldDemangler: Demanglerable {
                     return metatype
                 }
                 
-                return demangleProtocolList();
+                return demangleProtocolList()
             }
         }
         if c == "Q" {
@@ -1706,10 +1706,10 @@ class OldDemangler: Demanglerable {
                 // Special mangling for opaque return type.
                 return Node(kind: .OpaqueReturnType)
             }
-            return demangleArchetypeType();
+            return demangleArchetypeType()
         }
         if c == "q" {
-            return demangleDependentType();
+            return demangleDependentType()
         }
         if c == "x" {
             // Special mangling for the first generic param.

@@ -45,6 +45,7 @@
 - [x] OutlinedDestroyNoValueWitness - outlined destroy no value witness
 - [x] DependentGenericInverseConformanceRequirement - dependent generic inverse conformance requirement
 // Added in Swift 6.TBD
-- [ ] Integer
-- [ ] NegativeInteger
+- [x] Integer - integer node
+- [x] NegativeInteger - negative integer node
 - [ ] DependentGenericParamValueMarker
+
