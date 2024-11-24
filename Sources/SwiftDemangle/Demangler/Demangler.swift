@@ -2055,6 +2055,25 @@ class Demangler: Demanglerable, Mangling {
                     return createWithChildren(.OutlinedDestroy, popNode(.Type), sig)
                 }
                 return createWithChild(.OutlinedDestroy, popNode(.Type))
+            case "g":
+                if let sig = popNode(.DependentGenericSignature) {
+                    return createWithChildren(.OutlinedEnumGetTag, popNode(.Type), sig)
+                }
+                return createWithChild(.OutlinedEnumGetTag, popNode(.Type))
+            case "i":
+                let enumCaseIdx = demangleIndexAsNode()
+                if let sig = popNode(.DependentGenericSignature) {
+                    return createWithChildren(.OutlinedEnumTagStore, popNode(.Type), sig,
+                                    enumCaseIdx)
+                }
+                return createWithChildren(.OutlinedEnumTagStore, popNode(.Type), enumCaseIdx)
+            case "j":
+                let enumCaseIdx = demangleIndexAsNode()
+                if let sig = popNode(.DependentGenericSignature) {
+                    return createWithChildren(.OutlinedEnumProjectDataForLoad, popNode(.Type), sig,
+                                    enumCaseIdx)
+                }
+                return createWithChildren(.OutlinedEnumProjectDataForLoad, popNode(.Type), enumCaseIdx)
             default:
                 return nil
             }

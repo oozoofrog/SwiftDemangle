@@ -30,11 +30,11 @@
 - [x] SILThunkHopToMainActorIfNeeded - hop to main actor thunk
 - [x] TypedThrowsAnnotation - print typed throws
 - [x] SugaredParen // Removed in Swift 6.TBD
-- [ ] DroppedArgument
+- [x] DroppedArgument
 // Addedn in Swift 6.0
-- [ ] OutlinedEnumTagStore
-- [ ] OutlinedEnumProjectDataForLoad
-- [ ] OutlinedEnumGetTag
+- [x] OutlinedEnumTagStore
+- [x] OutlinedEnumProjectDataForLoad
+- [x] OutlinedEnumGetTag
 // Added in Swift 5.9 1
 - [ ] AsyncRemoved
 // Added in Swift 5.TBD

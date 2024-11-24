@@ -125,7 +125,8 @@ struct NodePrinter {
         case .OutlinedAssignWithCopy:
             printer("outlined assign with copy of ")
             try printNode(node.children(0), depth: depth + 1)
-        case .OutlinedDestroy:
+        case .OutlinedDestroy,
+             .OutlinedDestroyNoValueWitness:
             printer("outlined destroy of ")
             try printNode(node.children(0), depth: depth + 1)
         case .OutlinedEnumProjectDataForLoad:
