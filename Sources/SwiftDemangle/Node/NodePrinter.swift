@@ -1819,7 +1819,7 @@ struct NodePrinter {
             printer(node.index.or(0).description)
         case .NegativeInteger:
             let bitPattern = Int64(bitPattern: UInt64(node.index.or(0)))
-            printer("-" + bitPattern.description)
+            printer(bitPattern.description)
         }
         return nil
     }

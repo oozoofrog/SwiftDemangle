@@ -41,5 +41,14 @@ struct SwiftDemangle6Tests {
         let demangled = "@convention(block) (Swift.Int) -> Swift.UInt"
         #expect(mangled.demangled == demangled)
     }
+    
+    /**
+     $s$n3_SSBV ---> Builtin.FixedArray<-4, Swift.String>
+     */
+    @Test func testNegativeInteger() async throws {
+        let mangled = "$s$n3_SSBV"
+        let demangled = "Builtin.FixedArray<-4, Swift.String>"
+        #expect(mangled.demangled == demangled)
+    }
 }
     
