@@ -5,9 +5,9 @@
 - [x] DependentGenericSameShapeRequirement - requirement that two generic types must have the same structural characteristics (e.g., identical property structure or memory layout)
 - [x] DependentGenericParamPackMarker - marker for a variadic generic parameter pack
 - [x] ImplErasedIsolation - isolation for any actor
-- [x] ImplSendingResult
-- [x] ImplParameterSending
-- [x] ImplCoroutineKind
+- [x] ImplSendingResult - sending result for function
+- [x] ImplParameterSending - sending parameter for function
+- [x] ImplCoroutineKind - coroutine kind for ast (yield_once, yield_once_2, yield_many)
 - [ ] InitAccessor
 - [ ] IsolatedDeallocator
 - [ ] Sending
