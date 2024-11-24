@@ -1078,6 +1078,7 @@ class Demangler: Demanglerable, Mangling {
         var NumTypesToAdd = 0
         var Param: Node?
         while let param = demangleImplParamConvention(.ImplParameter) {
+            Param = param
             type = addChild(type, Param)
             if let Diff = demangleImplParameterResultDifferentiability() {
                 Param = addChild(Param, Diff)
@@ -1940,7 +1941,6 @@ class Demangler: Demanglerable, Mangling {
     }
     
     func demangleSpecAttributes(_ SpecKind: Node.Kind) -> Node? {
-        let metatypeParamsRemoved = nextIf("m")
         let isSerialized = nextIf("q")
         let asyncRemoved = nextIf("a")
         
@@ -2582,14 +2582,14 @@ class Demangler: Demanglerable, Mangling {
         case "i":
             ConstraintKind = .Inverse
             TypeKind = .Generic
-            let inverseKind = demangleIndexAsNode()
+            inverseKind = demangleIndexAsNode()
             if inverseKind == nil {
                 return nil
             }
         case "I":
             ConstraintKind = .Inverse
             TypeKind = .Substitution
-            let inverseKind = demangleIndexAsNode()
+            inverseKind = demangleIndexAsNode()
             if inverseKind == nil {
                 return nil
             }
