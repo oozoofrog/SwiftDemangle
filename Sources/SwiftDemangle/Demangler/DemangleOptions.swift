@@ -85,4 +85,10 @@ public struct DemangleOptions: OptionSet, Sendable {
         }
       return name
     }
+    
+    func classified() -> Self {
+        var opts = self
+        opts.isClassify = true
+        return opts
+    }
 }

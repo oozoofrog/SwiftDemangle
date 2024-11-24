@@ -7,6 +7,7 @@
 
 import Foundation
 import Testing
+@testable import SwiftDemangle
 
 @MainActor
 struct SwiftDemangle6Tests {
@@ -48,7 +49,16 @@ struct SwiftDemangle6Tests {
     @Test func testNegativeInteger() async throws {
         let mangled = "$s$n3_SSBV"
         let demangled = "Builtin.FixedArray<-4, Swift.String>"
-        #expect(mangled.demangled == demangled)
+        #expect(try mangled.demangling(.defaultOptions.classified()) == demangled)
+    }
+    
+    /**
+     $s4main3fooyySiFyyXEfU_TA.1 ---> {T:} partial apply forwarder for closure #1 () -> () in main.foo(Swift.Int) -> () with unmangled suffix ".1"
+     */
+    @Test func testPartialApplyForwarder() async throws {
+        let mangled = "$s4main3fooyySiFyyXEfU_TA.1"
+        let demangled = "{T:} partial apply forwarder for closure #1 () -> () in main.foo(Swift.Int) -> () with unmangled suffix \".1\""
+        #expect(try mangled.demangling(.defaultOptions.classified()) == demangled)
     }
 }
     

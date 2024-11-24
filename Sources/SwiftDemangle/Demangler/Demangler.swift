@@ -64,7 +64,7 @@ class Demangler: Demanglerable, Mangling {
         }
         
         let topLevel = createNode(.Global)
-        
+        let suffix = popNode(.Suffix)
         var Parent = topLevel
         while let FuncAttr = popNode(isFunctionAttr) {
             Parent.addChild(FuncAttr)
@@ -80,6 +80,11 @@ class Demangler: Demanglerable, Mangling {
                 Parent.addChild(Nd)
             }
         }
+        
+        if let suffix {
+            topLevel.addChild(suffix)
+        }
+        
         if topLevel.getNumChildren() == 0 {
             return nil
         }
@@ -196,6 +201,11 @@ class Demangler: Demanglerable, Mangling {
     func demangleOperator() -> Node? {
         while true {
             let c = nextChar()
+            #if DEBUG
+            if ProcessInfo.processInfo.environment["SWIFT_DEMANGLE_DEBUG"] == "1" {
+                print("c: \(c)")
+            }
+            #endif
             switch c {
             case 0xFF:
                 // A 0xFF byte is used as alignment padding for symbolic references

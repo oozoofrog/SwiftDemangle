@@ -1518,7 +1518,7 @@ extension Node.Kind {
         .AccessibleFunctionRecord,
         .BackDeploymentThunk,
         .BackDeploymentFallback,
-        .HasSymbolQuery
+        .HasSymbolQuery,
     ]
     
     var isDeclName: Bool {
