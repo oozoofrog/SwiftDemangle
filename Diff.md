@@ -6,7 +6,7 @@
 - [x] DependentGenericParamPackMarker - marker for a variadic generic parameter pack
 - [x] ImplErasedIsolation - isolation for any actor
 - [x] ImplSendingResult
-- [ ] ImplParameterSending
+- [x] ImplParameterSending
 - [ ] ImplCoroutineKind
 - [ ] InitAccessor
 - [ ] IsolatedDeallocator
