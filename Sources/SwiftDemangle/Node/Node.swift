@@ -379,6 +379,7 @@ extension Node {
                 .AutoClosureType,
                 .BaseConformanceDescriptor,
                 .BaseWitnessTableAccessor,
+                .BodyAttachedMacroExpansion,
                 .ClangType,
                 .ClassMetadataBaseOffset,
                 .CFunctionPointer,
@@ -865,6 +866,7 @@ extension Node {
         case AccessorAttachedMacroExpansion
         case AssociatedTypeWitnessTableAccessor
         case BaseWitnessTableAccessor
+        case BodyAttachedMacroExpansion
         case AutoClosureType
         case BoundGenericClass
         case BoundGenericEnum
