@@ -28,7 +28,7 @@
 - [x] VTableAttribute - override attribute
 - [x] SILThunkIdentity - identity thunk for ABI
 - [x] SILThunkHopToMainActorIfNeeded - hop to main actor thunk
-- [ ] TypedThrowsAnnotation
+- [x] TypedThrowsAnnotation - print typed throws
 - [ ] SugaredParen // Removed in Swift 6.TBD
 - [ ] DroppedArgument
 // Addedn in Swift 6.0
