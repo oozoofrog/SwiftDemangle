@@ -39,9 +39,9 @@
 - [x] AsyncRemoved
 // Added in Swift 5.TBD
 - [x] ObjectiveCProtocolSymbolicReference - objective-c protocol symbolic reference
-- [x] OutlinedInitializeWithCopyNoValueWitness
-- [ ] OutlinedAssignWithTakeNoValueWitness
-- [ ] OutlinedAssignWithCopyNoValueWitness
+- [x] OutlinedInitializeWithCopyNoValueWitness - outlined initialize with copy no value witness
+- [x] OutlinedAssignWithTakeNoValueWitness - outlined assign with take(ownership) no value witness
+- [x] OutlinedAssignWithCopyNoValueWitness - outlined assign with copy no value witness
 - [ ] OutlinedDestroyNoValueWitness
 - [ ] DependentGenericInverseConformanceRequirement
 // Added in Swift 6.TBD

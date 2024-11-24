@@ -120,10 +120,12 @@ struct NodePrinter {
                 .OutlinedInitializeWithCopyNoValueWitness:
             printer("outlined init with copy of ")
             try printNode(node.children(0), depth: depth + 1)
-        case .OutlinedAssignWithTake:
+        case .OutlinedAssignWithTake,
+                .OutlinedAssignWithTakeNoValueWitness:
             printer("outlined assign with take of ")
             try printNode(node.children(0), depth: depth + 1)
-        case .OutlinedAssignWithCopy:
+        case .OutlinedAssignWithCopy,
+                .OutlinedAssignWithCopyNoValueWitness:
             printer("outlined assign with copy of ")
             try printNode(node.children(0), depth: depth + 1)
         case .OutlinedDestroy,
