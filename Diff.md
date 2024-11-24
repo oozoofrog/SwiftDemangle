@@ -9,15 +9,15 @@
 - [x] ImplSendingResult - sending result for function
 - [x] ImplParameterSending - sending parameter for function
 - [x] ImplCoroutineKind - coroutine kind for ast (yield_once, yield_once_2, yield_many)
-- [ ] InitAccessor
-- [ ] IsolatedDeallocator
-- [ ] Sending
-- [ ] IsolatedAnyFunctionType
-- [ ] SendingResultFunctionType
-- [ ] MacroExpansionLoc
-- [ ] Modify2Accessor
-- [ ] PreambleAttachedMacroExpansion
-- [ ] Read2Accessor
+- [x] InitAccessor - managing for lazy initializer accessor
+- [x] IsolatedDeallocator - isolated deallocator for any actor
+- [x] Sending - sending for function
+- [x] IsolatedAnyFunctionType - isolated any function type
+- [x] SendingResultFunctionType - sending result function type
+- [x] MacroExpansionLoc - print location of macro expansion
+- [x] Modify2Accessor - modify2: improved version of modify accessor
+- [x] PreambleAttachedMacroExpansion
+- [x] Read2Accessor - read accessor for coroutine
 - [ ] Pack
 - [ ] SILPackDirect
 - [ ] SILPackIndirect

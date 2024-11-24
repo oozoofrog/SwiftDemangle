@@ -2664,6 +2664,15 @@ class Demangler: Demanglerable, Mangling {
             kind = .MacroExpansionUniqueName
             isAttached = false
             isFreestanding = false
+        case "X":
+            kind = .MacroExpansionLoc
+            let line = demangleIndex()
+            let col = demangleIndex()
+            let lineNode = createNode(.Index, line)
+            let colNode = createNode(.Index, col)
+            let buffer = popNode(.Identifier)
+            let module = popNode(.Identifier)
+            return createWithChildren(kind, module, buffer, lineNode, colNode)
         default:
             return nil
         }
