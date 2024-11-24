@@ -25,7 +25,7 @@
 - [x] PackElement - pack element
 - [x] PackElementLevel - pack element level
 /// note: old mangling only
-- [ ] VTableAttribute
+- [x] VTableAttribute - override attribute
 - [ ] SILThunkIdentity
 - [ ] SILThunkHopToMainActorIfNeeded
 - [ ] TypedThrowsAnnotation
