@@ -36,7 +36,7 @@
 - [x] OutlinedEnumProjectDataForLoad
 - [x] OutlinedEnumGetTag
 // Added in Swift 5.9 1
-- [ ] AsyncRemoved
+- [x] AsyncRemoved
 // Added in Swift 5.TBD
 - [ ] ObjectiveCProtocolSymbolicReference
 - [ ] OutlinedInitializeWithCopyNoValueWitness
