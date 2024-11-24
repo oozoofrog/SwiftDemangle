@@ -1,7 +1,7 @@
 // added Kind in version 6.1
 - [x] BuiltinTupleType - builtin tuple type for swift compiler
 - [x] BuiltinFixedArray - builtin fixed array type for swift compiler
-- [ ] PackProtocolConformance
+- [x] PackProtocolConformance - variadic generic pack protocol conformance
 - [ ] DependentGenericSameShapeRequirement
 - [ ] DependentGenericParamPackMarker
 - [ ] ImplErasedIsolation
