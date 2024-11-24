@@ -1223,6 +1223,19 @@ struct NodePrinter {
             try printNode(type, depth: depth + 1)
             printer(": ")
             try printNode(reqt, depth: depth + 1)
+        case .DependentGenericInverseConformanceRequirement:
+            let type = node.children(0)
+            try printNode(type, depth: depth + 1)
+            printer(": ~")
+            let invertibleProtocol = InvertibleProtocols(rawValue: node.children(1).index ?? 0) ?? .Copyable
+            switch invertibleProtocol {
+            case .Copyable:
+                printer("Swift.\(invertibleProtocol.name)")
+            case .Escapable:
+                printer("Swift.\(invertibleProtocol.name)")
+            default:
+                printer("Swift.<bit \(node.children(1).index ?? 0)>")
+            }
         case .DependentGenericLayoutRequirement:
             let type = node.children(0)
             let layout = node.children(1)

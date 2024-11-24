@@ -43,7 +43,7 @@
 - [x] OutlinedAssignWithTakeNoValueWitness - outlined assign with take(ownership) no value witness
 - [x] OutlinedAssignWithCopyNoValueWitness - outlined assign with copy no value witness
 - [x] OutlinedDestroyNoValueWitness - outlined destroy no value witness
-- [ ] DependentGenericInverseConformanceRequirement
+- [x] DependentGenericInverseConformanceRequirement - dependent generic inverse conformance requirement
 // Added in Swift 6.TBD
 - [ ] Integer
 - [ ] NegativeInteger
