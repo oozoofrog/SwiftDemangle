@@ -1288,6 +1288,19 @@ class Demangler: Demanglerable, Mangling {
             let T = demangleAssociatedTypeCompound(getDependentGenericParamType(0, 0))
             addSubstitution(T)
             return T
+        case "p":
+            let CountTy = popTypeAndGetChild()
+            let PatternTy = popTypeAndGetChild()
+            return createType(createWithChildren(.PackExpansion, PatternTy, CountTy))
+        case "e":
+            let PackTy = popTypeAndGetChild()
+            let level = demangleIndex()
+            if level < 0 { return nil }
+            return createType(createWithChildren(.PackElement, PackTy, createNode(.PackElementLevel, level)))
+        case "P":
+            return popPack()
+        case "S":
+            return popSILPack()
         default:
             return nil
         }
@@ -3046,6 +3059,48 @@ class Demangler: Demanglerable, Mangling {
             
             Root.reverseChildren()
         }
+        return createType(Root)
+    }
+
+    func popPack() -> Node? {
+        let Root = createNode(.Pack)
+
+        if popNode(.EmptyList) == nil {
+            var firstElem = false
+            repeat {
+                firstElem = popNode(.FirstElementMarker).hasValue
+                guard let Ty = popNode(.Type) else { return nil }
+                Root.addChild(Ty)
+            } while !firstElem
+            
+            Root.reverseChildren()
+        }
+        return createType(Root)
+    }
+
+    func popSILPack() -> Node? {
+        var Root: Node?
+
+        switch (nextChar()) {
+        case "d":
+            Root = createNode(.SILPackDirect)
+        case "i":
+            Root = createNode(.SILPackIndirect)
+        default:
+            return nil
+        }
+
+        if !popNode(.EmptyList) {
+            var firstElem = false
+            do {
+                firstElem = popNode(.FirstElementMarker).hasValue
+                guard let Ty = popNode(.Type) else { return nil }
+                Root?.addChild(Ty)
+            } while !firstElem
+
+            Root?.reverseChildren()
+        }
+
         return createType(Root)
     }
     

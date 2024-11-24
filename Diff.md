@@ -18,12 +18,12 @@
 - [x] Modify2Accessor - modify2: improved version of modify accessor
 - [x] PreambleAttachedMacroExpansion
 - [x] Read2Accessor - read accessor for coroutine
-- [ ] Pack
-- [ ] SILPackDirect
-- [ ] SILPackIndirect
-- [ ] PackExpansion
-- [ ] PackElement
-- [ ] PackElementLevel
+- [x] Pack - generic pack
+- [x] SILPackDirect - direct SIL pack
+- [x] SILPackIndirect - indirect SIL pack
+- [x] PackExpansion - pack expansion
+- [x] PackElement - pack element
+- [x] PackElementLevel - pack element level
 /// note: old mangling only
 - [ ] VTableAttribute
 - [ ] SILThunkIdentity
