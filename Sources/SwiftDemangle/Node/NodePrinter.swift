@@ -1227,13 +1227,14 @@ struct NodePrinter {
             let type = node.children(0)
             try printNode(type, depth: depth + 1)
             printer(": ~")
-            let invertibleProtocol = InvertibleProtocols(rawValue: node.children(1).index ?? 0) ?? .Copyable
-            switch invertibleProtocol {
-            case .Copyable:
-                printer("Swift.\(invertibleProtocol.name)")
-            case .Escapable:
-                printer("Swift.\(invertibleProtocol.name)")
-            default:
+            if let invertibleProtocol = InvertibleProtocols(rawValue: node.children(1).index ?? 0) {
+                switch invertibleProtocol {
+                case .Copyable:
+                    printer("Swift.\(invertibleProtocol.name)")
+                case .Escapable:
+                    printer("Swift.\(invertibleProtocol.name)")
+                }
+            } else {
                 printer("Swift.<bit \(node.children(1).index ?? 0)>")
             }
         case .DependentGenericLayoutRequirement:

@@ -47,5 +47,5 @@
 // Added in Swift 6.TBD
 - [x] Integer - integer node
 - [x] NegativeInteger - negative integer node
-- [ ] DependentGenericParamValueMarker
+- [x] DependentGenericParamValueMarker
 
