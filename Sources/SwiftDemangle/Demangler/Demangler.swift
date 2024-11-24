@@ -581,6 +581,16 @@ class Demangler: Demanglerable, Mangling {
             name.push_back("x")
             name.append(EltType.getText().substr(String.BUILTIN_TYPE_NAME_PREFIX.size()))
             Ty = createNode(.BuiltinTypeName, name)
+        case "V":
+            if let element = popNode(.Type) {
+                return nil
+            }
+            if let size = popNode(.Type) {
+                return nil
+            }
+            Ty = createNode(.BuiltinFixedArray)
+            addChild(Ty, size)
+            addChild(Ty, element)
         case "O":
             Ty = createNode(.BuiltinTypeName, .BUILTIN_TYPE_NAME_UNKNOWNOBJECT)
         case "o":

@@ -867,7 +867,6 @@ extension Node {
         case AssociatedTypeWitnessTableAccessor
         case BaseWitnessTableAccessor
         case AutoClosureType
-        case BodyAttachedMacroExpansion
         case BoundGenericClass
         case BoundGenericEnum
         case BoundGenericStructure

@@ -928,8 +928,6 @@ struct NodePrinter {
             try printNode(node.children(1), depth: depth + 1)
             printer(" in ")
             try printNode(node.children(0), depth: depth + 1)
-        case .BodyAttachedMacroExpansion:
-            return nil
         case .ClassMetadataBaseOffset:
             printer("class metadata base offset for ")
             try printNode(node.children(0), depth: depth + 1)
