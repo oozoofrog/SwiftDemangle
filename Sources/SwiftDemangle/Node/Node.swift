@@ -722,7 +722,7 @@ extension Node {
         switch self.kind {
         case .Type:
             return firstChild.isProtocol
-        case .Protocol, .ProtocolSymbolicReference:
+        case .Protocol, .ProtocolSymbolicReference, .ObjectiveCProtocolSymbolicReference:
             return true
         default:
             return false

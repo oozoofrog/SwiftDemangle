@@ -1769,6 +1769,9 @@ struct NodePrinter {
         case .NonUniqueExtendedExistentialTypeShapeSymbolicReference:
             printer("non-unique existential shape symbolic reference 0x")
             printerHex(node.index)
+        case .ObjectiveCProtocolSymbolicReference:
+            printer("objective-c protocol symbolic reference 0x")
+            printerHex(node.index)
         case .SymbolicExtendedExistentialType:
             let shape = node.getChild(0)
             if shape.getKind() == .UniqueExtendedExistentialTypeShapeSymbolicReference {

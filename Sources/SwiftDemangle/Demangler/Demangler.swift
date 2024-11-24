@@ -3185,6 +3185,8 @@ class Demangler: Demanglerable, Mangling {
         
         if let  symbolicRef = popNode(.ProtocolSymbolicReference) {
             return symbolicRef
+        } else if let objcSymbolicRef = popNode(.ObjectiveCProtocolSymbolicReference) {
+            return objcSymbolicRef
         }
         
         let Name = popNode(isDeclName)
@@ -3252,6 +3254,9 @@ class Demangler: Demanglerable, Mangling {
         // If we haven't seen a protocol, check for a symbolic reference.
         if proto == nil {
             proto = popNode(.ProtocolSymbolicReference)
+        }
+        if proto == nil {
+            proto = popNode(.ObjectiveCProtocolSymbolicReference)
         }
         
         let identifier = popNode(.Identifier)
