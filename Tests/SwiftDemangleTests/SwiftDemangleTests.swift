@@ -92,7 +92,7 @@ final class SwiftDemangleTests {
                 print("[TEST] mangled_with_clang_type demangle for \(line): \(mangled) failed")
                 return false
             }
-            XCTAssertEqual(result, demangled, "\n\(line): \(mangled) ---> \n\(result)\n\(demangled)")
+            #expect(result == demangled)
             return true
         }
     }
@@ -102,32 +102,32 @@ final class SwiftDemangleTests {
         typealias Kind = FunctionSigSpecializationParamKind
         
         let kindOnly = Kind(rawValue: Kind.Kind.ClosureProp.rawValue)
-        XCTAssertEqual(kindOnly.kind, .ClosureProp)
-        XCTAssertTrue(kindOnly.optionSet.isEmpty)
+        #expect(kindOnly.kind == .ClosureProp)
+        #expect(kindOnly.optionSet.isEmpty)
         
         let optionSet: Kind.OptionSet = [.Dead, .GuaranteedToOwned]
         let kindAndOptionSet = Kind(rawValue: Kind.Kind.ClosureProp.rawValue | optionSet.rawValue)
         
-        XCTAssertNotEqual(kindAndOptionSet.kind, .ClosureProp)
-        XCTAssertNotEqual(kindAndOptionSet.kind, .BoxToStack)
-        XCTAssertNotEqual(kindAndOptionSet.kind, .BoxToValue)
-        XCTAssertNotEqual(kindAndOptionSet.kind, .ConstantPropFloat)
-        XCTAssertNotEqual(kindAndOptionSet.kind, .ConstantPropFunction)
-        XCTAssertNotEqual(kindAndOptionSet.kind, .ConstantPropGlobal)
-        XCTAssertNotEqual(kindAndOptionSet.kind, .ConstantPropInteger)
-        XCTAssertNotEqual(kindAndOptionSet.kind, .ConstantPropString)
+        #expect(kindAndOptionSet.kind != .ClosureProp)
+        #expect(kindAndOptionSet.kind != .BoxToStack)
+        #expect(kindAndOptionSet.kind != .BoxToValue)
+        #expect(kindAndOptionSet.kind != .ConstantPropFloat)
+        #expect(kindAndOptionSet.kind != .ConstantPropFunction)
+        #expect(kindAndOptionSet.kind != .ConstantPropGlobal)
+        #expect(kindAndOptionSet.kind != .ConstantPropInteger)
+        #expect(kindAndOptionSet.kind != .ConstantPropString)
         
-        XCTAssertTrue(kindAndOptionSet.containOptions(.Dead))
-        XCTAssertTrue(kindAndOptionSet.containOptions(.GuaranteedToOwned))
-        XCTAssertFalse(kindAndOptionSet.containOptions(.ExistentialToGeneric))
-        XCTAssertFalse(kindAndOptionSet.containOptions(.OwnedToGuaranteed))
-        XCTAssertFalse(kindAndOptionSet.containOptions(.SROA))
+        #expect(kindAndOptionSet.containOptions(.Dead))
+        #expect(kindAndOptionSet.containOptions(.GuaranteedToOwned))
+        #expect(kindAndOptionSet.containOptions(.ExistentialToGeneric) == false)
+        #expect(kindAndOptionSet.containOptions(.OwnedToGuaranteed) == false)
+        #expect(kindAndOptionSet.containOptions(.SROA) == false)
         
-        XCTAssertTrue(kindAndOptionSet.isValidOptionSet)
+        #expect(kindAndOptionSet.isValidOptionSet)
         
         let extraOptionSet: UInt = 1 << 11
         let extraOptionSetOnly = Kind(rawValue: extraOptionSet)
-        XCTAssertFalse(extraOptionSetOnly.isValidOptionSet)
+        #expect(extraOptionSetOnly.isValidOptionSet == false)
     }
     
     func loadAndForEachMangles(_ inputFileName: String, forEach handler: (_ line: Int, _ mangled: String, _ demangled: String) throws -> Bool) throws {
