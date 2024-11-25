@@ -8,11 +8,11 @@
 import Foundation
 
 final class Node {
-
+    
     typealias IndexType = UInt64
-
+    
     private weak var parent: Node?
-
+    
     private(set) var kind: Kind
     private(set) var payload: Payload
     private(set) var _children: [Node] {
@@ -20,9 +20,9 @@ final class Node {
             _children.forEach({ $0.parent = self })
         }
     }
-
+    
     var copyOfChildren: [Node] { _children }
-
+    
     fileprivate var numberOfParent: Int {
         var count = 0
         var parent: Node? = self.parent
@@ -32,79 +32,79 @@ final class Node {
         }
         return count
     }
-
+    
     var numberOfChildren: Int { _children.count }
-
+    
     init(kind: Kind) {
         self.kind = kind
         self.payload = .none
         self._children = []
     }
-
+    
     convenience init(_ kind: Kind) {
         self.init(kind: kind)
     }
-
+    
     init(kind: Kind, text: String) {
         self.kind = kind
         self.payload = .text(text)
         self._children = []
     }
-
+    
     convenience init(_ kind: Kind, _ character: Character) {
         self.init(kind: kind, text: character.description)
     }
-
+    
     init(kind: Kind, functionParamKind: FunctionSigSpecializationParamKind.Kind) {
         self.kind = kind
         self.payload = .functionSigSpecializationParamKind(.init(kind: functionParamKind))
         self._children = []
     }
-
+    
     init(kind: Kind, functionParamOption: FunctionSigSpecializationParamKind.OptionSet) {
         self.kind = kind
         self.payload = .functionSigSpecializationParamKind(.init(optionSet: functionParamOption))
         self._children = []
     }
-
+    
     init<N>(kind: Kind, index: N) where N: BinaryInteger {
         self.kind = kind
-        self.payload = .index(UInt64(index))
+        self.payload = .index(UInt64(truncatingIfNeeded: index))
         self._children = []
     }
-
+    
     convenience init<N>(_ kind: Kind, _ index: N) where N: BinaryInteger {
         self.init(kind: kind, index: index)
     }
-
+    
     init(kind: Kind, payload: Payload) {
         self.kind = kind
         self.payload = payload
         self._children = []
     }
-
+    
     convenience init(_ kind: Kind, _ payload: Payload) {
         self.init(kind: kind, payload: payload)
     }
-
+    
     init(kind: Kind, children: Node?...) {
         self.kind = kind
         self.payload = .none
         self._children = children.flatten()
         self.updatePayloadForChildren()
     }
-
+    
     convenience init(kind: Kind, child: Node?) {
         self.init(kind: kind, children: child)
     }
-
+    
     func newNode(_ kind: Kind) -> Node {
         let node = Node(kind: kind)
         node.payload = payload
         node._children = _children
         return node
     }
-
+    
     func children(_ at: Int) -> Node {
         if at < self._children.count {
             return self._children[at]
@@ -113,11 +113,11 @@ final class Node {
             return Node(kind: .UnknownIndex)
         }
     }
-
+    
     func childIf(_ kind: Node.Kind) -> Node? {
         _children.first(where: { $0.kind == kind })
     }
-
+    
     private func updatePayloadForChildren() {
         switch self._children.count {
         case 1:
@@ -130,7 +130,7 @@ final class Node {
             payload = .none
         }
     }
-
+    
     func add(_ child: Node) {
         if payload.isChildren {
             self._children.append(child)
@@ -139,24 +139,24 @@ final class Node {
             assertionFailure("cannot add child to \(self)")
         }
     }
-
+    
     func add(_ childOrNil: Node?) {
         guard let child = childOrNil else { return }
         self.add(child)
     }
-
+    
     func add(_ kind: Node.Kind) {
         add(.init(kind: kind))
     }
-
+    
     func add(kind: Node.Kind, text: String) {
         add(.init(kind: kind, text: text))
     }
-
+    
     func add(kind: Node.Kind, payload: Payload) {
         add(Node(kind: kind, payload: payload))
     }
-
+    
     func adds<C>(_ children: C) where C: Collection, C.Element == Node {
         guard children.isNotEmpty else { return }
         if payload.isChildren {
@@ -166,38 +166,38 @@ final class Node {
             assertionFailure("cannot add child to \(self)")
         }
     }
-
+    
     func addFunctionSigSpecializationParamKind(kind: FunctionSigSpecializationParamKind.Kind, texts: String...) {
         add(Node(kind: .FunctionSignatureSpecializationParamKind, functionParamKind: kind))
         for text in texts {
             add(Node(kind: .FunctionSignatureSpecializationParamPayload, text: text))
         }
     }
-
+    
     func adding(_ children: Node?...) -> Self {
         self.adding(children.flatten())
     }
-
+    
     func adding(_ children: [Node]) -> Self {
         self.adds(children)
         return self
     }
-
+    
     func remove(_ child: Node) {
         if let index = _children.firstIndex(where: { $0 === child }) {
             self._children.remove(at: index)
         }
     }
-
+    
     func remove(_ at: Int) {
         guard at < numberOfChildren else { return }
         self._children.remove(at: at)
     }
-
+    
     func reverseChildren() {
         _children.reverse()
     }
-
+    
     func reverseChildren(_ fromAt: Int) {
         guard fromAt < numberOfChildren else { return }
         if fromAt == 0 {
@@ -208,20 +208,20 @@ final class Node {
             self._children = Array(prefix) + reversedSuffix
         }
     }
-
+    
     func replaceLast(_ child: Node) {
         self._children.removeLast()
         self._children.append(child)
     }
-
+    
     var isSwiftModule: Bool {
         kind == .Module && text == .STDLIB_NAME
     }
-
+    
     func isIdentifier(desired: String) -> Bool {
         kind == .Identifier && text == desired
     }
-
+    
     var text: String {
         if case let .text(text) = self.payload {
             return text
@@ -229,11 +229,11 @@ final class Node {
             return ""
         }
     }
-
+    
     var hasText: Bool {
         self.payload.isText
     }
-
+    
     var index: UInt64? {
         switch self.payload {
         case let .index(index):
@@ -242,7 +242,7 @@ final class Node {
             return nil
         }
     }
-
+    
     var functionSigSpecializationParamKind: FunctionSigSpecializationParamKind? {
         switch self.payload {
         case let .functionSigSpecializationParamKind(kind):
@@ -251,7 +251,7 @@ final class Node {
             return nil
         }
     }
-
+    
     var valueWitnessKind: ValueWitnessKind? {
         switch self.payload {
         case let .valueWitnessKind(w):
@@ -260,7 +260,7 @@ final class Node {
             return nil
         }
     }
-
+    
     var mangledDifferentiabilityKind: MangledDifferentiabilityKind? {
         switch self.payload {
         case let .mangledDifferentiabilityKind(kind):
@@ -271,15 +271,15 @@ final class Node {
             return nil
         }
     }
-
+    
     var firstChild: Node {
         children(0)
     }
-
+    
     var lastChild: Node {
         children(_children.endIndex - 1)
     }
-
+    
     var directness: Directness {
         if case let .directness(directness) = self.payload {
             return directness
@@ -305,7 +305,7 @@ extension Node {
             return true
         }
     }
-
+    
     var isSimpleType: Bool {
         switch kind {
         case .AssociatedType,
@@ -318,6 +318,8 @@ extension Node {
                 .BoundGenericTypeAlias,
                 .BoundGenericFunction,
                 .BuiltinTypeName,
+                .BuiltinTupleType,
+                .BuiltinFixedArray,
                 .Class,
                 .DependentGenericType,
                 .DependentMemberType,
@@ -330,6 +332,11 @@ extension Node {
                 .MetatypeRepresentation,
                 .Module,
                 .Tuple,
+                .Pack,
+                .SILPackDirect,
+                .SILPackIndirect,
+                .ConstrainedExistentialRequirementList,
+                .ConstrainedExistentialSelf,
                 .Protocol,
                 .ProtocolSymbolicReference,
                 .ReturnType,
@@ -345,7 +352,9 @@ extension Node {
                 .SugaredOptional,
                 .SugaredArray,
                 .SugaredDictionary,
-                .SugaredParen:
+                .SugaredParen,
+                .Integer,
+                .NegativeInteger:
             return true
         case .Type:
             return firstChild.isSimpleType
@@ -353,7 +362,11 @@ extension Node {
             return _children[0].numberOfChildren <= 1
         case .ProtocolListWithAnyObject:
             return _children[0]._children[0].numberOfChildren == 0
-        case .ProtocolListWithClass,
+        case .ConstrainedExistential,
+                .PackElement,
+                .PackElementLevel,
+                .PackExpansion,
+                .ProtocolListWithClass,
                 .AccessorAttachedMacroExpansion,
                 .AccessorFunctionReference,
                 .Allocator,
@@ -362,9 +375,11 @@ extension Node {
                 .AssociatedTypeDescriptor,
                 .AssociatedTypeMetadataAccessor,
                 .AssociatedTypeWitnessTableAccessor,
+                .AsyncRemoved,
                 .AutoClosureType,
                 .BaseConformanceDescriptor,
                 .BaseWitnessTableAccessor,
+                .BodyAttachedMacroExpansion,
                 .ClangType,
                 .ClassMetadataBaseOffset,
                 .CFunctionPointer,
@@ -372,18 +387,23 @@ extension Node {
                 .Constructor,
                 .CoroutineContinuationPrototype,
                 .CurryThunk,
+                .SILThunkIdentity,
+                .SILThunkHopToMainActorIfNeeded,
                 .DispatchThunk,
                 .Deallocator,
+                .IsolatedDeallocator,
                 .DeclContext,
                 .DefaultArgumentInitializer,
                 .DefaultAssociatedTypeMetadataAccessor,
                 .DefaultAssociatedConformanceAccessor,
                 .DependentAssociatedTypeRef,
                 .DependentGenericSignature,
+                .DependentGenericParamPackMarker,
                 .DependentGenericParamCount,
                 .DependentGenericConformanceRequirement,
                 .DependentGenericLayoutRequirement,
                 .DependentGenericSameTypeRequirement,
+                .DependentGenericSameShapeRequirement,
                 .DependentPseudogenericSignature,
                 .Destructor,
                 .DidSet,
@@ -424,16 +444,21 @@ extension Node {
                 .GlobalGetter,
                 .Identifier,
                 .Index,
+                .InitAccessor,
                 .IVarInitializer,
                 .IVarDestroyer,
                 .ImplDifferentiabilityKind,
                 .ImplEscaping,
+                .ImplErasedIsolation,
+                .ImplSendingResult,
                 .ImplConvention,
                 .ImplParameterResultDifferentiability,
+                .ImplParameterSending,
                 .ImplFunctionAttribute,
                 .ImplFunctionConvention,
                 .ImplFunctionConventionName,
                 .ImplFunctionType,
+                .ImplCoroutineKind,
                 .ImplInvocationSubstitutions,
                 .ImplPatternSubstitutions,
                 .ImplicitClosure,
@@ -445,6 +470,8 @@ extension Node {
                 .InfixOperator,
                 .Initializer,
                 .Isolated,
+                .Sending,
+                .CompileTimeConst,
                 .PropertyWrapperBackingInitializer,
                 .PropertyWrapperInitFromProjectedValue,
                 .KeyPathGetterThunkHelper,
@@ -455,6 +482,7 @@ extension Node {
                 .LazyProtocolWitnessTableCacheVariable,
                 .LocalDeclName,
                 .Macro,
+                .MacroExpansionLoc,
                 .MacroExpansionUniqueName,
                 .MaterializeForSet,
                 .MemberAttributeAttachedMacroExpansion,
@@ -464,6 +492,7 @@ extension Node {
                 .MethodDescriptor,
                 .MethodLookupFunction,
                 .ModifyAccessor,
+                .Modify2Accessor,
                 .NativeOwningAddressor,
                 .NativeOwningMutableAddressor,
                 .NativePinningAddressor,
@@ -490,6 +519,7 @@ extension Node {
                 .PartialApplyObjCForwarder,
                 .PeerAttachedMacroExpansion,
                 .PostfixOperator,
+                .PreambleAttachedMacroExpansion,
                 .PredefinedObjCAsyncCompletionHandlerImpl,
                 .PrefixOperator,
                 .PrivateDeclName,
@@ -513,6 +543,7 @@ extension Node {
                 .ReabstractionThunkHelperWithSelf,
                 .ReabstractionThunkHelperWithGlobalActor,
                 .ReadAccessor,
+                .Read2Accessor,
                 .RelatedEntityDeclName,
                 .RetroactiveConformance,
                 .Setter,
@@ -521,6 +552,7 @@ extension Node {
                 .SILBoxMutableField,
                 .SILBoxImmutableField,
                 .IsSerialized,
+                .DroppedArgument,
                 .SpecializationPassID,
                 .Static,
                 .Subscript,
@@ -556,10 +588,13 @@ extension Node {
                 .ResilientProtocolWitnessTable,
                 .GenericTypeParamDecl,
                 .ConcurrentFunctionType,
-                .GlobalActorFunctionType,
                 .DifferentiableFunctionType,
+                .GlobalActorFunctionType,
+                .IsolatedAnyFunctionType,
+                .SendingResultFunctionType,
                 .AsyncAnnotation,
                 .ThrowsAnnotation,
+                .TypedThrowsAnnotation,
                 .EmptyList,
                 .FirstElementMarker,
                 .VariadicMarker,
@@ -573,7 +608,15 @@ extension Node {
                 .OutlinedAssignWithTake,
                 .OutlinedAssignWithCopy,
                 .OutlinedDestroy,
+                .OutlinedInitializeWithCopyNoValueWitness,
+                .OutlinedAssignWithTakeNoValueWitness,
+                .OutlinedAssignWithCopyNoValueWitness,
+                .OutlinedDestroyNoValueWitness,
+                .OutlinedEnumTagStore,
+                .OutlinedEnumGetTag,
+                .OutlinedEnumProjectDataForLoad,
                 .OutlinedVariable,
+                .OutlinedReadOnlyObject,
                 .AssocTypePath,
                 .ModuleDescriptor,
                 .AnonymousDescriptor,
@@ -582,6 +625,7 @@ extension Node {
                 .AnonymousContext,
                 .AnyProtocolConformanceList,
                 .ConcreteProtocolConformance,
+                .PackProtocolConformance,
                 .DependentAssociatedConformance,
                 .DependentProtocolConformanceAssociated,
                 .DependentProtocolConformanceInherited,
@@ -597,6 +641,8 @@ extension Node {
                 .OpaqueType,
                 .OpaqueTypeDescriptorSymbolicReference,
                 .OpaqueReturnType,
+                .OpaqueReturnTypeIndex,
+                .OpaqueReturnTypeParent,
                 .OpaqueReturnTypeOf,
                 .CanonicalSpecializedGenericMetaclass,
                 .CanonicalSpecializedGenericTypeMetadataAccessFunction,
@@ -616,19 +662,29 @@ extension Node {
                 .NoDerivative,
                 .IndexSubset,
                 .AsyncAwaitResumePartialFunction,
-                .AsyncSuspendResumePartialFunction:
-            return false
-        default:
+                .AsyncSuspendResumePartialFunction,
+                .AccessibleFunctionRecord,
+                .BackDeploymentThunk,
+                .BackDeploymentFallback,
+                .ExtendedExistentialTypeShape,
+                .Uniquable,
+                .UniqueExtendedExistentialTypeShapeSymbolicReference,
+                .NonUniqueExtendedExistentialTypeShapeSymbolicReference,
+                .SymbolicExtendedExistentialType,
+                .HasSymbolQuery,
+                .ObjectiveCProtocolSymbolicReference,
+                .DependentGenericInverseConformanceRequirement,
+                .DependentGenericParamValueMarker:
             return false
         }
     }
-
+    
     var isExistentialType: Bool {
         [Kind.ExistentialMetatype, .ProtocolList, .ProtocolListWithClass, .ProtocolListWithAnyObject].contains(kind)
     }
-
+    
     var isClassType: Bool { kind == .Class }
-
+    
     var isAlias: Bool {
         switch self.kind {
         case .Type:
@@ -639,7 +695,7 @@ extension Node {
             return false
         }
     }
-
+    
     var isClass: Bool {
         switch self.kind {
         case .Type:
@@ -650,7 +706,7 @@ extension Node {
             return false
         }
     }
-
+    
     var isEnum: Bool {
         switch self.kind {
         case .Type:
@@ -661,18 +717,18 @@ extension Node {
             return false
         }
     }
-
+    
     var isProtocol: Bool {
         switch self.kind {
         case .Type:
             return firstChild.isProtocol
-        case .Protocol, .ProtocolSymbolicReference:
+        case .Protocol, .ProtocolSymbolicReference, .ObjectiveCProtocolSymbolicReference:
             return true
         default:
             return false
         }
     }
-
+    
     var isStruct: Bool {
         switch self.kind {
         case .Type:
@@ -683,7 +739,7 @@ extension Node {
             return false
         }
     }
-
+    
     var isConsumesGenericArgs: Bool {
         switch kind {
         case .Variable,
@@ -699,7 +755,7 @@ extension Node {
             return true
         }
     }
-
+    
     var isSpecialized: Bool {
         switch kind {
         case .BoundGenericStructure,.BoundGenericEnum,.BoundGenericClass,.BoundGenericOtherNominalType,.BoundGenericTypeAlias,.BoundGenericProtocol,.BoundGenericFunction:
@@ -712,7 +768,7 @@ extension Node {
             return false
         }
     }
-
+    
     func unspecialized() -> Node? {
         var NumToCopy = 2
         switch kind {
@@ -732,7 +788,7 @@ extension Node {
                 }
             }
             return result
-
+            
         case .BoundGenericStructure, .BoundGenericEnum, .BoundGenericClass, .BoundGenericProtocol, .BoundGenericOtherNominalType, .BoundGenericTypeAlias:
             let unboundType = getChild(0)
             assert(unboundType.getKind() == .Type)
@@ -769,7 +825,7 @@ extension Node {
 }
 
 extension Node {
-    public enum Payload: Equatable {
+    public enum Payload: Equatable, CustomDebugStringConvertible {
         case none
         case text(String)
         case index(UInt64)
@@ -780,7 +836,7 @@ extension Node {
         case onechild
         case twochildren
         case manychildren
-
+        
         var isChildren: Bool {
             switch self {
             case .none, .onechild, .twochildren, .manychildren:
@@ -789,15 +845,35 @@ extension Node {
                 return false
             }
         }
-
+        
         var isText: Bool {
             switch self {
             case .text: return true
             default: return false
             }
         }
+        
+        var hasValue: Bool {
+            switch self {
+            case .text, .index:
+                return true
+            default:
+                return false
+            }
+        }
+        
+        public var debugDescription: String {
+            switch self {
+            case .text(let value):
+                return "text:\"\(value)\""
+            case .index(let value):
+                return "index:\(value)"
+            default:
+                return ""
+            }
+        }
     }
-
+    
     public enum Kind: String, Equatable {//}, CustomStringConvertible, CustomDebugStringConvertible {
         case Allocator
         case AnonymousContext
@@ -810,6 +886,7 @@ extension Node {
         case AccessorAttachedMacroExpansion
         case AssociatedTypeWitnessTableAccessor
         case BaseWitnessTableAccessor
+        case BodyAttachedMacroExpansion
         case AutoClosureType
         case BoundGenericClass
         case BoundGenericEnum
@@ -819,11 +896,14 @@ extension Node {
         case BoundGenericTypeAlias
         case BoundGenericFunction
         case BuiltinTypeName
+        case BuiltinTupleType
+        case BuiltinFixedArray
         case CFunctionPointer
         case ClangType
         case Class
         case ClassMetadataBaseOffset
         case ConcreteProtocolConformance
+        case PackProtocolConformance
         case ConformanceAttachedMacroExpansion
         case Constructor
         case CoroutineContinuationPrototype
@@ -836,7 +916,9 @@ extension Node {
         case DependentGenericParamCount
         case DependentGenericParamType
         case DependentGenericSameTypeRequirement
+        case DependentGenericSameShapeRequirement
         case DependentGenericLayoutRequirement
+        case DependentGenericParamPackMarker
         case DependentGenericSignature
         case DependentGenericType
         case DependentMemberType
@@ -902,11 +984,15 @@ extension Node {
         case ImplEscaping
         case ImplConvention
         case ImplDifferentiabilityKind
+        case ImplErasedIsolation
+        case ImplSendingResult
         case ImplParameterResultDifferentiability
+        case ImplParameterSending
         case ImplFunctionAttribute
         case ImplFunctionConvention
         case ImplFunctionConventionName
         case ImplFunctionType
+        case ImplCoroutineKind
         case ImplInvocationSubstitutions
         case ImplicitClosure
         case ImplParameter
@@ -917,7 +1003,12 @@ extension Node {
         case InOut
         case InfixOperator
         case Initializer
+        case InitAccessor
         case Isolated
+        case IsolatedDeallocator
+        case Sending
+        case IsolatedAnyFunctionType
+        case SendingResultFunctionType
         case KeyPathGetterThunkHelper
         case KeyPathSetterThunkHelper
         case KeyPathEqualsThunkHelper
@@ -926,6 +1017,7 @@ extension Node {
         case LazyProtocolWitnessTableCacheVariable
         case LocalDeclName
         case Macro
+        case MacroExpansionLoc
         case MacroExpansionUniqueName
         case MaterializeForSet
         case MemberAttachedMacroExpansion
@@ -939,6 +1031,7 @@ extension Node {
         case ObjCResilientClassStub
         case FullObjCResilientClassStub
         case ModifyAccessor
+        case Modify2Accessor
         case Module
         case NativeOwningAddressor
         case NativeOwningMutableAddressor
@@ -960,6 +1053,7 @@ extension Node {
         case PartialApplyObjCForwarder
         case PeerAttachedMacroExpansion
         case PostfixOperator
+        case PreambleAttachedMacroExpansion
         case PrefixOperator
         case PrivateDeclName
         case PropertyDescriptor
@@ -990,6 +1084,7 @@ extension Node {
         case ReabstractionThunkHelperWithSelf
         case ReabstractionThunkHelperWithGlobalActor
         case ReadAccessor
+        case Read2Accessor
         case RelatedEntityDeclName
         case RetroactiveConformance
         case ReturnType
@@ -1011,6 +1106,12 @@ extension Node {
         case Tuple
         case TupleElement
         case TupleElementName
+        case Pack
+        case SILPackDirect
+        case SILPackIndirect
+        case PackExpansion
+        case PackElement
+        case PackElementLevel
         case `Type`
         case TypeSymbolicReference
         case TypeAlias
@@ -1026,18 +1127,17 @@ extension Node {
         case TypeMetadataLazyCache
         case UncurriedFunctionType
         case UnknownIndex
-        // REF_STORAGE start
         case Weak
         case Unowned
         case Unmanaged
-        // REF_STORAGE end
         case UnsafeAddressor
         case UnsafeMutableAddressor
         case ValueWitness
         case ValueWitnessTable
         case Variable
         case VTableThunk
-        case VTableAttribute // note: old mangling only
+        /// note: old mangling only
+        case VTableAttribute
         case WillSet
         case ReflectionMetadataBuiltinDescriptor
         case ReflectionMetadataFieldDescriptor
@@ -1045,6 +1145,8 @@ extension Node {
         case ReflectionMetadataSuperclassDescriptor
         case GenericTypeParamDecl
         case CurryThunk
+        case SILThunkIdentity
+        case SILThunkHopToMainActorIfNeeded
         case DispatchThunk
         case MethodDescriptor
         case ProtocolRequirementsBaseDescriptor
@@ -1054,6 +1156,7 @@ extension Node {
         case AssociatedTypeDescriptor
         case AsyncAnnotation
         case ThrowsAnnotation
+        case TypedThrowsAnnotation
         case EmptyList
         case FirstElementMarker
         case VariadicMarker
@@ -1078,8 +1181,8 @@ extension Node {
         case SugaredOptional
         case SugaredArray
         case SugaredDictionary
-        case SugaredParen
-
+        case SugaredParen // Removed in Swift 6.TBD
+        
         // Added in Swift 5.1
         case AccessorFunctionReference
         case OpaqueType
@@ -1092,7 +1195,7 @@ extension Node {
         case OpaqueTypeDescriptorAccessorVar
         case OpaqueReturnType
         case OpaqueReturnTypeOf
-
+        
         // Added in Swift 5.4
         case CanonicalSpecializedGenericMetaclass
         case CanonicalSpecializedGenericTypeMetadataAccessFunction
@@ -1103,7 +1206,7 @@ extension Node {
         case GlobalVariableOnceToken
         case GlobalVariableOnceDeclList
         case CanonicalPrespecializedGenericTypeCachingOnceToken
-
+        
         // Added in Swift 5.5
         case AsyncFunctionPointer
         case AutoDiffFunction
@@ -1116,11 +1219,11 @@ extension Node {
         case IndexSubset
         case AsyncAwaitResumePartialFunction
         case AsyncSuspendResumePartialFunction
-
+        
         // Added in Swift 5.6
         case AccessibleFunctionRecord
         case CompileTimeConst
-
+        
         // Added in Swift 5.7
         case BackDeploymentThunk
         case BackDeploymentFallback
@@ -1129,28 +1232,46 @@ extension Node {
         case UniqueExtendedExistentialTypeShapeSymbolicReference
         case NonUniqueExtendedExistentialTypeShapeSymbolicReference
         case SymbolicExtendedExistentialType
-
+        
         // Added in Swift 5.8
-        case MetatypeParamsRemoved
+        case DroppedArgument
         case HasSymbolQuery
-        case RuntimeDiscoverableAttributeRecord
-        case RuntimeAttributeGenerator
         case OpaqueReturnTypeIndex
         case OpaqueReturnTypeParent
-
+        
+        // Addedn in Swift 6.0
+        case OutlinedEnumTagStore
+        case OutlinedEnumProjectDataForLoad
+        case OutlinedEnumGetTag
+        // Added in Swift 5.9 + 1
+        case AsyncRemoved
+        
+        // Added in Swift 5.TBD
+        case ObjectiveCProtocolSymbolicReference
+        case OutlinedInitializeWithCopyNoValueWitness
+        case OutlinedAssignWithTakeNoValueWitness
+        case OutlinedAssignWithCopyNoValueWitness
+        case OutlinedDestroyNoValueWitness
+        case DependentGenericInverseConformanceRequirement
+        
+        // Added in Swift 6.TBD
+        case Integer
+        case NegativeInteger
+        case DependentGenericParamValueMarker
+        
         public func `in`(_ kinds: Self...) -> Bool {
             kinds.contains(self)
         }
-
+        
     }
-
+    
     public enum IsVariadic {
         case yes, no
     }
-
+    
     public enum Directness {
         case direct, indirect, unknown
-
+        
         var text: String {
             switch self {
             case .direct:
@@ -1162,7 +1283,7 @@ extension Node {
             }
         }
     }
-
+    
     public enum ValueWitnessKind {
         case AllocateBuffer
         case AssignWithCopy
@@ -1188,7 +1309,7 @@ extension Node {
         case DestructiveInjectEnumTag
         case GetEnumTagSinglePayload
         case StoreEnumTagSinglePayload
-
+        
         init?(code: String) {
             switch code {
             case "al": self = .AllocateBuffer
@@ -1219,7 +1340,7 @@ extension Node {
                 return nil
             }
         }
-
+        
         var name: String {
             switch self {
             case .AllocateBuffer:
@@ -1277,40 +1398,121 @@ extension Node {
 
 // MARK: - Debugging
 extension Node: CustomDebugStringConvertible {
-
-    public var debugDescription: String {
-        //        let kind = self.kind
-        //        let payload = self.payload
-        //        let children = self._children
-        //        let numberOfParent = self.numberOfParent
-        //        let prefix = [String](repeating: "  ", count: numberOfParent).joined()
-        //        if numberOfChildren > 0 {
-        //            return "\(numberOfParent > 0 ? "\n" : "")\(prefix)Kind: \(kind) \(children.map(\.debugDescription).joined(separator: ", "))"
-        //        } else {
-        //            return "\(numberOfParent > 0 ? "\n" : "")\(prefix)Kind: \(kind), Payload: \(payload)"
-        //        }
-        printHierarchy()
+    
+    public var debugDescription: String { printHierarchy() }
+    
+    public func dump() {
+        print(printHierarchy())
     }
-
+    
     // Node와 그 자식들의 kind와 계층 관계를 출력하는 메서드
     func printHierarchy(level: Int = 0) -> String {
-        var string = "\(String(repeating: "  ", count: level))\(kind.rawValue)\(self.hasText ? (", text:" + self.text) : "")\n"
-        string += _children.map { $0.printHierarchy(level: level + 1) }.joined()
-        return string
+        var descriptions: [String] = []
+        let prefix = Array<String>(repeating: "\t", count: level).joined()
+        
+        if payload.hasValue {
+            descriptions.append(prefix + "kind=\(kind.rawValue), \(payload)")
+        } else {
+            descriptions.append(prefix + "kind=\(kind.rawValue)")
+        }
+        
+        if numberOfChildren > 0 {
+            for child in copyOfChildren {
+                descriptions.append(child.printHierarchy(level: level + 1))
+            }
+        }
+        
+        return descriptions.joined(separator: "\n")
     }
 }
 
 extension Node.Kind {
-
-    private static func array(_ kind: Node.Kind...) -> [Node.Kind] {
-        kind
-    }
-
-    private static let declNames: [Node.Kind] = array(.Identifier, .LocalDeclName, .PrivateDeclName, .RelatedEntityDeclName, .PrefixOperator, .PostfixOperator, .InfixOperator, .TypeSymbolicReference, .ProtocolSymbolicReference)
-    private static let anyGenerics: [Node.Kind] = array(.Structure, .Class, .Enum, .Protocol, .ProtocolSymbolicReference, .OtherNominalType, .TypeAlias, .TypeSymbolicReference)
-    private static let requirements = array(.DependentGenericSameTypeRequirement, .DependentGenericLayoutRequirement, .DependentGenericConformanceRequirement)
-    private static let contexts = array(.Allocator, .AnonymousContext, .Class, .Constructor, .Deallocator, .DefaultArgumentInitializer, .Destructor, .DidSet, .Enum, .ExplicitClosure, .Extension, .Function, .Getter, .GlobalGetter, .IVarInitializer, .IVarDestroyer, .ImplicitClosure, .Initializer, .MaterializeForSet, .ModifyAccessor, .Module, .NativeOwningAddressor, .NativeOwningMutableAddressor, .NativePinningAddressor, .NativePinningMutableAddressor, .OtherNominalType, .OwningAddressor, .OwningMutableAddressor, .PropertyWrapperBackingInitializer, .PropertyWrapperInitFromProjectedValue, .Protocol, .ProtocolSymbolicReference, .ReadAccessor, .Setter, .Static, .Structure, .Subscript, .TypeSymbolicReference, .TypeAlias, .UnsafeAddressor, .UnsafeMutableAddressor, .Variable, .WillSet, .OpaqueReturnTypeOf, .AutoDiffFunction)
-    private static let functionAttrs = array(
+    
+    private static let declNames: [Node.Kind] = [
+        .Identifier,
+        .LocalDeclName,
+        .PrivateDeclName,
+        .RelatedEntityDeclName,
+        .PrefixOperator,
+        .PostfixOperator,
+        .InfixOperator,
+        .TypeSymbolicReference,
+        .ProtocolSymbolicReference,
+        .ObjectiveCProtocolSymbolicReference
+    ]
+    private static let anyGenerics: [Node.Kind] = [
+        .Structure,
+        .Class,
+        .Enum,
+        .Protocol,
+        .ProtocolSymbolicReference,
+        .ObjectiveCProtocolSymbolicReference,
+        .OtherNominalType,
+        .TypeAlias,
+        .TypeSymbolicReference,
+        .BuiltinTupleType
+    ]
+    private static let requirements: [Node.Kind] = [
+        .DependentGenericParamPackMarker,
+        .DependentGenericParamValueMarker,
+        .DependentGenericSameTypeRequirement,
+        .DependentGenericSameShapeRequirement,
+        .DependentGenericLayoutRequirement,
+        .DependentGenericConformanceRequirement,
+        .DependentGenericInverseConformanceRequirement
+    ]
+    private static let contexts: [Node.Kind] = [
+        .Allocator,
+        .AnonymousContext,
+        .Class,
+        .Constructor,
+        .Deallocator,
+        .DefaultArgumentInitializer,
+        .Destructor,
+        .DidSet,
+        .Enum,
+        .ExplicitClosure,
+        .Extension,
+        .Function,
+        .Getter,
+        .GlobalGetter,
+        .IVarInitializer,
+        .IVarDestroyer,
+        .ImplicitClosure,
+        .Initializer,
+        .InitAccessor,
+        .IsolatedDeallocator,
+        .MaterializeForSet,
+        .ModifyAccessor,
+        .Modify2Accessor,
+        .Module,
+        .NativeOwningAddressor,
+        .NativeOwningMutableAddressor,
+        .NativePinningAddressor,
+        .NativePinningMutableAddressor,
+        .OtherNominalType,
+        .OwningAddressor,
+        .OwningMutableAddressor,
+        .PropertyWrapperBackingInitializer,
+        .PropertyWrapperInitFromProjectedValue,
+        .Protocol,
+        .ProtocolSymbolicReference,
+        .ReadAccessor,
+        .Read2Accessor,
+        .Setter,
+        .Static,
+        .Structure,
+        .Subscript,
+        .TypeSymbolicReference,
+        .TypeAlias,
+        .UnsafeAddressor,
+        .UnsafeMutableAddressor,
+        .Variable,
+        .WillSet,
+        .OpaqueReturnTypeOf,
+        .AutoDiffFunction
+    ]
+    private static let functionAttrs: [Node.Kind] = [
         .FunctionSignatureSpecialization,
         .GenericSpecialization,
         .GenericSpecializationPrespecialized,
@@ -1327,8 +1529,8 @@ extension Node.Kind {
         .PartialApplyForwarder,
         .PartialApplyObjCForwarder,
         .OutlinedVariable,
-        .OutlinedBridgedMethod,
         .OutlinedReadOnlyObject,
+        .OutlinedBridgedMethod,
         .MergedFunction,
         .DistributedThunk,
         .DistributedAccessor,
@@ -1342,17 +1544,16 @@ extension Node.Kind {
         .BackDeploymentThunk,
         .BackDeploymentFallback,
         .HasSymbolQuery,
-        .RuntimeDiscoverableAttributeRecord
-    )
-
+    ]
+    
     var isDeclName: Bool {
         Self.declNames.contains(self)
     }
-
+    
     var isAnyGeneric: Bool {
         Self.anyGenerics.contains(self)
     }
-
+    
     var isEntity: Bool {
         if self == .Type {
             return true
@@ -1360,20 +1561,20 @@ extension Node.Kind {
             return isContext
         }
     }
-
+    
     var isRequirement: Bool {
         Self.requirements.contains(self)
     }
-
-
+    
+    
     var isContext: Bool {
         Self.contexts.contains(self)
     }
-
+    
     var isFunctionAttr: Bool {
         Self.functionAttrs.contains(self)
     }
-
+    
     var isMacroExpandion: Bool {
         switch self {
         case .AccessorAttachedMacroExpansion,
@@ -1382,7 +1583,8 @@ extension Node.Kind {
                 .MemberAttachedMacroExpansion,
                 .PeerAttachedMacroExpansion,
                 .ConformanceAttachedMacroExpansion,
-                .ExtensionAttachedMacroExpansion:
+                .ExtensionAttachedMacroExpansion,
+                .MacroExpansionLoc:
             return true
         default:
             return false

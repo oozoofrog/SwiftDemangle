@@ -12,4 +12,4 @@ enum AutoDiffFunctionKind: String {
   case VJP = "r"
   case Differential = "d"
   case Pullback = "p"
-};
+}

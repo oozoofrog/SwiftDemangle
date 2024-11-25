@@ -7,9 +7,8 @@
 
 import Foundation
 
-public struct DemangleOptions: OptionSet {
+public struct DemangleOptions: OptionSet, Sendable {
     
-    static var hidingCurrentModule: String?
     var isClassify: Bool = false
     
     public let rawValue: Int
@@ -85,5 +84,11 @@ public struct DemangleOptions: OptionSet {
             name.append(depth.description)
         }
       return name
+    }
+    
+    func classified() -> Self {
+        var opts = self
+        opts.isClassify = true
+        return opts
     }
 }

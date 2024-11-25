@@ -1,22 +1,27 @@
 # This workflow will build a Swift project
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-swift
-
-name: Swift
+name: Swift Tests
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
   pull_request:
-    branches: [ "main" ]
 
 jobs:
-  build:
-
+  test:
     runs-on: macos-latest
-
     steps:
-    - uses: actions/checkout@v3
-    - name: Build
-      run: swift build -v
-    - name: Run tests
-      run: swift test -v
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - uses: SwiftyLab/setup-swift@latest
+        with:
+          swift-version: "6"      
+
+      - name: Verify Swift version
+        run: swift --version
+
+      - name: Run Tests
+        run: swift test
+
