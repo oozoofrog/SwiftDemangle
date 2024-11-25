@@ -201,11 +201,6 @@ class Demangler: Demanglerable, Mangling {
     func demangleOperator() -> Node? {
         while true {
             let c = nextChar()
-            #if DEBUG
-            if ProcessInfo.processInfo.environment["SWIFT_DEMANGLE_DEBUG"] == "1" {
-                print("c: \(c)")
-            }
-            #endif
             switch c {
             case 0xFF:
                 // A 0xFF byte is used as alignment padding for symbolic references
@@ -2556,9 +2551,19 @@ class Demangler: Demanglerable, Mangling {
         case "v":
             ConstraintKind = .PackMarker
             TypeKind = .Generic
+            break
+        case "C": 
+            ConstraintKind = .BaseClass
+            TypeKind = .CompoundAssoc
         case "c":
             ConstraintKind = .BaseClass
             TypeKind = .Assoc
+        case "b":
+            ConstraintKind = .BaseClass
+            TypeKind = .Generic
+        case "B":
+            ConstraintKind = .BaseClass
+            TypeKind = .Substitution
         case "t":
             ConstraintKind = .SameType
             TypeKind = .Assoc
@@ -2584,8 +2589,14 @@ class Demangler: Demanglerable, Mangling {
             ConstraintKind = .Layout
             TypeKind = .Substitution
         case "p":
-            ConstraintKind = .SameShape
-            TypeKind = .Generic
+            ConstraintKind = .Protocol
+            TypeKind = .Assoc
+        case "P":
+            ConstraintKind = .Protocol
+            TypeKind = .CompoundAssoc
+        case "Q":
+            ConstraintKind = .Protocol
+            TypeKind = .Substitution
         case "h":
             ConstraintKind = .SameShape
             TypeKind = .Generic

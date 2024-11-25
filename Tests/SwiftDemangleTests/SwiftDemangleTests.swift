@@ -49,8 +49,10 @@ final class SwiftDemangleTests {
             }
             if result != demangled {
                 print("[FAILURE] demangling for \(line):  \(mangled) ---> \(demangled) failed")
-                print(result)
-                print(demangled)
+                print()
+                print("R: " + result)
+                print("E: " + demangled)
+                print()
                 #expect(Bool(false))
                 return false
             }
