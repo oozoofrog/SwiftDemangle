@@ -1417,13 +1417,30 @@ struct NodePrinter {
             printer("generic parameter reference for associated type ")
             try printChildren(node, depth: depth)
         case .AnyProtocolConformanceList:
-            try printChildren(node, depth: depth)
+            // try printChildren(node, depth: depth)
+            if node.numberOfChildren > 0 {
+                printer("(")
+                for (index, child) in node.copyOfChildren.enumerated() {
+                    if index > 0 {
+                        printer(", ")
+                    }
+                    try printNode(child, depth: depth + 1)
+      }
+                printer(")")
+            }
         case .ConcreteProtocolConformance:
             printer("concrete protocol conformance ")
             if let index = node.index {
                 printer("#" + index.description + " ")
             }
-            try printChildren(node, depth: depth)
+            try printNode(node.children(0), depth: depth + 1)
+            printer(" to ")
+            try printNode(node.children(1), depth: depth + 1)
+            if node.numberOfChildren > 2 &&
+                node.children(2).numberOfChildren > 0 {
+                printer(" with conditional requirements: ")
+                try printNode(node.children(2), depth: depth + 1)
+            }
         case .PackProtocolConformance:
             printer("pack protocol conformance ")
             try printChildren(node, depth: depth)
