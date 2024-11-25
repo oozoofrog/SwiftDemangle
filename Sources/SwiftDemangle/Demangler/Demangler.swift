@@ -1765,8 +1765,10 @@ class Demangler: Demanglerable, Mangling {
     
     func demangleGenericSpecialization(_ SpecKind: Node.Kind, _ droppedArguments: Node? = nil) -> Node? {
         guard let Spec = demangleSpecAttributes(SpecKind) else { return nil }
-        if let droppedArguments {
-            Spec.addChild(droppedArguments)
+        if let droppedArguments = droppedArguments?.copyOfChildren {
+            for droppedArguments in droppedArguments {
+                Spec.addChild(droppedArguments)
+            }
         }
         guard let TyList = popTypeList() else { return nil }
         for Ty in TyList.copyOfChildren {

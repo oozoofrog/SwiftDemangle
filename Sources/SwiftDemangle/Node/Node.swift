@@ -825,7 +825,7 @@ extension Node {
 }
 
 extension Node {
-    public enum Payload: Equatable {
+    public enum Payload: Equatable, CustomDebugStringConvertible {
         case none
         case text(String)
         case index(UInt64)
@@ -850,6 +850,26 @@ extension Node {
             switch self {
             case .text: return true
             default: return false
+            }
+        }
+        
+        var hasValue: Bool {
+            switch self {
+            case .text, .index:
+                return true
+            default:
+                return false
+            }
+        }
+        
+        public var debugDescription: String {
+            switch self {
+            case .text(let value):
+                return "text: \(value)"
+            case .index(let value):
+                return "index: \(value)"
+            default:
+                return ""
             }
         }
     }
@@ -1379,25 +1399,30 @@ extension Node {
 // MARK: - Debugging
 extension Node: CustomDebugStringConvertible {
     
-    public var debugDescription: String {
-        //        let kind = self.kind
-        //        let payload = self.payload
-        //        let children = self._children
-        //        let numberOfParent = self.numberOfParent
-        //        let prefix = [String](repeating: "  ", count: numberOfParent).joined()
-        //        if numberOfChildren > 0 {
-        //            return "\(numberOfParent > 0 ? "\n" : "")\(prefix)Kind: \(kind) \(children.map(\.debugDescription).joined(separator: ", "))"
-        //        } else {
-        //            return "\(numberOfParent > 0 ? "\n" : "")\(prefix)Kind: \(kind), Payload: \(payload)"
-        //        }
-        printHierarchy()
+    public var debugDescription: String { printHierarchy() }
+    
+    public func dump() {
+        print(printHierarchy())
     }
     
     // Node와 그 자식들의 kind와 계층 관계를 출력하는 메서드
     func printHierarchy(level: Int = 0) -> String {
-        var string = "\(String(repeating: "  ", count: level))\(kind.rawValue)\(self.hasText ? (", text:" + self.text) : "")\n"
-        string += _children.map { $0.printHierarchy(level: level + 1) }.joined()
-        return string
+        var descriptions: [String] = []
+        let prefix = Array<String>(repeating: " ", count: level).joined()
+        
+        if payload.hasValue {
+            descriptions.append(prefix + "kind=\(kind.rawValue), \(payload)")
+        } else {
+            descriptions.append(prefix + "kind=\(kind.rawValue)")
+        }
+        
+        if numberOfChildren > 0 {
+            for child in copyOfChildren {
+                descriptions.append(child.printHierarchy(level: level + 1))
+            }
+        }
+        
+        return descriptions.joined(separator: "\n")
     }
 }
 

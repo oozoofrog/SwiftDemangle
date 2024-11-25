@@ -89,5 +89,14 @@ struct SwiftDemangle6Tests {
         let demangled = "closure #1 (A.Swift._IndexableBase.Index) -> A.Swift._IndexableBase.Index in (extension in a):Swift.MutableCollection<A where A: Swift.MutableCollection, A: Swift.RandomAccessCollection, A.Swift.BidirectionalCollection.SubSequence: Swift.MutableCollection, A.Swift.BidirectionalCollection.SubSequence: Swift.RandomAccessCollection>.rotateRandomAccess(shiftingToStart: A.Swift._MutableIndexable.Index) -> A.Swift._MutableIndexable.Index"
         #expect(mangled.demangled == demangled)
     }
+    
+    /**
+     $s4test7genFuncyyx_q_tr0_lFSi_SbTtt1g5 ---> generic specialization <Swift.Int, Swift.Bool> of test.genFunc<A, B>(A, B) -> ()
+     */
+    @Test func testGenericSpecialization() async throws {
+        let mangled = "$s4test7genFuncyyx_q_tr0_lFSi_SbTtt1g5"
+        let demangled = "generic specialization <Swift.Int, Swift.Bool> of test.genFunc<A, B>(A, B) -> ()"
+        #expect(mangled.demangled == demangled)
+    }
 }
     
