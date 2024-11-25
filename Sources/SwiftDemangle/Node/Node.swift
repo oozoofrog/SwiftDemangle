@@ -865,9 +865,9 @@ extension Node {
         public var debugDescription: String {
             switch self {
             case .text(let value):
-                return "text: \(value)"
+                return "text:\"\(value)\""
             case .index(let value):
-                return "index: \(value)"
+                return "index:\(value)"
             default:
                 return ""
             }
@@ -1408,7 +1408,7 @@ extension Node: CustomDebugStringConvertible {
     // Node와 그 자식들의 kind와 계층 관계를 출력하는 메서드
     func printHierarchy(level: Int = 0) -> String {
         var descriptions: [String] = []
-        let prefix = Array<String>(repeating: " ", count: level).joined()
+        let prefix = Array<String>(repeating: "\t", count: level).joined()
         
         if payload.hasValue {
             descriptions.append(prefix + "kind=\(kind.rawValue), \(payload)")
