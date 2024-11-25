@@ -128,5 +128,15 @@ struct SwiftDemangle6Tests {
         print("E:" + expect)
         #expect(demangled == expect)
     }
+    
+    /**
+     $s9MacroUser0023macro_expandswift_elFCffMX436_4_23bitwidthNumberedStructsfMf_ ---> freestanding macro expansion #1 of bitwidthNumberedStructs in module MacroUser file macro_expand.swift line 437 column 5
+     */
+    @Test func demangleMacroExpansion() async throws {
+        let mangled = "$s9MacroUser0023macro_expandswift_elFCffMX436_4_23bitwidthNumberedStructsfMf_"
+        let expected = "freestanding macro expansion #1 of bitwidthNumberedStructs in module MacroUser file macro_expand.swift line 437 column 5"
+        let demangled = mangled.demangled
+        #expect(demangled == expected)
+    }
 }
     

@@ -2774,10 +2774,6 @@ class Demangler: Demanglerable, Mangling {
             kind = .MemberAttributeAttachedMacroExpansion
             isAttached = true
             isFreestanding = false
-        case "f":
-            kind = .FreestandingMacroExpansion
-            isAttached = false
-            isFreestanding = true
         case "m":
             kind = .MemberAttachedMacroExpansion
             isAttached = true
@@ -2794,6 +2790,14 @@ class Demangler: Demanglerable, Mangling {
             kind = .ExtensionAttachedMacroExpansion
             isAttached = true
             isFreestanding = false
+        case "b":
+            kind = .BodyAttachedMacroExpansion
+            isAttached = true
+            isFreestanding = false
+        case "f":
+            kind = .FreestandingMacroExpansion
+            isAttached = false
+            isFreestanding = true
         case "u":
             kind = .MacroExpansionUniqueName
             isAttached = false

@@ -1583,7 +1583,8 @@ extension Node.Kind {
                 .MemberAttachedMacroExpansion,
                 .PeerAttachedMacroExpansion,
                 .ConformanceAttachedMacroExpansion,
-                .ExtensionAttachedMacroExpansion:
+                .ExtensionAttachedMacroExpansion,
+                .MacroExpansionLoc:
             return true
         default:
             return false
