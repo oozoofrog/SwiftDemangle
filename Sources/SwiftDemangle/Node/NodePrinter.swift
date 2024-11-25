@@ -1210,6 +1210,11 @@ struct NodePrinter {
             if node.numberOfChildren == 3 {
                 try printNode(node.children(1), depth: depth + 1)
             }
+            // Print differentiability and sending if it exists.
+            if node.numberOfChildren == 4 {
+                try printNode(node.children(1), depth: depth + 1)
+                try printNode(node.children(2), depth: depth + 1)
+            }
             // Print type.
             try printNode(node.lastChild, depth: depth + 1)
         case .ImplFunctionType:
@@ -1546,8 +1551,8 @@ struct NodePrinter {
             }
             printer(" ")
         case .ImplParameterResultDifferentiability:
-            if node.text.isEmpty == false {
-                printer(node.text + " ")
+            if let text = node.text.emptyToNil() {
+                printer(text + " ")
             }
         case .ImplParameterSending:
             if node.text.isEmpty == false {

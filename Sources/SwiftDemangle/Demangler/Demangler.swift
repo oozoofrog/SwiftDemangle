@@ -903,16 +903,32 @@ class Demangler: Demanglerable, Mangling {
     func demangleImplParamConvention(_ ConvKind: Node.Kind) -> Node? {
         let attr: String
         switch nextChar() {
-        case "i": attr = "@in"
+        case "i": 
+            attr = "@in"
         case "c":
             attr = "@in_constant"
-        case "l": attr = "@inout"
-        case "b": attr = "@inout_aliasable"
-        case "n": attr = "@in_guaranteed"
-        case "x": attr = "@owned"
-        case "g": attr = "@guaranteed"
-        case "e": attr = "@deallocating"
-        case "y": attr = "@unowned"
+        case "l":
+            attr = "@inout"
+        case "b":
+            attr = "@inout_aliasable"
+        case "n":
+            attr = "@in_guaranteed"
+        case "X":
+            attr = "@in_cxx"
+        case "x":
+            attr = "@owned"
+        case "g":
+            attr = "@guaranteed"
+        case "e":
+            attr = "@deallocating"
+        case "y":
+            attr = "@unowned"
+        case "v":
+            attr = "@pack_owned"
+        case "p":
+            attr = "@pack_guaranteed"
+        case "m":
+            attr = "@pack_inout"
         default:
             pushBack()
             return nil

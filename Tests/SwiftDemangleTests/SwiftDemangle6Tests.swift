@@ -107,5 +107,14 @@ struct SwiftDemangle6Tests {
         let demangled = "A.bar(a: _const Swift.String) -> ()"
         #expect(mangled.demangled == demangled)
     }
+    
+    /**
+     $sS3fIedgyywTd_D ---> @escaping @differentiable @callee_guaranteed (@unowned Swift.Float, @unowned @noDerivative sending Swift.Float) -> (@unowned Swift.Float)
+     */
+    @Test func demangleDifferentiable() async throws {
+        let mangled = "$sS3fIedgyywTd_D"
+        let demangled = "@escaping @differentiable @callee_guaranteed (@unowned Swift.Float, @unowned @noDerivative sending Swift.Float) -> (@unowned Swift.Float)"
+        #expect(mangled.demangled == demangled)
+    }
 }
     
