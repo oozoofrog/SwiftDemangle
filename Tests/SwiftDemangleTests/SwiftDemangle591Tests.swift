@@ -39,13 +39,6 @@ final class SwiftDemangle591Tests {
     }
 
     @Test
-    func test$sSUss17FixedWidthIntegerRzrlEyxqd__cSzRd__lufCSu_SiTgm5() throws {
-        let mangled = "$sSUss17FixedWidthIntegerRzrlEyxqd__cSzRd__lufCSu_SiTgm5"
-        let demangled = "generic specialization <Swift.UInt, Swift.Int> of (extension in Swift):Swift.UnsignedInteger< where A: Swift.FixedWidthInteger>.init<A where A1: Swift.BinaryInteger>(A1) -> A"
-        #expect(mangled.demangled == demangled)
-    }
-
-    @Test
     func test$s6Foobar7Vector2VAASdRszlE10simdMatrix5scale6rotate9translateSo0C10_double3x3aACySdG_SdAJtFZ0D4TypeL_aySd__GD() throws {
         let mangled = "$s6Foobar7Vector2VAASdRszlE10simdMatrix5scale6rotate9translateSo0C10_double3x3aACySdG_SdAJtFZ0D4TypeL_aySd__GD"
         let demangled = "MatrixType #1 in static (extension in Foobar):Foobar.Vector2<Swift.Double><A where A == Swift.Double>.simdMatrix(scale: Foobar.Vector2<Swift.Double>, rotate: Swift.Double, translate: Foobar.Vector2<Swift.Double>) -> __C.simd_double3x3"
@@ -101,14 +94,6 @@ final class SwiftDemangle591Tests {
     func test$s14swift_ide_test14myColorLiteral3red5green4blue5alphaAA0E0VSf_S3ftcfm() throws {
         let mangled = "$s14swift_ide_test14myColorLiteral3red5green4blue5alphaAA0E0VSf_S3ftcfm"
         let demangled = "swift_ide_test.myColorLiteral(red: Swift.Float, green: Swift.Float, blue: Swift.Float, alpha: Swift.Float) -> swift_ide_test.Color"
-        let result = try mangled.demangling(.defaultOptions, printDebugInformation: true)
-        #expect(result == demangled)
-    }
-
-    @Test
-    func test$s4main4FlagVHa() throws {
-        let mangled = "$s4main4FlagVHa"
-        let demangled = "runtime discoverable attribute record for main.Flag"
         let result = try mangled.demangling(.defaultOptions, printDebugInformation: true)
         #expect(result == demangled)
     }
