@@ -187,6 +187,8 @@ class Demangler: Demanglerable, Mangling {
             return createType(createWithChild(.NoDerivative, popTypeAndGetChild()))
         case "K":
             return createWithChild(.TypedThrowsAnnotation, popTypeAndGetChild())
+        case "t":
+            return createType(createWithChild(.CompileTimeConst, popTypeAndGetChild()))
         case "T":
             return createNode(.SendingResultFunctionType)
         case "u":

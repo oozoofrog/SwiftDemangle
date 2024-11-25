@@ -42,7 +42,18 @@ struct NodePrinter {
     }
     
     mutating func printRoot(_ node: Node) throws -> String {
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["SWIFT_DEMANGLE_DEBUG"] == "1" {
+            node.dump()
+        }
+        #endif
         try printNode(node, depth: 0)
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["SWIFT_DEMANGLE_DEBUG"] == "1" {
+            print("\"\(printText)\"")
+            print()
+        }
+        #endif
         return printText
     }
     

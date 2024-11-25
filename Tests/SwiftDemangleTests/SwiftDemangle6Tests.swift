@@ -98,5 +98,14 @@ struct SwiftDemangle6Tests {
         let demangled = "generic specialization <Swift.Int, Swift.Bool> of test.genFunc<A, B>(A, B) -> ()"
         #expect(mangled.demangled == demangled)
     }
+    
+    /**
+     $s1A3bar1aySSYt_tF ---> A.bar(a: _const Swift.String)
+     */
+    @Test func demangleTypeAnnotation() async throws {
+        let mangled = "$s1A3bar1aySSYt_tF"
+        let demangled = "A.bar(a: _const Swift.String) -> ()"
+        #expect(mangled.demangled == demangled)
+    }
 }
     
