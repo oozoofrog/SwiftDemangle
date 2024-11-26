@@ -10,7 +10,7 @@
 
 `SwiftDemangle` is a library designed for demangling Swift symbols, inspired by Swift's own `swift-demangle` tool. This library offers compatibility up to Swift version 6.0(maybe 6.1 too), providing an easy-to-use interface for converting mangled Swift symbols into a human-readable format.
 
-## What's New in 6.0.2
+## What's New in 6.0.3
 
 - remove binary target
 - add xcframework.sh script to build xcframework
