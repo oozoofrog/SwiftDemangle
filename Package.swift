@@ -9,6 +9,7 @@ let package = Package(
         .macOS(.v14),
         .iOS(.v16)
     ],
+    version: "6.0.3",
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
