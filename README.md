@@ -12,6 +12,11 @@
 
 ## What's New in 6.0.2
 
+- remove binary target
+- add xcframework.sh script to build xcframework
+
+## What's New in 6.0.2
+
 Version 6.0.2 of SwiftDemangle introduces significant updates and improvements, extending support for Swift's latest features. Key updates include:
 
 - **Swift 6.0(6.1) Compatibility:** Full support for Swift 6.0 demangling features
@@ -44,6 +49,12 @@ print(demangledVector)  // Output: Builtin.Vec4xFPIEEE16
 let mangledProtocol = "$ss6SimpleHr"
 let demangledProtocol = mangledProtocol.demangled
 print(demangledProtocol)  // Output: protocol descriptor runtime record for Swift.Simple
+```
+
+## Build xcframework
+
+```bash
+./xcframework.sh
 ```
 
 ## Contributing

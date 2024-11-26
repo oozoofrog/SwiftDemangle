@@ -89,3 +89,8 @@ fastlane/test_output
 
 iOSInjectionProject/
 xcworkspace
+
+Binary/
+build/
+SwiftDemangle.xcframework
+.DS_Store
