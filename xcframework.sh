@@ -34,9 +34,9 @@ xcodebuild archive \
 echo "Create XCFramework"
 # create XCFramework
 xcodebuild -create-xcframework \
-    -framework "./build/ios.xcarchive/Products/Library/Frameworks/SwiftDemangle.framework" \
-    -framework "./build/ios-simulator.xcarchive/Products/Library/Frameworks/SwiftDemangle.framework" \
-    -framework "./build/macos.xcarchive/Products/Library/Frameworks/SwiftDemangle.framework" \
+    -framework "./build/ios.xcarchive/Products/usr/local/lib/SwiftDemangle.framework" \
+    -framework "./build/ios-simulator.xcarchive/Products/usr/local/lib/SwiftDemangle.framework" \
+    -framework "./build/macos.xcarchive/Products/usr/local/lib/SwiftDemangle.framework" \
     -output "./SwiftDemangle.xcframework"
 
 echo "Cleaning..."

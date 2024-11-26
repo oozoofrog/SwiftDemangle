@@ -13,9 +13,8 @@ let package = Package(
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
             name: "SwiftDemangle",
+            type: .dynamic,
             targets: ["SwiftDemangle"]),
-        .library(name: "SwiftDemangleFramework",
-                 targets: ["SwiftDemangleFramework"])
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -31,8 +30,6 @@ let package = Package(
             name: "SwiftDemangleTests",
             dependencies: ["SwiftDemangle"],
             resources: [.process("Resources")]),
-        .binaryTarget(name: "SwiftDemangleFramework",
-                      path: "Binary/SwiftDemangleFramework.xcframework"),
     ],
     swiftLanguageModes: [.v6]
 )
