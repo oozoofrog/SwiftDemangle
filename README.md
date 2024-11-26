@@ -8,13 +8,13 @@
 
 ## Overview
 
-`SwiftDemangle` is a library designed for demangling Swift symbols, inspired by Swift's own `swift-demangle` tool. This library offers compatibility up to Swift version 5.9, providing an easy-to-use interface for converting mangled Swift symbols into a human-readable format.
+`SwiftDemangle` is a library designed for demangling Swift symbols, inspired by Swift's own `swift-demangle` tool. This library offers compatibility up to Swift version 6.0(maybe 6.1 too), providing an easy-to-use interface for converting mangled Swift symbols into a human-readable format.
 
-## What's New in 6.0.1
+## What's New in 6.0.2
 
-Version 6.0.1 of SwiftDemangle introduces significant updates and improvements, extending support for Swift's latest features. Key updates include:
+Version 6.0.2 of SwiftDemangle introduces significant updates and improvements, extending support for Swift's latest features. Key updates include:
 
-- **Swift 6.0 Compatibility:** Full support for Swift 6.0 demangling features
+- **Swift 6.0(6.1) Compatibility:** Full support for Swift 6.0 demangling features
 - **Enhanced Generic Type Parsing:** Improved handling of complex generic type signatures
 - **Async/Await Context Support:** Better parsing of async/await related symbols
 - **Structured Concurrency Elements:** Support for structured concurrency related demangling
