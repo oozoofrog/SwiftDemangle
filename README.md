@@ -10,26 +10,23 @@
 
 `SwiftDemangle` is a library designed for demangling Swift symbols, inspired by Swift's own `swift-demangle` tool. This library offers compatibility up to Swift version 5.9, providing an easy-to-use interface for converting mangled Swift symbols into a human-readable format.
 
-## What's New in 5.9.1
+## What's New in 6.0.1
 
-Version 5.9.1 of SwiftDemangle brings several exciting enhancements, extending support for Swift's latest 5.9 demangle grammar. Key updates include:
+Version 6.0.1 of SwiftDemangle introduces significant updates and improvements, extending support for Swift's latest features. Key updates include:
 
-- **Builtin Vector and Floating-Point Types:** Demangle builtin types like vectors and floating-point types.
-- **Outlined Read-Only Object Parsing:** Improved parsing for outlined read-only objects.
-- **Protocol and Conformance Descriptor Parsing:** Enhanced parsing for protocol and conformance descriptor runtime records.
-- **Nominal Type Descriptor and Opaque Type Descriptor:** Support for nominal and opaque type descriptor runtime records.
-- **Advanced Generic Specialization Parsing:** Improved parsing for generic specializations in Swift.
-- **Distributed Thunk and Accessible Function Records:** Enhanced parsing for distributed thunk and accessible function runtime records.
-- **Macro Expansion Parsing:** Improved parsing for macro expansions in various contexts.
-
-These additions enhance SwiftDemangle's capabilities, making it an indispensable tool for Swift developers.
+- **Swift 6.0 Compatibility:** Full support for Swift 6.0 demangling features
+- **Enhanced Generic Type Parsing:** Improved handling of complex generic type signatures
+- **Async/Await Context Support:** Better parsing of async/await related symbols
+- **Structured Concurrency Elements:** Support for structured concurrency related demangling
+- **Improved Macro Support:** Extended capabilities for handling macro-generated code
+- **Extended Platform Support:** Broader platform compatibility
 
 ## Installation
 
 ```Swift
 # If using Swift Package Manager
 dependencies: [
-    .package(url: "https://github.com/oozoofrog/SwiftDemangle", .upToNextMajor(from: "5.9.1"))
+    .package(url: "https://github.com/oozoofrog/SwiftDemangle", .upToNextMajor(from: "6.0.1"))
 ]
 ```
 
