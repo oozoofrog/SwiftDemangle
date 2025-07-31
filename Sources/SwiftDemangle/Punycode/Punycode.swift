@@ -27,7 +27,7 @@ struct Punycode {
         let damp         = 700
         let initial_bias = 72
         let initial_n = 128
-        let delimeter = "_"
+        let delimiter = "_"
         
         func adapt(_ delta: Int, _ numpoints: Int, _ firsttime: Bool) -> Int {
             var delta = delta
@@ -55,8 +55,8 @@ struct Punycode {
         /// let output = an empty string indexed from 0
         // consume all code points before the last delimiter (if there is one)
         //  and copy them to output,
-        let lastDelimeter = InputPunycode.range(of: delimeter, options: .backwards)
-        if let lastDelimiter = lastDelimeter {
+        let lastDelimiter = InputPunycode.range(of: delimiter, options: .backwards)
+        if let lastDelimiter = lastDelimiter {
             for character in InputPunycode[InputPunycode.startIndex..<lastDelimiter.lowerBound] {
                 // fail on any non-basic code point
                 if character.asciiValue.or(0) > 0x7f {
