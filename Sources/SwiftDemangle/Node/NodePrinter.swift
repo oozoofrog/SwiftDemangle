@@ -1567,7 +1567,7 @@ struct NodePrinter {
         case .IsolatedAnyFunctionType:
             printer("@isolated(any) ")
         case .NonIsolatedCallerFunctionType:
-            printer("@nonisolated(nonsending) ")
+            printer("nonisolated(nonsending) ")
         case .SendingResultFunctionType:
             printer("sending ")
         case .DifferentiableFunctionType:
@@ -2128,14 +2128,22 @@ struct NodePrinter {
         if type.getChild(startIndex).kind == .ClangType {
             startIndex += 1
         }
-        switch type.children(startIndex).kind {
-        case .IsolatedAnyFunctionType,
-             .GlobalActorFunctionType,
-             .NonIsolatedCallerFunctionType:
+        if type.children(startIndex).kind == .SendingResultFunctionType {
+            startIndex += 1
+            hasSendingResult = true
+        }
+        if type.children(startIndex).kind == .IsolatedAnyFunctionType {
             try printNode(type.children(startIndex), depth: depth + 1)
             startIndex += 1
-        default:
-            break
+        }
+        var nonIsolatedCallerNode: Node?
+        if type.children(startIndex).kind == .NonIsolatedCallerFunctionType {
+            nonIsolatedCallerNode = type.children(startIndex)
+            startIndex += 1
+        }
+        if type.children(startIndex).kind == .GlobalActorFunctionType {
+            try printNode(type.children(startIndex), depth: depth + 1)
+            startIndex += 1
         }
         if type.children(startIndex).kind == .DifferentiableFunctionType {
             diffKind = type.children(startIndex).mangledDifferentiabilityKind ?? .nonDifferentiable
@@ -2157,11 +2165,7 @@ struct NodePrinter {
             startIndex += 1
             isAsync = true
         }
-        if type.children(startIndex).kind == .SendingResultFunctionType {
-            startIndex += 1
-            hasSendingResult = true
-        }
-        
+
         switch diffKind {
         case .forward:
             printer("@differentiable(_forward) ")
@@ -2174,7 +2178,11 @@ struct NodePrinter {
         case .nonDifferentiable:
             break
         }
-        
+
+        if let nonIsolatedCallerNode {
+            try printNode(nonIsolatedCallerNode, depth: depth + 1)
+        }
+
         if isSendable {
             printer("@Sendable ")
         }
@@ -2324,6 +2332,7 @@ struct NodePrinter {
                         index += 1
                     case .ConstantPropFunction,
                             .ConstantPropGlobal:
+                        if index + 2 > endIndex { return }
                         printer("[")
                         try printNode(node.children(index), depth: depth + 1)
                         index += 1
@@ -2338,6 +2347,7 @@ struct NodePrinter {
                         printer("]")
                     case .ConstantPropInteger,
                             .ConstantPropFloat:
+                        if index + 2 > endIndex { return }
                         printer("[")
                         try printNode(node.children(index), depth: depth + 1)
                         index += 1
@@ -2346,6 +2356,7 @@ struct NodePrinter {
                         index += 1
                         printer("]")
                     case .ConstantPropString:
+                        if index + 3 > endIndex { return }
                         printer("[")
                         try printNode(node.children(index), depth: depth + 1)
                         index += 1
@@ -2358,6 +2369,7 @@ struct NodePrinter {
                         printer("'")
                         printer("]")
                     case .ConstantPropKeyPath:
+                        if index + 4 > endIndex { return }
                         printer("[")
                         try printNode(node.getChild(index), depth: depth + 1)
                         index += 1
@@ -2372,6 +2384,7 @@ struct NodePrinter {
                         index += 1
                         printer(">]")
                     case .ClosureProp:
+                        if index + 2 > endIndex { return }
                         printer("[")
                         try printNode(node.children(index), depth: depth + 1)
                         index += 1

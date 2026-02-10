@@ -1118,9 +1118,13 @@ class Demangler: Demanglerable, Mangling {
         if nextIf("H") {
             type.addChild(createNode(.ImplFunctionAttribute, "@async"))
         }
-        
+
+        if nextIf("T") {
+            type.addChild(createNode(.ImplSendingResult))
+        }
+
         addChild(type, GenSig)
-        
+
         var NumTypesToAdd = 0
         var Param: Node?
         while let param = demangleImplParamConvention(.ImplParameter) {
@@ -1139,10 +1143,6 @@ class Demangler: Demanglerable, Mangling {
                 Param = addChild(Param, ImplicitLeading)
             }
             NumTypesToAdd += 1
-        }
-
-        if nextIf("T") {
-            type.addChild(createNode(.ImplSendingResult))
         }
 
         var Result: Node?
@@ -3087,12 +3087,12 @@ class Demangler: Demanglerable, Mangling {
             ClangType = demangleClangType()
         }
         addChild(FuncType, ClangType)
+        addChild(FuncType, popNode(.SendingResultFunctionType))
         addChild(FuncType, popNode({ kind in
             kind == .GlobalActorFunctionType ||
             kind == .IsolatedAnyFunctionType ||
             kind == .NonIsolatedCallerFunctionType
         }))
-        addChild(FuncType, popNode(.SendingResultFunctionType))
         addChild(FuncType, popNode(.DifferentiableFunctionType))
         addChild(FuncType, popNode({ kind in
             return kind == .ThrowsAnnotation ||
@@ -3133,12 +3133,16 @@ class Demangler: Demanglerable, Mangling {
         }
 
         var FirstChildIdx = 0
-        if FuncType.getChild(FirstChildIdx).getKind() == .GlobalActorFunctionType ||
-            FuncType.getChild(FirstChildIdx).getKind() == .IsolatedAnyFunctionType ||
-            FuncType.getChild(FirstChildIdx).getKind() == .NonIsolatedCallerFunctionType {
+        if FuncType.getChild(FirstChildIdx).getKind() == .SendingResultFunctionType {
             ++FirstChildIdx
         }
-        if FuncType.getChild(FirstChildIdx).getKind() == .SendingResultFunctionType {
+        if FuncType.getChild(FirstChildIdx).getKind() == .GlobalActorFunctionType {
+            ++FirstChildIdx
+        }
+        if FuncType.getChild(FirstChildIdx).getKind() == .IsolatedAnyFunctionType {
+            ++FirstChildIdx
+        }
+        if FuncType.getChild(FirstChildIdx).getKind() == .NonIsolatedCallerFunctionType {
             ++FirstChildIdx
         }
         if FuncType.getChild(FirstChildIdx).getKind() == .DifferentiableFunctionType {
