@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum MangledDifferentiabilityKind: String {
+public enum MangledDifferentiabilityKind: String {
     case nonDifferentiable = ""
     case forward = "f"
     case reverse = "r"

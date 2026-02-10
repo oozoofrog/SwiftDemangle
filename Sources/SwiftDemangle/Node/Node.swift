@@ -7,8 +7,8 @@
 
 import Foundation
 
-final class Node {
-    
+public final class Node {
+
     typealias IndexType = UInt64
     
     private weak var parent: Node?
@@ -822,6 +822,27 @@ extension Node {
         }
         return nil
     }
+
+    func extractSymbolKind() -> Kind? {
+        switch kind {
+        case .Global:
+            // Global nodes wrap the actual kind as first child
+            // Skip function attributes to get to the real symbol kind
+            for child in copyOfChildren where !child.kind.isFunctionAttr {
+                return child.kind
+            }
+            return nil
+        case .TypeMangling:
+            // Type manglings wrap the actual type
+            return firstChild.extractSymbolKind()
+        case .Type:
+            // Type nodes wrap the actual kind
+            return firstChild.extractSymbolKind()
+        default:
+            // For all other cases, the current kind is the symbol kind
+            return kind
+        }
+    }
 }
 
 extension Node {
@@ -874,7 +895,7 @@ extension Node {
         }
     }
     
-    public enum Kind: String, Equatable {//}, CustomStringConvertible, CustomDebugStringConvertible {
+    public enum Kind: String, Equatable, Sendable {//}, CustomStringConvertible, CustomDebugStringConvertible {
         case Allocator
         case AnonymousContext
         case AnyProtocolConformanceList
