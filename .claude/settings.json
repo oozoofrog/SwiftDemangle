@@ -3,13 +3,23 @@
     "PostToolUse": [
       {
         "matcher": "Edit|Write",
-        "command": "swift build 2>&1 | tail -20"
+        "hooks": [
+          {
+            "type": "command",
+            "command": "swift build 2>&1 | tail -20"
+          }
+        ]
       }
     ],
     "PreToolUse": [
       {
         "matcher": "Edit|Write",
-        "command": "case \"$CLAUDE_FILE_PATH\" in */Resources/manglings*) echo 'BLOCKED: test resource file'; exit 1;; esac"
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/block-manglings.sh"
+          }
+        ]
       }
     ]
   }
