@@ -353,6 +353,7 @@ extension Node {
                 .SugaredArray,
                 .SugaredDictionary,
                 .SugaredParen,
+                .SugaredInlineArray,
                 .Integer,
                 .NegativeInteger:
             return true
@@ -471,11 +472,19 @@ extension Node {
                 .Initializer,
                 .Isolated,
                 .Sending,
-                .CompileTimeConst,
+                .CompileTimeLiteral,
+                .ConstValue,
+                .CoroFunctionPointer,
+                .DefaultOverride,
+                .DependentProtocolConformanceOpaque,
+                .ImplParameterIsolated,
+                .ImplParameterImplicitLeading,
                 .PropertyWrapperBackingInitializer,
                 .PropertyWrapperInitFromProjectedValue,
                 .KeyPathGetterThunkHelper,
                 .KeyPathSetterThunkHelper,
+                .KeyPathUnappliedMethodThunkHelper,
+                .KeyPathAppliedMethodThunkHelper,
                 .KeyPathEqualsThunkHelper,
                 .KeyPathHashThunkHelper,
                 .LazyProtocolWitnessTableAccessor,
@@ -591,6 +600,7 @@ extension Node {
                 .DifferentiableFunctionType,
                 .GlobalActorFunctionType,
                 .IsolatedAnyFunctionType,
+                .NonIsolatedCallerFunctionType,
                 .SendingResultFunctionType,
                 .AsyncAnnotation,
                 .ThrowsAnnotation,
@@ -604,6 +614,7 @@ extension Node {
                 .OutlinedRetain,
                 .OutlinedRelease,
                 .OutlinedInitializeWithTake,
+                .OutlinedInitializeWithTakeNoValueWitness,
                 .OutlinedInitializeWithCopy,
                 .OutlinedAssignWithTake,
                 .OutlinedAssignWithCopy,
@@ -1243,7 +1254,7 @@ extension Node {
         
         // Added in Swift 5.6
         case AccessibleFunctionRecord
-        case CompileTimeConst
+        case CompileTimeLiteral
         
         // Added in Swift 5.7
         case BackDeploymentThunk
@@ -1279,6 +1290,19 @@ extension Node {
         case Integer
         case NegativeInteger
         case DependentGenericParamValueMarker
+
+        // Added in Swift 6.2.3
+        case ConstValue
+        case CoroFunctionPointer
+        case DefaultOverride
+        case DependentProtocolConformanceOpaque
+        case ImplParameterIsolated
+        case ImplParameterImplicitLeading
+        case KeyPathUnappliedMethodThunkHelper
+        case KeyPathAppliedMethodThunkHelper
+        case NonIsolatedCallerFunctionType
+        case OutlinedInitializeWithTakeNoValueWitness
+        case SugaredInlineArray
         
         public func `in`(_ kinds: Self...) -> Bool {
             kinds.contains(self)
@@ -1564,6 +1588,8 @@ extension Node.Kind {
         .AccessibleFunctionRecord,
         .BackDeploymentThunk,
         .BackDeploymentFallback,
+        .CoroFunctionPointer,
+        .DefaultOverride,
         .HasSymbolQuery,
     ]
     

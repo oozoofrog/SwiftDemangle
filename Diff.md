@@ -48,4 +48,17 @@
 - [x] Integer - integer node
 - [x] NegativeInteger - negative integer node
 - [x] DependentGenericParamValueMarker
+// Added in Swift 6.2.3
+- [x] CompileTimeLiteral (renamed from CompileTimeConst)
+- [x] ConstValue - @const type annotation
+- [x] CoroFunctionPointer - coro function pointer thunk
+- [x] DefaultOverride - default override thunk
+- [x] DependentProtocolConformanceOpaque - dependent opaque protocol conformance
+- [x] ImplParameterIsolated - SIL isolated parameter
+- [x] ImplParameterImplicitLeading - SIL implicit leading parameter
+- [x] KeyPathUnappliedMethodThunkHelper - key path unapplied method thunk
+- [x] KeyPathAppliedMethodThunkHelper - key path applied method thunk
+- [x] NonIsolatedCallerFunctionType - @nonisolated(nonsending) function type
+- [x] OutlinedInitializeWithTakeNoValueWitness - outlined init with take no value witness
+- [x] SugaredInlineArray - sugared inline array type [N of T]
 

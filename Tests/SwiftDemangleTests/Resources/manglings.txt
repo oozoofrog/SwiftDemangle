@@ -483,3 +483,10 @@ $s4mainAAyyycAA1CCFTTH ---> hop to main actor thunk of main.main(main.C) -> () -
 
 $s4main6VectorVy$1_SiG ---> main.Vector<2, Swift.Int>
 $s$n3_SSBV ---> Builtin.FixedArray<-4, Swift.String>
+
+$sBAD ---> Builtin.ImplicitActor
+$s3red7MyActorC3runyxxyYaKYCXEYaKlFZ ---> static red.MyActor.run<A>(@nonisolated(nonsending) () async throws -> A) async throws -> A
+$s5thing1PP1sAA1SVvxTwc ---> coro function pointer to thing.P.s.modify2 : thing.S
+$s7Library1BC1iSivxTwd ---> default override of Library.B.i.modify2 : Swift.Int
+$s7Library1BC1iSivxTwdTwc ---> coro function pointer to default override of Library.B.i.modify2 : Swift.Int
+$s3use1xAA3OfPVy3lib1GVyAA1fQryFQOyQo_GAjE1PAAxAeKHD1_AIHO_HCg_Gvp ---> use.x : use.OfP<lib.G<<<opaque return type of use.f() -> some>>.0>>

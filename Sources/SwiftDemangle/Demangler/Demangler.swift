@@ -188,11 +188,15 @@ class Demangler: Demanglerable, Mangling {
         case "K":
             return createWithChild(.TypedThrowsAnnotation, popTypeAndGetChild())
         case "t":
-            return createType(createWithChild(.CompileTimeConst, popTypeAndGetChild()))
+            return createType(createWithChild(.CompileTimeLiteral, popTypeAndGetChild()))
         case "T":
             return createNode(.SendingResultFunctionType)
         case "u":
             return createType(createWithChild(.Sending, popTypeAndGetChild()))
+        case "C":
+            return createNode(.NonIsolatedCallerFunctionType)
+        case "g":
+            return createType(createWithChild(.ConstValue, popTypeAndGetChild()))
         default:
             return nil
         }
@@ -224,6 +228,7 @@ class Demangler: Demanglerable, Mangling {
                 case "C": return demangleConcreteProtocolConformance()
                 case "D": return demangleDependentProtocolConformanceRoot()
                 case "I": return demangleDependentProtocolConformanceInherited()
+                case "O": return demangleDependentProtocolConformanceOpaque()
                 case "P":
                     return createWithChild(.ProtocolConformanceRefInTypeModule, popProtocol())
                 case "p":
@@ -620,6 +625,8 @@ class Demangler: Demanglerable, Mangling {
             Ty = createNode(.BuiltinTypeName, .BUILTIN_TYPE_NAME_PACKINDEX)
         case "T":
             Ty = createNode(.BuiltinTupleType)
+        case "A":
+            Ty = createNode(.BuiltinTypeName, .BUILTIN_TYPE_NAME_IMPLICITACTOR)
         default:
             return nil
         }
@@ -744,6 +751,12 @@ class Demangler: Demanglerable, Mangling {
         let associatedConformance = popDependentAssociatedConformance()
         let nested = popDependentProtocolConformance()
         return createWithChildren(.DependentProtocolConformanceAssociated, nested, associatedConformance, index)
+    }
+
+    func demangleDependentProtocolConformanceOpaque() -> Node? {
+        let type = popNode(.Type)
+        let conformance = popDependentProtocolConformance()
+        return createWithChildren(.DependentProtocolConformanceOpaque, conformance, type)
     }
     
     func demangleDependentConformanceIndex() -> Node? {
@@ -958,6 +971,16 @@ class Demangler: Demanglerable, Mangling {
         }
         return createNode(.ImplParameterSending, "sending")
     }
+
+    func demangleImplParameterIsolated() -> Node? {
+        if !nextIf("I") { return nil }
+        return createNode(.ImplParameterIsolated, "isolated")
+    }
+
+    func demangleImplParameterImplicitLeading() -> Node? {
+        if !nextIf("L") { return nil }
+        return createNode(.ImplParameterImplicitLeading, "sil_implicit_leading_param")
+    }
     
     func demangleImplParameterResultDifferentiability() -> Node? {
         // Empty string represents default differentiability.
@@ -1108,6 +1131,12 @@ class Demangler: Demanglerable, Mangling {
             }
             if let Sending = demangleImplParameterSending() {
                 Param = addChild(Param, Sending)
+            }
+            if let Isolated = demangleImplParameterIsolated() {
+                Param = addChild(Param, Isolated)
+            }
+            if let ImplicitLeading = demangleImplParameterImplicitLeading() {
+                Param = addChild(Param, ImplicitLeading)
             }
             NumTypesToAdd += 1
         }
@@ -1492,8 +1521,15 @@ class Demangler: Demanglerable, Mangling {
         case"f":
             return demangleFunctionSpecialization()
         case "K", "k":
-            let nodeKind: Node.Kind = c == "K" ? .KeyPathGetterThunkHelper : .KeyPathSetterThunkHelper
-            
+            let nodeKind: Node.Kind
+            if nextIf("mu") {
+                nodeKind = .KeyPathUnappliedMethodThunkHelper
+            } else if nextIf("MA") {
+                nodeKind = .KeyPathAppliedMethodThunkHelper
+            } else {
+                nodeKind = c == "K" ? .KeyPathGetterThunkHelper : .KeyPathSetterThunkHelper
+            }
+
             let isSerialized = nextIf("q")
             
             var types: [Node] = []
@@ -1633,6 +1669,8 @@ class Demangler: Demanglerable, Mangling {
             switch (nextChar()) {
             case "b": return createNode(.BackDeploymentThunk)
             case "B": return createNode(.BackDeploymentFallback)
+            case "c": return createNode(.CoroFunctionPointer)
+            case "d": return createNode(.DefaultOverride)
             case "S": return createNode(.HasSymbolQuery)
             default:
                 return nil
@@ -2041,6 +2079,11 @@ class Demangler: Demanglerable, Mangling {
             return createWithChildren(.BaseWitnessTableAccessor, Conf, ProtoTy)
         case "O":
             switch nextChar() {
+            case "B":
+                if let sig = popNode(.DependentGenericSignature) {
+                    return createWithChildren(.OutlinedInitializeWithTakeNoValueWitness, popNode(.Type), sig)
+                }
+                return createWithChild(.OutlinedInitializeWithTakeNoValueWitness, popNode(.Type))
             case "C":
                 if let sig = popNode(.DependentGenericSignature) {
                     return createWithChildren(.OutlinedInitializeWithCopyNoValueWitness, popNode(.Type), sig)
@@ -2274,6 +2317,10 @@ class Demangler: Demanglerable, Mangling {
                 return createType(createWithChildren(.SugaredDictionary, key, value))
             case "p":
                 return createType(createWithChild(.SugaredParen, popNode(.Type)))
+            case "A":
+                let element = popNode(.Type)
+                let count = popNode(.Type)
+                return createType(createWithChildren(.SugaredInlineArray, count, element))
             default:
                 return nil
             }
@@ -3040,8 +3087,11 @@ class Demangler: Demanglerable, Mangling {
             ClangType = demangleClangType()
         }
         addChild(FuncType, ClangType)
-        addChild(FuncType, popNode(.GlobalActorFunctionType))
-        addChild(FuncType, popNode(.IsolatedAnyFunctionType))
+        addChild(FuncType, popNode({ kind in
+            kind == .GlobalActorFunctionType ||
+            kind == .IsolatedAnyFunctionType ||
+            kind == .NonIsolatedCallerFunctionType
+        }))
         addChild(FuncType, popNode(.SendingResultFunctionType))
         addChild(FuncType, popNode(.DifferentiableFunctionType))
         addChild(FuncType, popNode({ kind in
@@ -3083,10 +3133,9 @@ class Demangler: Demanglerable, Mangling {
         }
 
         var FirstChildIdx = 0
-        if FuncType.getChild(FirstChildIdx).getKind() == .GlobalActorFunctionType {
-            ++FirstChildIdx
-        }
-        if FuncType.getChild(FirstChildIdx).getKind() == .IsolatedAnyFunctionType {
+        if FuncType.getChild(FirstChildIdx).getKind() == .GlobalActorFunctionType ||
+            FuncType.getChild(FirstChildIdx).getKind() == .IsolatedAnyFunctionType ||
+            FuncType.getChild(FirstChildIdx).getKind() == .NonIsolatedCallerFunctionType {
             ++FirstChildIdx
         }
         if FuncType.getChild(FirstChildIdx).getKind() == .SendingResultFunctionType {
@@ -3302,7 +3351,8 @@ class Demangler: Demanglerable, Mangling {
                         .PackProtocolConformance,
                         .DependentProtocolConformanceRoot,
                         .DependentProtocolConformanceInherited,
-                        .DependentProtocolConformanceAssociated:
+                        .DependentProtocolConformanceAssociated,
+                        .DependentProtocolConformanceOpaque:
                     return true
                 default:
                     return false
