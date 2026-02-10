@@ -31,5 +31,11 @@ public extension String {
             }
         })
     }
-    
+
+    var symbolKind: Node.Kind? {
+        guard let node = demangleSymbolAsNode(printDebugInformation: false) else {
+            return nil
+        }
+        return node.extractSymbolKind()
+    }
 }

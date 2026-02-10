@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct FunctionSigSpecializationParamKind: Equatable {
+public struct FunctionSigSpecializationParamKind: Equatable {
     
     public let rawValue: UInt
     
