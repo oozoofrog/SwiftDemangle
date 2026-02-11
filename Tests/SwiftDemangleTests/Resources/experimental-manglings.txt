@@ -1,0 +1,7 @@
+// Experimental test cases for new node kinds not yet in upstream manglings.txt
+// Remove individual entries as they get added to the official manglings.txt
+// Source: swift/test/DebugInfo/sugar_inline_array.swift (Swift 6.2.3)
+
+// SugaredInlineArray - [N of T] syntax
+$s$2_SiXSA_s11InlineArrayVy$2_SiGtD ---> ([3 of Swift.Int], Swift.InlineArray<3, Swift.Int>)
+$s$2_$0_SSXSAXSA_s11InlineArrayVy$2_ABy$0_SSGGtD ---> ([3 of [1 of Swift.String]], Swift.InlineArray<3, Swift.InlineArray<1, Swift.String>>)

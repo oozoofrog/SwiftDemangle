@@ -90,4 +90,6 @@ extension String {
     static let BUILTIN_TYPE_NAME_WORD = "Builtin.Word"
     /// The name of the Builtin type for PackIndex
     static let  BUILTIN_TYPE_NAME_PACKINDEX = "Builtin.PackIndex"
+    /// The name of the Builtin type for ImplicitActor
+    static let BUILTIN_TYPE_NAME_IMPLICITACTOR = "Builtin.ImplicitActor"
 }

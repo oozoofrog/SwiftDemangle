@@ -29,6 +29,7 @@ extension Mangling {
                 "_T0",              // Swift 4
                 "$S", "_$S",        // Swift 4.*
                 "$s", "_$s",        // Swift 5+.*
+                "$e", "_$e",        // Embedded Swift
                 "@__swiftmacro_"    // Swift 5+ for filenames
             ]
             for prefix in prefixes where mangled.hasPrefix(prefix){

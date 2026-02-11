@@ -130,7 +130,8 @@ struct NodePrinter {
         case .OutlinedRelease:
             printer("outlined release of ")
             try printNode(node.children(0), depth: depth + 1)
-        case .OutlinedInitializeWithTake:
+        case .OutlinedInitializeWithTake,
+                .OutlinedInitializeWithTakeNoValueWitness:
             printer("outlined init with take of ")
             try printNode(node.children(0), depth: depth + 1)
         case .OutlinedInitializeWithCopy,
@@ -745,11 +746,17 @@ struct NodePrinter {
                 try printChildren(node, depth: depth)
             }
         case .KeyPathGetterThunkHelper,
-                .KeyPathSetterThunkHelper:
+                .KeyPathSetterThunkHelper,
+                .KeyPathUnappliedMethodThunkHelper,
+                .KeyPathAppliedMethodThunkHelper:
             if node.kind == .KeyPathGetterThunkHelper {
                 printer("key path getter for ")
-            } else {
+            } else if node.kind == .KeyPathSetterThunkHelper {
                 printer("key path setter for ")
+            } else if node.kind == .KeyPathUnappliedMethodThunkHelper {
+                printer("key path unapplied method for ")
+            } else if node.kind == .KeyPathAppliedMethodThunkHelper {
+                printer("key path applied method for ")
             }
             
             try printNode(node.children(0), depth: depth + 1)
@@ -1462,6 +1469,9 @@ struct NodePrinter {
             printOptionalIndex(node.children(2))
             try printNode(node.children(0), depth: depth + 1)
             try printNode(node.children(1), depth: depth + 1)
+        case .DependentProtocolConformanceOpaque:
+            printer("dependent opaque protocol conformance ")
+            try printChildren(node, depth: depth)
         case .ProtocolConformanceRefInTypeModule:
             printer("protocol conformance ref (type's module) ")
             try printChildren(node, depth: depth)
@@ -1482,6 +1492,12 @@ struct NodePrinter {
             printer("[")
             try printNode(node.children(0), depth: depth + 1)
             printer(" : ")
+            try printNode(node.children(1), depth: depth + 1)
+            printer("]")
+        case .SugaredInlineArray:
+            printer("[")
+            try printNode(node.children(0), depth: depth + 1)
+            printer(" of ")
             try printNode(node.children(1), depth: depth + 1)
             printer("]")
         case .SugaredParen:
@@ -1550,6 +1566,8 @@ struct NodePrinter {
             }
         case .IsolatedAnyFunctionType:
             printer("@isolated(any) ")
+        case .NonIsolatedCallerFunctionType:
+            printer("nonisolated(nonsending) ")
         case .SendingResultFunctionType:
             printer("sending ")
         case .DifferentiableFunctionType:
@@ -1571,7 +1589,9 @@ struct NodePrinter {
             if let text = node.text.emptyToNil() {
                 printer(text + " ")
             }
-        case .ImplParameterSending:
+        case .ImplParameterSending,
+             .ImplParameterIsolated,
+             .ImplParameterImplicitLeading:
             if node.text.isEmpty == false {
                 printer(node.text + " ")
             }
@@ -1780,8 +1800,11 @@ struct NodePrinter {
             if options.contains(.shortenThunk) == false {
                 printer("accessible function runtime record for ")
             }
-        case .CompileTimeConst:
+        case .CompileTimeLiteral:
             printer("_const ")
+            try printNode(node.getChild(0), depth: depth + 1)
+        case .ConstValue:
+            printer("@const ")
             try printNode(node.getChild(0), depth: depth + 1)
         case .BackDeploymentThunk:
             if options.contains(.shortenThunk) == false {
@@ -1789,6 +1812,10 @@ struct NodePrinter {
             }
         case .BackDeploymentFallback:
             printer("back deployment fallback for ")
+        case .CoroFunctionPointer:
+            printer("coro function pointer to ")
+        case .DefaultOverride:
+            printer("default override of ")
         case .ExtendedExistentialTypeShape:
             // Printing the requirement signature is pretty useless if we
             // don't print `where` clauses.
@@ -2101,8 +2128,17 @@ struct NodePrinter {
         if type.getChild(startIndex).kind == .ClangType {
             startIndex += 1
         }
+        if type.children(startIndex).kind == .SendingResultFunctionType {
+            startIndex += 1
+            hasSendingResult = true
+        }
         if type.children(startIndex).kind == .IsolatedAnyFunctionType {
             try printNode(type.children(startIndex), depth: depth + 1)
+            startIndex += 1
+        }
+        var nonIsolatedCallerNode: Node?
+        if type.children(startIndex).kind == .NonIsolatedCallerFunctionType {
+            nonIsolatedCallerNode = type.children(startIndex)
             startIndex += 1
         }
         if type.children(startIndex).kind == .GlobalActorFunctionType {
@@ -2129,11 +2165,7 @@ struct NodePrinter {
             startIndex += 1
             isAsync = true
         }
-        if type.children(startIndex).kind == .SendingResultFunctionType {
-            startIndex += 1
-            hasSendingResult = true
-        }
-        
+
         switch diffKind {
         case .forward:
             printer("@differentiable(_forward) ")
@@ -2146,7 +2178,11 @@ struct NodePrinter {
         case .nonDifferentiable:
             break
         }
-        
+
+        if let nonIsolatedCallerNode {
+            try printNode(nonIsolatedCallerNode, depth: depth + 1)
+        }
+
         if isSendable {
             printer("@Sendable ")
         }
@@ -2296,6 +2332,7 @@ struct NodePrinter {
                         index += 1
                     case .ConstantPropFunction,
                             .ConstantPropGlobal:
+                        if index + 2 > endIndex { return }
                         printer("[")
                         try printNode(node.children(index), depth: depth + 1)
                         index += 1
@@ -2310,6 +2347,7 @@ struct NodePrinter {
                         printer("]")
                     case .ConstantPropInteger,
                             .ConstantPropFloat:
+                        if index + 2 > endIndex { return }
                         printer("[")
                         try printNode(node.children(index), depth: depth + 1)
                         index += 1
@@ -2318,6 +2356,7 @@ struct NodePrinter {
                         index += 1
                         printer("]")
                     case .ConstantPropString:
+                        if index + 3 > endIndex { return }
                         printer("[")
                         try printNode(node.children(index), depth: depth + 1)
                         index += 1
@@ -2330,6 +2369,7 @@ struct NodePrinter {
                         printer("'")
                         printer("]")
                     case .ConstantPropKeyPath:
+                        if index + 4 > endIndex { return }
                         printer("[")
                         try printNode(node.getChild(index), depth: depth + 1)
                         index += 1
@@ -2344,6 +2384,7 @@ struct NodePrinter {
                         index += 1
                         printer(">]")
                     case .ClosureProp:
+                        if index + 2 > endIndex { return }
                         printer("[")
                         try printNode(node.children(index), depth: depth + 1)
                         index += 1
