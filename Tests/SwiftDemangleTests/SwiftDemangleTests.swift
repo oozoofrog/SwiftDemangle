@@ -98,6 +98,28 @@ final class SwiftDemangleTests {
     }
     
     @Test
+    func testExperimentalManglings() throws {
+        try loadAndForEachMangles("experimental-manglings.txt") { line, mangled, demangled in
+            var result = try mangled.demangling(.defaultOptions)
+            if result != demangled {
+                let classifiedResult = try mangled.demangling(.defaultOptions.classified())
+                result = classifiedResult
+            }
+            if result != demangled {
+                print("[EXPERIMENTAL] demangling for \(line):  \(mangled) ---> \(demangled) failed")
+                print()
+                print("R: " + result)
+                print("E: " + demangled)
+                print()
+                #expect(Bool(false))
+                return false
+            }
+            #expect(result == demangled)
+            return true
+        }
+    }
+
+    @Test
     func testFunctionSigSpecializationParamKind() throws {
         typealias Kind = FunctionSigSpecializationParamKind
         
