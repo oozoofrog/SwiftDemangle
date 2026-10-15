@@ -22,7 +22,8 @@ A Swift symbol demangling library. Converts mangled Swift symbols into human-rea
 mangled string → Demangler or OldDemangler → Node tree → NodePrinter → demangled string
 ```
 
-- **Public API** (`String+Demangling.swift`): `String.demangled`, `String.demangling(_:)`, `String.node`, `String.symbolKind`; `Node` traversal: `kind`, `children`, `text`, `index`, type checks (`isAlias`, `isClass`, `isEnum`, `isProtocol`, `isStruct`), kind queries (`isDeclName`, `isAnyGeneric`, `isEntity`, `isRequirement`, `isContext`, `isFunctionAttr`, `isMacroExpansion`)
+- **Public API** (`String+Demangling.swift`): `String.demangled`, `String.demangling(_:)`, `String.node`, `String.nominalOwner`, `String.symbolKind`; read-only `Node` traversal: `kind`, `children`, `text`, `index`.
+- **Nominal ownership** (`Node+NominalOwner.swift`): Follows supported declaration contexts and wrappers. Returns `nil` for module-level declarations and unsupported or ambiguous shapes; never searches arbitrary children or signature types as a fallback.
 - **Demangler** (`Demangler.swift`): Handles modern mangling (`$s`, `$S` prefixes). Stack-based iterative parsing
 - **OldDemangler** (`OldDemangler.swift`): Handles legacy `_T` prefix. Recursive descent parsing
 - **Demanglerable protocol** (`Demanglerable.swift`): Low-level parsing interface shared by both demanglers (`peekChar`, `nextChar`, `nextIf`, etc.)

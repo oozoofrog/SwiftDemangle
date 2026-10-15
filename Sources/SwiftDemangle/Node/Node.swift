@@ -13,6 +13,7 @@ public final class Node {
     
     private weak var parent: Node?
     
+    /// The kind of syntax represented by this node.
     public private(set) var kind: Kind
     private(set) var payload: Payload
     private(set) var _children: [Node] {
@@ -23,6 +24,7 @@ public final class Node {
     
     var copyOfChildren: [Node] { _children }
 
+    /// The child nodes in syntax-tree order. Changing this array does not change the tree.
     public var children: [Node] { copyOfChildren }
     
     fileprivate var numberOfParent: Int {
@@ -224,6 +226,7 @@ public final class Node {
         kind == .Identifier && text == desired
     }
     
+    /// The text payload, or an empty string when this node has no text payload.
     public var text: String {
         if case let .text(text) = self.payload {
             return text
@@ -236,6 +239,7 @@ public final class Node {
         self.payload.isText
     }
     
+    /// The numeric payload, or `nil` when this node has no numeric payload.
     public var index: UInt64? {
         switch self.payload {
         case let .index(index):
@@ -698,7 +702,7 @@ extension Node {
     
     var isClassType: Bool { kind == .Class }
     
-    public var isAlias: Bool {
+    var isAlias: Bool {
         switch self.kind {
         case .Type:
             return firstChild.isAlias
@@ -709,7 +713,7 @@ extension Node {
         }
     }
     
-    public var isClass: Bool {
+    var isClass: Bool {
         switch self.kind {
         case .Type:
             return firstChild.isClass
@@ -720,7 +724,7 @@ extension Node {
         }
     }
     
-    public var isEnum: Bool {
+    var isEnum: Bool {
         switch self.kind {
         case .Type:
             return firstChild.isEnum
@@ -731,7 +735,7 @@ extension Node {
         }
     }
     
-    public var isProtocol: Bool {
+    var isProtocol: Bool {
         switch self.kind {
         case .Type:
             return firstChild.isProtocol
@@ -742,7 +746,7 @@ extension Node {
         }
     }
     
-    public var isStruct: Bool {
+    var isStruct: Bool {
         switch self.kind {
         case .Type:
             return firstChild.isStruct
@@ -1595,15 +1599,15 @@ extension Node.Kind {
         .HasSymbolQuery,
     ]
     
-    public var isDeclName: Bool {
+    var isDeclName: Bool {
         Self.declNames.contains(self)
     }
     
-    public var isAnyGeneric: Bool {
+    var isAnyGeneric: Bool {
         Self.anyGenerics.contains(self)
     }
     
-    public var isEntity: Bool {
+    var isEntity: Bool {
         if self == .Type {
             return true
         } else {
@@ -1611,19 +1615,19 @@ extension Node.Kind {
         }
     }
     
-    public var isRequirement: Bool {
+    var isRequirement: Bool {
         Self.requirements.contains(self)
     }
     
-    public var isContext: Bool {
+    var isContext: Bool {
         Self.contexts.contains(self)
     }
     
-    public var isFunctionAttr: Bool {
+    var isFunctionAttr: Bool {
         Self.functionAttrs.contains(self)
     }
     
-    public var isMacroExpansion: Bool {
+    var isMacroExpansion: Bool {
         switch self {
         case .AccessorAttachedMacroExpansion,
                 .MemberAttributeAttachedMacroExpansion,

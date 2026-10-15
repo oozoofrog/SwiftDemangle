@@ -32,8 +32,25 @@ public extension String {
         })
     }
     
+    /// The demangled syntax tree, available for read-only traversal.
+    /// Returns `nil` if this string cannot be demangled as a symbol.
     var node: Node? {
         demangleSymbolAsNode(printDebugInformation: false)
+    }
+
+    /// The innermost nominal type that owns this symbol.
+    ///
+    /// Nominal type symbols return their own declaration node. Members, accessors,
+    /// and local declarations follow their declaration context; extension members
+    /// return the extended type. Bound generic types return the nominal declaration
+    /// rather than one of their generic arguments.
+    ///
+    /// Returns `nil` for module-level declarations, invalid symbols, unresolved
+    /// symbolic references, and unsupported or ambiguous wrappers (including
+    /// protocol witness and vtable thunks). Parameter types, return types, and
+    /// conformance types are never searched as a fallback.
+    var nominalOwner: Node? {
+        node?.extractNominalOwner()
     }
 
     var symbolKind: Node.Kind? {
