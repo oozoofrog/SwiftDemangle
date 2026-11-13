@@ -44,43 +44,17 @@ final class SwiftDemangleTests {
         try loadAndForEachMangles("manglings.txt") { line, mangled, demangled in
             var result = try mangled.demangling(.defaultOptions)
             if result != demangled {
-                let classifiedResult = try mangled.demangling(.defaultOptions.classified())
-                result = classifiedResult
+                result = try mangled.demangling(.defaultOptions.classified())
             }
-            if result != demangled {
-                print("[FAILURE] demangling for \(line):  \(mangled) ---> \(demangled) failed")
-                print()
-                print("R: " + result)
-                print("E: " + demangled)
-                print()
-                #expect(Bool(false))
-                return false
-            }
-            #expect(result == demangled)
-            return true
+            #expect(result == demangled, "line \(line + 1): \(mangled)")
         }
     }
     
     @Test
     func testSimplifiedManglings() throws {
         try loadAndForEachMangles("simplified-manglings.txt") { line, mangled, demangled in
-            let opts: DemangleOptions = .simplifiedOptions
-            let result = try mangled.demangling(opts)
-            if result != demangled {
-                print("[TEST] simplified demangle for \(line): \(mangled) failed")
-                return false
-            }
-            #expect(result == demangled, """
-
-            func test\(mangled)() throws {
-                let mangled = "\(mangled)"
-                let demangled = "\(demangled)"
-                let result = try mangled.demangling(.simplifiedOptions, printDebugInformation: true)
-                // \(result)
-                XCTAssertEqual(result, demangled)
-            }
-            """)
-            return true
+            let result = try mangled.demangling(.simplifiedOptions)
+            #expect(result == demangled, "line \(line + 1): \(mangled)")
         }
     }
     
@@ -88,12 +62,7 @@ final class SwiftDemangleTests {
     func testManglingsWithClangTypes() throws {
         try loadAndForEachMangles("manglings-with-clang-types.txt") { line, mangled, demangled in
             let result = mangled.demangled
-            if result != demangled {
-                print("[TEST] mangled_with_clang_type demangle for \(line): \(mangled) failed")
-                return false
-            }
-            #expect(result == demangled)
-            return true
+            #expect(result == demangled, "line \(line + 1): \(mangled)")
         }
     }
     
@@ -102,20 +71,9 @@ final class SwiftDemangleTests {
         try loadAndForEachMangles("experimental-manglings.txt") { line, mangled, demangled in
             var result = try mangled.demangling(.defaultOptions)
             if result != demangled {
-                let classifiedResult = try mangled.demangling(.defaultOptions.classified())
-                result = classifiedResult
+                result = try mangled.demangling(.defaultOptions.classified())
             }
-            if result != demangled {
-                print("[EXPERIMENTAL] demangling for \(line):  \(mangled) ---> \(demangled) failed")
-                print()
-                print("R: " + result)
-                print("E: " + demangled)
-                print()
-                #expect(Bool(false))
-                return false
-            }
-            #expect(result == demangled)
-            return true
+            #expect(result == demangled, "line \(line + 1): \(mangled)")
         }
     }
 
@@ -152,7 +110,7 @@ final class SwiftDemangleTests {
         #expect(extraOptionSetOnly.isValidOptionSet == false)
     }
     
-    func loadAndForEachMangles(_ inputFileName: String, forEach handler: (_ line: Int, _ mangled: String, _ demangled: String) throws -> Bool) throws {
+    func loadAndForEachMangles(_ inputFileName: String, forEach handler: (_ line: Int, _ mangled: String, _ demangled: String) throws -> Void) throws {
         let bundle = Bundle.module
         let path = bundle.path(forResource: inputFileName, ofType: "")!
         let tests = try String(contentsOfFile: path)
@@ -161,10 +119,7 @@ final class SwiftDemangleTests {
             guard let rangePair = range else { continue }
             let mangled = String(mangledPair[mangledPair.startIndex..<rangePair.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
             let demangled = String(mangledPair[rangePair.upperBound..<mangledPair.endIndex])
-            let result = try handler(offset, mangled, demangled)
-            if result == false {
-                break
-            }
+            try handler(offset, mangled, demangled)
         }
     }
 
