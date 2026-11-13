@@ -10,6 +10,17 @@
 
 `SwiftDemangle` is a library designed for demangling Swift symbols, inspired by Swift's own `swift-demangle` tool. It follows the demangler of Swift 6.4.2, providing an easy-to-use interface for converting mangled Swift symbols into a human-readable format.
 
+## What's New in 6.4.3
+
+Hardening for malformed and untrusted input. Still follows the Swift 6.4.2 demangler.
+
+- **No traps on damaged symbols:** truncated `_T` symbols, overflowing numbers, thunks without children and oversized Punycode code points are returned unchanged
+- **Depth limits:** a tree deeper than 256 levels (64 nested types for `_T`) is returned unchanged, so an optimized build stays within a 512 KB thread stack
+- **Speed:** long symbols demangle in linear time (a 160 KB identifier: 61 s → 0.03 s)
+- **`$` prefix:** added to a string starting with `s` / `S` only when that makes it demangle; `"sorted".demangled` is `"sorted"`, not `"$sorted"`
+- **Output changes** (following upstream): key path index operators print as `key path index equality operator for (Swift.String)`, value generic parameters as `<let A>`; both printed `unknown index` before
+- **Deprecated:** `demangling(_:printDebugInformation:)`; the parameter has no effect
+
 ## What's New in 6.4.2
 
 Synced with the Swift 6.4.2 demangler.
