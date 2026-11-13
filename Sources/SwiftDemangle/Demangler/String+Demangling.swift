@@ -27,7 +27,7 @@ public extension String {
         if hasPrefix("S") || hasPrefix("s") {
             let prefixed = "$" + self
             let leadingToken = String(prefixed.unicodeScalars.prefix(while: { !Self.symbolSeparators.contains($0) }))
-            if Self.isDemangleable(leadingToken) {
+            if Self.isDemangleable(leadingToken, options) {
                 return try prefixed.replacingSymbols(options)
             }
         }
@@ -37,9 +37,9 @@ public extension String {
     /// Characters that end a symbol inside a longer text; the complement of `symbolPattern`.
     private static let symbolSeparators: Set<Unicode.Scalar> = [" ", "\n", "\r", "\t", "<", ">", ";", ":"]
     
-    private static func isDemangleable(_ symbol: String) -> Bool {
+    private static func isDemangleable(_ symbol: String, _ options: DemangleOptions) -> Bool {
         guard let root = symbol.demangleSymbolAsNode() else { return false }
-        var printer = NodePrinter(options: .defaultOptions)
+        var printer = NodePrinter(options: options)
         return (try? printer.printRoot(root))?.isEmpty == false
     }
     

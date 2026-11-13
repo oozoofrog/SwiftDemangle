@@ -17,7 +17,7 @@ protocol Demangling {
     func demangleSymbolAsNode() -> Node?
     func demangleSymbol() -> Node?
     func demangleOldSymbolAsNode() -> Node?
-    func demangleSymbolAsString(with options: DemangleOptions) throws -> String
+    func demangleSymbolAsString(with options: DemangleOptions, nesting: Int) throws -> String
 }
 
 extension String: Demangling, Mangling {}
@@ -126,11 +126,14 @@ extension Demangling where Self: StringProtocol, Self: Mangling {
     }
 
     internal func demangleSymbolAsNode() -> Node? {
-        if isMangledName {
-            return demangleSymbol()
-        } else {
-            return demangleOldSymbolAsNode()
+        let root = isMangledName ? demangleSymbol() : demangleOldSymbolAsNode()
+        // The demanglers reject deep trees through `Node.height`. This walk is the backstop
+        // for a height that was not kept up to date.
+        if let root, root.isDeeper(than: Node.maxDepth) {
+            root.dismantle()
+            return nil
         }
+        return root
     }
     
     internal func demangleSymbol() -> Node? {
@@ -144,10 +147,15 @@ extension Demangling where Self: StringProtocol, Self: Mangling {
     }
     
     internal func demangleSymbolAsString(with options: DemangleOptions) throws -> String {
+        try demangleSymbolAsString(with: options, nesting: 0)
+    }
+    
+    /// - Parameter nesting: how many symbols deep this one sits inside a symbol being printed.
+    internal func demangleSymbolAsString(with options: DemangleOptions, nesting: Int) throws -> String {
         let root = demangleSymbolAsNode()
         var name = options.isClassify ? self.classified(root) : ""
         if let root = root {
-            var printer = NodePrinter(options: options)
+            var printer = NodePrinter(options: options, nesting: nesting)
             if let nodeToString = try printer.printRoot(root).emptyToNil() {
                 name += nodeToString
             } else {

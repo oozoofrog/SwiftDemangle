@@ -218,9 +218,26 @@ public final class Node {
         recomputeHeight()
     }
     
-    /// Recomputes `height` from the children; needed after a mutation that can lower it.
-    private func recomputeHeight() {
+    /// Recomputes `height` from the children; needed after a mutation that can lower it,
+    /// and on the parent of a child that gained children after it was attached.
+    func recomputeHeight() {
         height = _children.reduce(0) { max($0, $1.height + 1) }
+    }
+    
+    /// Whether some path below this node has more than `limit` edges. Unlike `height` this
+    /// walks the tree, so it does not depend on `height` being up to date.
+    func isDeeper(than limit: Int) -> Bool {
+        guard limit > 0 else { return _children.isNotEmpty }
+        return _children.contains { $0.isDeeper(than: limit - 1) }
+    }
+    
+    /// Detaches every node below this one, so that releasing a deep tree does not recurse.
+    func dismantle() {
+        var pending = [self]
+        while let node = pending.popLast() {
+            pending.append(contentsOf: node._children)
+            node._children = []
+        }
     }
     
     var isSwiftModule: Bool {

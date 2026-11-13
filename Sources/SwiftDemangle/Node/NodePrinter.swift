@@ -21,6 +21,22 @@ struct NodePrinter {
     
     let depthLimit = Node.maxDepth
     
+    /// How many symbols deep this printer sits inside a symbol being printed.
+    private let nesting: Int
+    /// A constant-propagated symbol nested deeper than this is printed as its mangled text.
+    private static let nestingLimit = 8
+    
+    init(options: DemangleOptions, nesting: Int = 0) {
+        self.options = options
+        self.nesting = nesting
+    }
+    
+    /// Demangles a symbol that appears as text inside the symbol being printed.
+    private func demangleNested(_ text: String) throws -> String {
+        guard nesting < Self.nestingLimit else { return text }
+        return try text.demangleSymbolAsString(with: .nestedSymbolOptions, nesting: nesting + 1)
+    }
+    
     private mutating func setInvalid() {
         isValid = false
     }
@@ -579,7 +595,7 @@ struct NodePrinter {
             throw SwiftDemangleError.nodePrinterError(description: "should be handled in printSpecializationPrefix", nodeDebugDescription: node.debugDescription)
         case .FunctionSignatureSpecializationParamPayload:
             if node.hasText {
-                if let demangleName = try node.text.demangleSymbolAsString(with: .nestedSymbolOptions).emptyToNil() {
+                if let demangleName = try demangleNested(node.text).emptyToNil() {
                     printer(demangleName)
                 } else {
                     printer(node.text)
@@ -2459,7 +2475,7 @@ struct NodePrinter {
             case .ConstantPropInteger, .ConstantPropFloat:
                 guard child.hasText else { return }
                 let text = child.text
-                let demangleName = try text.demangleSymbolAsString(with: .nestedSymbolOptions)
+                let demangleName = try demangleNested(text)
                 printer(demangleName.emptyToNil() ?? text)
             case .ConstantPropString:
                 if child.hasText {
@@ -2473,7 +2489,7 @@ struct NodePrinter {
                 try printNode(child, depth: depth + 1)
             case .ConstantPropFunction, .ConstantPropGlobal:
                 let text = child.text
-                let demangleName = try text.demangleSymbolAsString(with: .nestedSymbolOptions)
+                let demangleName = try demangleNested(text)
                 printer(demangleName.emptyToNil() ?? text)
             default:
                 try printNode(child, depth: depth + 1)

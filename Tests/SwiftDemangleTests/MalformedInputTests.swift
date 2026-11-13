@@ -83,11 +83,20 @@ final class MalformedInputTests {
     }
 
     /// Nesting beyond the depth limit is returned unchanged, even on a 512 KB stack.
-    @Test(.timeLimit(.minutes(1)), arguments: ["Sg x 500", "Sg x 10000", "GSq x 20000"])
+    @Test(.timeLimit(.minutes(1)), arguments: [
+        "Sg x 500", "Sg x 10000", "GSq x 20000",
+        // Shapes whose nodes gain children after they are attached to their parent.
+        "impl function x 600", "protocol list x 3000", "specialization x 3000",
+    ])
     func deeplyNestedSymbolIsReturnedUnchanged(shape: String) async {
         let symbol = switch shape {
         case "Sg x 500": "$sSi" + String(repeating: "Sg", count: 500) + "D"
         case "Sg x 10000": "$sSi" + String(repeating: "Sg", count: 10_000) + "D"
+        case "impl function x 600": "$sSi" + String(repeating: "Iyx_", count: 600)
+        case "protocol list x 3000":
+            "$s" + String(repeating: "4main3fooyy", count: 3000) + "Si" + String(repeating: "F1PL_P_p", count: 3000)
+        case "specialization x 3000":
+            "$s" + String(repeating: "s3foo", count: 3000) + "Si" + String(repeating: "Tf1c_nLaV", count: 3000)
         default: "_Tt" + String(repeating: "GSq", count: 20_000) + "Si" + String(repeating: "_", count: 20_000)
         }
         let result = await withCheckedContinuation { continuation in
@@ -98,5 +107,17 @@ final class MalformedInputTests {
             thread.start()
         }
         #expect(result == symbol)
+    }
+    /// A constant-propagated function is itself a symbol; a chain of them must not recurse without bound.
+    @Test(.timeLimit(.minutes(1)))
+    func symbolsNestedInConstantPropagationTerminate() {
+        var symbol = "$s4main3fooyyF"
+        var twoLevels = ""
+        for level in 1...400 {
+            symbol = "$s\(symbol.count)\(symbol)Tf1pf_n"
+            if level == 2 { twoLevels = symbol }
+        }
+        #expect(twoLevels.demangled.contains("main.foo() -> ()"))
+        #expect(symbol.demangled != symbol)
     }
 }

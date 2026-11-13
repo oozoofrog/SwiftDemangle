@@ -43,6 +43,12 @@ final class SwiftDemangleTests {
         #expect(input.demangled == expected)
     }
     
+    /// The `$` is not kept when the leading token does not demangle with the caller's options.
+    @Test
+    func dollarPrefixFollowsTheGivenOptions() throws {
+        #expect(try "ss".demangling(.simplifiedOptions) == "ss")
+    }
+    
     @Test
     func testDemanglingInAngleQuotationMarks() throws {
         let mangled = "<_TtC4TestP33_EBDFD10FF4CF0D65A8576F5ADD7EC0FF8TestView: 0x0; frame = (0 0; 404 67.3333); layer = <CALayer: 0x0>>"

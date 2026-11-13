@@ -55,18 +55,25 @@ class Demangler: Demanglerable, Mangling {
         var Parent = topLevel
         // Partial apply forwarders nest everything after them, so track how deep Parent is.
         var parentDepth = 0
+        var parents = [topLevel]
         while let FuncAttr = popNode(isFunctionAttr) {
             guard parentDepth + 1 + FuncAttr.height <= Node.maxDepth else { return nil }
             Parent.addChild(FuncAttr)
             if FuncAttr.getKind() == .PartialApplyForwarder || FuncAttr.getKind() == .PartialApplyObjCForwarder {
                 Parent = FuncAttr
                 parentDepth += 1
+                parents.append(FuncAttr)
             }
         }
         for Nd in nodeStack {
             let child = Nd.getKind() == .Type ? Nd.getFirstChild() : Nd
             guard parentDepth + 1 + child.height <= Node.maxDepth else { return nil }
             Parent.addChild(child)
+        }
+        
+        // A forwarder gained its children after it was attached.
+        for parent in parents.reversed() {
+            parent.recomputeHeight()
         }
         
         if let suffix {
@@ -615,6 +622,8 @@ class Demangler: Demanglerable, Mangling {
             for index in 0..<visitedNode.numberOfChildren {
                 setParentForOpaqueReturnTypeNodes(parent: parent, visitedNode: visitedNode.children(index))
             }
+            // An opaque return type below may have gained its parent node.
+            visitedNode.recomputeHeight()
             return parent
         }
     }
@@ -639,6 +648,7 @@ class Demangler: Demanglerable, Mangling {
         }
         
         result = setParentForOpaqueReturnTypeNodes(parent: result, visitedNode: type)
+        result?.recomputeHeight()
         return result
     }
     
@@ -1124,6 +1134,8 @@ class Demangler: Demanglerable, Mangling {
             if !ConvTy { return nil }
             type.getChild(type.getNumChildren() - Idx - 1).addChild(ConvTy)
         }
+        // The parameters and results grew after they were attached.
+        type?.recomputeHeight()
         
         return createType(type)
     }
@@ -1854,6 +1866,8 @@ class Demangler: Demanglerable, Mangling {
             }
             Param.reverseChildren(fixedChildren)
         }
+        // The parameters grew after they were attached.
+        Spec?.recomputeHeight()
         return Spec
     }
     
@@ -2530,6 +2544,8 @@ class Demangler: Demanglerable, Mangling {
             } while !firstElem
             
             TypeList.reverseChildren()
+            // TypeList grew after it was attached.
+            ProtoList?.recomputeHeight()
         }
         return ProtoList
     }
