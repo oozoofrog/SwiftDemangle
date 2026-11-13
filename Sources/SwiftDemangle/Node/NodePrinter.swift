@@ -1960,11 +1960,11 @@ struct NodePrinter {
                 // later in suffix form.
                 postfixContext = context
             } else {
-                let currentPosition = printText.count
+                let currentPosition = printText.utf8.count
                 postfixContext = try printNode(context, depth: depth + 1, asPrefixContext: true)
                 
                 // Was the context printed as prefix?
-                if printText.count != currentPosition {
+                if printText.utf8.count != currentPosition {
                     printer(".")
                 }
             }
@@ -1979,7 +1979,7 @@ struct NodePrinter {
                 extraName = ""
                 extraIndex = -1
             }
-            let currentPos = printText.count
+            let currentPos = printText.utf8.count
             if let name = overwriteName?.emptyToNil() {
                 printer(name)
             } else {
@@ -1991,7 +1991,7 @@ struct NodePrinter {
                     try printNode(privateName, depth: depth + 1)
                 }
             }
-            if printText.count != currentPos, extraName.isNotEmpty {
+            if printText.utf8.count != currentPos, extraName.isNotEmpty {
                 printer(".")
             }
         }

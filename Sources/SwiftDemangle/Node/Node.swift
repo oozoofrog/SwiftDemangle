@@ -11,17 +11,10 @@ public final class Node {
 
     typealias IndexType = UInt64
     
-    private weak var parent: Node?
-    
     /// The kind of syntax represented by this node.
     public private(set) var kind: Kind
     private(set) var payload: Payload
-    private(set) var _children: [Node] {
-        didSet {
-            _children.forEach({ $0.parent = self })
-            height = _children.reduce(0) { max($0, $1.height + 1) }
-        }
-    }
+    private(set) var _children: [Node]
     
     /// Edges on the longest path down to a leaf.
     private(set) var height = 0
@@ -34,16 +27,6 @@ public final class Node {
 
     /// The child nodes in syntax-tree order. Changing this array does not change the tree.
     public var children: [Node] { copyOfChildren }
-    
-    fileprivate var numberOfParent: Int {
-        var count = 0
-        var parent: Node? = self.parent
-        while parent != nil {
-            count += 1
-            parent = parent?.parent
-        }
-        return count
-    }
     
     var numberOfChildren: Int { _children.count }
     
@@ -103,7 +86,7 @@ public final class Node {
         self.kind = kind
         self.payload = .none
         self._children = children.flatten()
-        self.height = _children.reduce(0) { max($0, $1.height + 1) }
+        self.recomputeHeight()
         self.updatePayloadForChildren()
     }
     
@@ -115,6 +98,7 @@ public final class Node {
         let node = Node(kind: kind)
         node.payload = payload
         node._children = _children
+        node.height = height
         return node
     }
     
@@ -147,6 +131,7 @@ public final class Node {
     func add(_ child: Node) {
         if payload.isChildren {
             self._children.append(child)
+            self.height = max(height, child.height + 1)
             self.updatePayloadForChildren()
         } else {
             assertionFailure("cannot add child to \(self)")
@@ -174,6 +159,9 @@ public final class Node {
         guard children.isNotEmpty else { return }
         if payload.isChildren {
             self._children.append(contentsOf: children)
+            for child in children {
+                self.height = max(height, child.height + 1)
+            }
             self.updatePayloadForChildren()
         } else {
             assertionFailure("cannot add child to \(self)")
@@ -199,12 +187,14 @@ public final class Node {
     func remove(_ child: Node) {
         if let index = _children.firstIndex(where: { $0 === child }) {
             self._children.remove(at: index)
+            recomputeHeight()
         }
     }
     
     func remove(_ at: Int) {
         guard at < numberOfChildren else { return }
         self._children.remove(at: at)
+        recomputeHeight()
     }
     
     func reverseChildren() {
@@ -225,6 +215,12 @@ public final class Node {
     func replaceLast(_ child: Node) {
         self._children.removeLast()
         self._children.append(child)
+        recomputeHeight()
+    }
+    
+    /// Recomputes `height` from the children; needed after a mutation that can lower it.
+    private func recomputeHeight() {
+        height = _children.reduce(0) { max($0, $1.height + 1) }
     }
     
     var isSwiftModule: Bool {
