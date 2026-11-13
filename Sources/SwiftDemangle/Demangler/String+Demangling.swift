@@ -34,7 +34,7 @@ public extension String {
         return try replacingSymbols(options)
     }
     
-    /// Characters that end a symbol inside a longer text; the complement of the pattern in `replacingSymbols`.
+    /// Characters that end a symbol inside a longer text; the complement of `symbolPattern`.
     private static let symbolSeparators: Set<Unicode.Scalar> = [" ", "\n", "\r", "\t", "<", ">", ";", ":"]
     
     private static func isDemangleable(_ symbol: String) -> Bool {
@@ -43,8 +43,11 @@ public extension String {
         return (try? printer.printRoot(root))?.isEmpty == false
     }
     
+    /// A run of characters that may form a symbol.
+    private static let symbolPattern = try? NSRegularExpression(pattern: "[^ \n\r\t<>;:]+", options: [])
+    
     private func replacingSymbols(_ options: DemangleOptions) throws -> String {
-        guard let regex = try? NSRegularExpression(pattern: "[^ \n\r\t<>;:]+", options: []) else {
+        guard let regex = Self.symbolPattern else {
             return self
         }
         return try regex.matches(in: self, options: [], range: NSRange(startIndex..<endIndex, in: self)).reversed().reduce(self, { (text, match) -> String in
