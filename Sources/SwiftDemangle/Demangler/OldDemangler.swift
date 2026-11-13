@@ -101,7 +101,7 @@ class OldDemangler: Demanglerable {
                 return true
             }
             if let n = peek().number(Number.self) {
-                number = Number(number.multipliedFullWidth(by: 10).low.advanced(by: Int(n)))
+                number = number &* 10 &+ n
             } else {
                 return true
             }
@@ -592,7 +592,7 @@ class OldDemangler: Demanglerable {
             if !nextIf("_") {
                 return false
             }
-            number += 1
+            number &+= 1
             return true
         } else {
             return false
@@ -1118,7 +1118,7 @@ class OldDemangler: Demanglerable {
         
         if nextIf("d") {
             guard demangleIndex(&depth) else { return nil }
-            depth += 1
+            depth &+= 1
             guard demangleIndex(&index) else { return nil }
         } else if nextIf("x") {
             depth = 0
@@ -1126,7 +1126,7 @@ class OldDemangler: Demanglerable {
         } else {
             guard demangleIndex(&index) else { return nil }
             depth = 0
-            index += 1
+            index &+= 1
         }
         return getDependentGenericParamType(depth: depth, index: index)
     }
@@ -1251,7 +1251,7 @@ class OldDemangler: Demanglerable {
             if nextIf("z") {
                 count = 0
             } else if demangleIndex(&count) {
-                count += 1
+                count &+= 1
             } else {
                 return nil
             }
