@@ -24,10 +24,23 @@ final class SwiftDemangleTests {
     @Test
     func testDemangle() throws {
         let mangled = "s7example1fyyYjfYaKF"
-        let demangled = #"$s7example1fyyYjfYaKF"#
         let result = mangled.demangled
-//        XCTAssertEqual(result, demangled, "\(mangled) ---> expect: (\(demangled)), result: (\(result))")
-        #expect(result == demangled)
+        #expect(result == mangled)
+    }
+    
+    /// A symbol without its `$` prefix is demangled; other text that starts with `s` or `S` is left alone.
+    @Test(arguments: [
+        ("s4main3fooyyF", "main.foo() -> ()"),
+        ("S4main3fooyyF", "main.foo() -> ()"),
+        ("s4main3fooyyF called from _TtSi", "main.foo() -> () called from Swift.Int"),
+        ("s4main3fooyyF: $sSiD", "main.foo() -> (): Swift.Int"),
+        ("sorted", "sorted"),
+        ("Swift is great", "Swift is great"),
+        ("see _TtSi and $sSiD", "see Swift.Int and Swift.Int"),
+        ("sorted _TtSi", "sorted Swift.Int"),
+    ])
+    func symbolWithoutDollarPrefix(input: String, expected: String) {
+        #expect(input.demangled == expected)
     }
     
     @Test

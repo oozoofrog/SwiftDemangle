@@ -19,15 +19,35 @@ public extension String {
         try demangling(options)
     }
     
+    /// Replaces every symbol in this string with its demangled form.
+    ///
+    /// A string that starts with `s` or `S` is also tried as a symbol without its `$`
+    /// prefix; the `$` is added only when that makes the leading token demangle.
     func demangling(_ options: DemangleOptions) throws -> String {
-        var mangled = self
-        if mangled.hasPrefix("S") || mangled.hasPrefix("s") {
-            mangled = "$" + mangled
+        if hasPrefix("S") || hasPrefix("s") {
+            let prefixed = "$" + self
+            let leadingToken = String(prefixed.unicodeScalars.prefix(while: { !Self.symbolSeparators.contains($0) }))
+            if Self.isDemangleable(leadingToken) {
+                return try prefixed.replacingSymbols(options)
+            }
         }
+        return try replacingSymbols(options)
+    }
+    
+    /// Characters that end a symbol inside a longer text; the complement of the pattern in `replacingSymbols`.
+    private static let symbolSeparators: Set<Unicode.Scalar> = [" ", "\n", "\r", "\t", "<", ">", ";", ":"]
+    
+    private static func isDemangleable(_ symbol: String) -> Bool {
+        guard let root = symbol.demangleSymbolAsNode() else { return false }
+        var printer = NodePrinter(options: .defaultOptions)
+        return (try? printer.printRoot(root))?.isEmpty == false
+    }
+    
+    private func replacingSymbols(_ options: DemangleOptions) throws -> String {
         guard let regex = try? NSRegularExpression(pattern: "[^ \n\r\t<>;:]+", options: []) else {
             return self
         }
-        return try regex.matches(in: mangled, options: [], range: NSRange(mangled.startIndex..<mangled.endIndex, in: mangled)).reversed().reduce(mangled, { (text, match) -> String in
+        return try regex.matches(in: self, options: [], range: NSRange(startIndex..<endIndex, in: self)).reversed().reduce(self, { (text, match) -> String in
             if let range = Range<String.Index>.init(match.range, in: text) {
                 let demangled = try text[range].demangleSymbolAsString(with: options)
                 return text.replacingCharacters(in: range, with: demangled)
