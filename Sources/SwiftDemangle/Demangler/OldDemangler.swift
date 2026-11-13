@@ -17,16 +17,13 @@ class OldDemangler: Demanglerable {
     
     private(set) var printerName: String = ""
 
-    private let printDebugInformation: Bool
-    
     /// Nesting of demangleTypeImpl and demangleContext, the two calls every recursion goes through.
     private var depth = 0
     /// Each level costs several kilobytes of stack in a debug build.
     private let maxDepth = 64
 
-    required init(_ mangled: String, printDebugInformation: Bool = false) {
+    required init(_ mangled: String) {
         self.buffer = Self.bytes(of: mangled)
-        self.printDebugInformation = printDebugInformation
     }
     
     func demangleTopLevel() -> Node? {

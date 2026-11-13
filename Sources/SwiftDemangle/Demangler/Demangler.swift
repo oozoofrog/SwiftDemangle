@@ -24,11 +24,8 @@ class Demangler: Demanglerable, Mangling {
     typealias SymbolicReferenceResolver_t = (SymbolicReferenceKind, Node.Directness, Int, String) -> Node?
     private var SymbolicReferenceResolver: SymbolicReferenceResolver_t?
     
-    private let printDebugInformation: Bool
-    
-    required init(_ mangled: String, printDebugInformation: Bool) {
+    required init(_ mangled: String) {
         self.buffer = Self.bytes(of: mangled)
-        self.printDebugInformation = printDebugInformation
     }
     
     func demangleOldSymbolAsNode(_ mangled: String) -> Node? {
@@ -55,9 +52,6 @@ class Demangler: Demanglerable, Mangling {
         // If any other prefixes are accepted, please update Mangler::verify.
         
         if !parseAndPushNodes() {
-            if printDebugInformation {
-                debugPrint("[DEMANGLER] progressed chars -> \(parsedChars)")
-            }
             return nil
         }
         
@@ -199,11 +193,6 @@ class Demangler: Demanglerable, Mangling {
         default:
             return nil
         }
-    }
-    
-    /// The input read so far.
-    var parsedChars: String {
-        String(decoding: buffer[..<position], as: UTF8.self)
     }
     
     func demangleOperator() -> Node? {

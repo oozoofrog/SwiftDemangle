@@ -14,7 +14,12 @@ public extension String {
         return demangled
     }
     
-    func demangling(_ options: DemangleOptions, printDebugInformation: Bool = false) throws -> String {
+    @available(*, deprecated, message: "printDebugInformation has no effect; use demangling(_:)")
+    func demangling(_ options: DemangleOptions, printDebugInformation: Bool) throws -> String {
+        try demangling(options)
+    }
+    
+    func demangling(_ options: DemangleOptions) throws -> String {
         var mangled = self
         if mangled.hasPrefix("S") || mangled.hasPrefix("s") {
             mangled = "$" + mangled
@@ -24,7 +29,7 @@ public extension String {
         }
         return try regex.matches(in: mangled, options: [], range: NSRange(mangled.startIndex..<mangled.endIndex, in: mangled)).reversed().reduce(mangled, { (text, match) -> String in
             if let range = Range<String.Index>.init(match.range, in: text) {
-                let demangled = try text[range].demangleSymbolAsString(with: options, printDebugInformation: printDebugInformation)
+                let demangled = try text[range].demangleSymbolAsString(with: options)
                 return text.replacingCharacters(in: range, with: demangled)
             } else {
                 return text
@@ -35,7 +40,7 @@ public extension String {
     /// The demangled syntax tree, available for read-only traversal.
     /// Returns `nil` if this string cannot be demangled as a symbol.
     var node: Node? {
-        demangleSymbolAsNode(printDebugInformation: false)
+        demangleSymbolAsNode()
     }
 
     /// The innermost nominal type that owns this symbol.

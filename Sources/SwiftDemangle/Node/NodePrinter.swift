@@ -42,18 +42,7 @@ struct NodePrinter {
     }
     
     mutating func printRoot(_ node: Node) throws -> String {
-        #if DEBUG
-        if ProcessInfo.processInfo.environment["SWIFT_DEMANGLE_DEBUG"] == "1" {
-            node.dump()
-        }
-        #endif
         try printNode(node, depth: 0)
-        #if DEBUG
-        if ProcessInfo.processInfo.environment["SWIFT_DEMANGLE_DEBUG"] == "1" {
-            print("\"\(printText)\"")
-            print()
-        }
-        #endif
         return printText
     }
     
@@ -69,13 +58,6 @@ struct NodePrinter {
             return nil
         }
         let kind = node.kind
-        #if DEBUG
-        if ProcessInfo.processInfo.environment["SWIFT_DEMANGLE_DEBUG"] == "1" {
-            print("\"\(printText)\"")
-            print("Kind: \(kind), depth: \(depth)")
-            print()
-        }
-        #endif
         switch kind {
         case .Static:
             printer("static ")
@@ -2477,7 +2459,7 @@ struct NodePrinter {
             case .ConstantPropInteger, .ConstantPropFloat:
                 guard child.hasText else { return }
                 let text = child.text
-                let demangleName = try text.demangleSymbolAsString(with: .nestedSymbolOptions, printDebugInformation: false)
+                let demangleName = try text.demangleSymbolAsString(with: .nestedSymbolOptions)
                 printer(demangleName.emptyToNil() ?? text)
             case .ConstantPropString:
                 if child.hasText {
@@ -2491,7 +2473,7 @@ struct NodePrinter {
                 try printNode(child, depth: depth + 1)
             case .ConstantPropFunction, .ConstantPropGlobal:
                 let text = child.text
-                let demangleName = try text.demangleSymbolAsString(with: .nestedSymbolOptions, printDebugInformation: false)
+                let demangleName = try text.demangleSymbolAsString(with: .nestedSymbolOptions)
                 printer(demangleName.emptyToNil() ?? text)
             default:
                 try printNode(child, depth: depth + 1)
@@ -2943,7 +2925,6 @@ private extension NodePrinter {
         do {
             return try printer.printRoot(root)
         } catch {
-            debugPrint("[SwiftDemangle] nodeToString failed by \(error)")
             return ""
         }
     }

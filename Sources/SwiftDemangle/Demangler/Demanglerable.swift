@@ -17,7 +17,7 @@ protocol Demanglerable: AnyObject {
     var numerics: [Character] { get }
     var substitutions: [Node] { get }
 
-    init(_ mangled: String, printDebugInformation: Bool)
+    init(_ mangled: String)
 }
 
 extension Demanglerable {

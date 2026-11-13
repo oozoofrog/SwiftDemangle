@@ -14,10 +14,10 @@ protocol Demangling {
     var isObjCSymbol: Bool { get }
     var droppingSwiftManglingPrefix: String { get }
     
-    func demangleSymbolAsNode(printDebugInformation: Bool) -> Node?
-    func demangleSymbol(printDebugInformation: Bool) -> Node?
+    func demangleSymbolAsNode() -> Node?
+    func demangleSymbol() -> Node?
     func demangleOldSymbolAsNode() -> Node?
-    func demangleSymbolAsString(with options: DemangleOptions, printDebugInformation: Bool) throws -> String
+    func demangleSymbolAsString(with options: DemangleOptions) throws -> String
 }
 
 extension String: Demangling, Mangling {}
@@ -59,7 +59,7 @@ extension Demangling where Self: StringProtocol, Self: Mangling {
                     MangledName.hasSuffix("fC")) {  // allocating constructor
                 
                 // To avoid false positives, we need to fully demangle the symbol.
-                guard let Nd = MangledName.demangleSymbol(printDebugInformation: false), Nd.getKind() == .Global, Nd.numberOfChildren > 0 else { return false }
+                guard let Nd = MangledName.demangleSymbol(), Nd.getKind() == .Global, Nd.numberOfChildren > 0 else { return false }
 
                 switch Nd.firstChild.kind {
                 case .ObjCAttribute,
@@ -125,16 +125,16 @@ extension Demangling where Self: StringProtocol, Self: Mangling {
         return name
     }
 
-    internal func demangleSymbolAsNode(printDebugInformation: Bool) -> Node? {
+    internal func demangleSymbolAsNode() -> Node? {
         if isMangledName {
-            return demangleSymbol(printDebugInformation: printDebugInformation)
+            return demangleSymbol()
         } else {
             return demangleOldSymbolAsNode()
         }
     }
     
-    internal func demangleSymbol(printDebugInformation: Bool) -> Node? {
-        let mangler = Demangler(String(self), printDebugInformation: printDebugInformation)
+    internal func demangleSymbol() -> Node? {
+        let mangler = Demangler(String(self))
         return mangler.demangleSymbol()
     }
     
@@ -143,8 +143,8 @@ extension Demangling where Self: StringProtocol, Self: Mangling {
         return mangler.demangleTopLevel()
     }
     
-    internal func demangleSymbolAsString(with options: DemangleOptions, printDebugInformation: Bool = false) throws -> String {
-        let root = demangleSymbolAsNode(printDebugInformation: printDebugInformation)
+    internal func demangleSymbolAsString(with options: DemangleOptions) throws -> String {
+        let root = demangleSymbolAsNode()
         var name = options.isClassify ? self.classified(root) : ""
         if let root = root {
             var printer = NodePrinter(options: options)
@@ -230,7 +230,7 @@ extension Demangling where Self: StringProtocol, Self: Mangling {
     }
     
     func hasSwiftCallingConvention() -> Bool {
-        guard let Global = self.demangleSymbolAsNode(printDebugInformation: false), Global.kind == .Global, Global.numberOfChildren > 0 else { return false }
+        guard let Global = self.demangleSymbolAsNode(), Global.kind == .Global, Global.numberOfChildren > 0 else { return false }
 
         let TopLevel = Global.firstChild
         switch TopLevel.kind {
@@ -244,7 +244,7 @@ extension Demangling where Self: StringProtocol, Self: Mangling {
     }
     
     internal func demangledModuleName() -> String? {
-        var node = demangleSymbolAsNode(printDebugInformation: false)
+        var node = demangleSymbolAsNode()
         while let nd = node {
             switch nd.kind {
             case .Module:

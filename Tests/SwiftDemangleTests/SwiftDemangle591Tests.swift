@@ -63,21 +63,21 @@ final class SwiftDemangle591Tests {
     func test$s1A3bar1aySSYt_tF() throws {
         let mangled = "$s1A3bar1aySSYt_tF"
         let demangled = "A.bar(a: _const Swift.String) -> ()"
-        #expect(try mangled.demangling(.defaultOptions, printDebugInformation: true) == demangled)
+        #expect(try mangled.demangling(.defaultOptions) == demangled)
     }
 
     @Test
     func test$s1t1fyyFSiAA3StrVcs7KeyPathCyADSiGcfu_SiADcfu0_33_556644b740b1b333fecb81e55a7cce98ADSiTf3npk_n() throws {
         let mangled = "$s1t1fyyFSiAA3StrVcs7KeyPathCyADSiGcfu_SiADcfu0_33_556644b740b1b333fecb81e55a7cce98ADSiTf3npk_n"
         let demangled = "function signature specialization <Arg[1] = [Constant Propagated KeyPath : _556644b740b1b333fecb81e55a7cce98<t.Str,Swift.Int>]> of implicit closure #2 (t.Str) -> Swift.Int in implicit closure #1 (Swift.KeyPath<t.Str, Swift.Int>) -> (t.Str) -> Swift.Int in t.f() -> ()"
-        #expect(try mangled.demangling(.defaultOptions, printDebugInformation: true) == demangled)
+        #expect(try mangled.demangling(.defaultOptions) == demangled)
     }
 
     @Test
     func test$s21back_deploy_attribute0A12DeployedFuncyyFTwb() throws {
         let mangled = "$s21back_deploy_attribute0A12DeployedFuncyyFTwb"
         let demangled = "back deployment thunk for back_deploy_attribute.backDeployedFunc() -> ()"
-        #expect(try mangled.demangling(.defaultOptions, printDebugInformation: true) == demangled)
+        #expect(try mangled.demangling(.defaultOptions) == demangled)
     }
 
     @Test
@@ -86,7 +86,7 @@ final class SwiftDemangle591Tests {
         let demangled = "{T:$sxIeghHr_xs5Error_pIegHrzo_s8SendableRzs5NeverORs_r0_lTR} (1) await resume partial function for partial apply forwarder for reabstraction thunk helper <A, B where A: Swift.Sendable, B == Swift.Never> from @escaping @callee_guaranteed @Sendable @async () -> (@out A) to @escaping @callee_guaranteed @async () -> (@out A, @error @owned Swift.Error)"
         var opts: DemangleOptions = .defaultOptions
         opts.isClassify = true
-        let result = try mangled.demangling(opts, printDebugInformation: true)
+        let result = try mangled.demangling(opts)
         #expect(result == demangled)
     }
 
@@ -94,7 +94,7 @@ final class SwiftDemangle591Tests {
     func test$s14swift_ide_test14myColorLiteral3red5green4blue5alphaAA0E0VSf_S3ftcfm() throws {
         let mangled = "$s14swift_ide_test14myColorLiteral3red5green4blue5alphaAA0E0VSf_S3ftcfm"
         let demangled = "swift_ide_test.myColorLiteral(red: Swift.Float, green: Swift.Float, blue: Swift.Float, alpha: Swift.Float) -> swift_ide_test.Color"
-        let result = try mangled.demangling(.defaultOptions, printDebugInformation: true)
+        let result = try mangled.demangling(.defaultOptions)
         #expect(result == demangled)
     }
 
@@ -102,7 +102,7 @@ final class SwiftDemangle591Tests {
     func test$s9MacroUser13testStringify1a1bySi_SitF9stringifyfMf1_() throws {
         let mangled = "$s9MacroUser13testStringify1a1bySi_SitF9stringifyfMf1_"
         let demangled = "freestanding macro expansion #3 of stringify in MacroUser.testStringify(a: Swift.Int, b: Swift.Int) -> ()"
-        let result = try mangled.demangling(.defaultOptions, printDebugInformation: true)
+        let result = try mangled.demangling(.defaultOptions)
         #expect(result == demangled)
     }
 
@@ -110,7 +110,7 @@ final class SwiftDemangle591Tests {
     func test__swiftmacro_1a13testStringifyAA1bySi_SitF9stringifyfMf_() throws {
         let mangled = "@__swiftmacro_1a13testStringifyAA1bySi_SitF9stringifyfMf_"
         let demangled = "freestanding macro expansion #1 of stringify in a.testStringify(a: Swift.Int, b: Swift.Int) -> ()"
-        let result = try mangled.demangling(.defaultOptions, printDebugInformation: true)
+        let result = try mangled.demangling(.defaultOptions)
         #expect(result == demangled)
     }
 
@@ -118,7 +118,7 @@ final class SwiftDemangle591Tests {
     func test_$s4main1fSiyYaFTQ0_() throws {
         let mangled = "_$s4main1fSiyYaFTQ0_"
         let demangled = "f()"
-        let result = try mangled.demangling(.simplifiedOptions, printDebugInformation: true)
+        let result = try mangled.demangling(.simplifiedOptions)
         #expect(result == demangled)
     }
 }
