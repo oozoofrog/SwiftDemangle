@@ -21,9 +21,6 @@ class Demangler: Demanglerable, Mangling {
     
     private var IsOldFunctionTypeMangling: Bool = false
     
-    typealias SymbolicReferenceResolver_t = (SymbolicReferenceKind, Node.Directness, Int, String) -> Node?
-    private var SymbolicReferenceResolver: SymbolicReferenceResolver_t?
-    
     required init(_ mangled: String) {
         self.buffer = Self.bytes(of: mangled)
     }
@@ -32,9 +29,7 @@ class Demangler: Demanglerable, Mangling {
         OldDemangler(mangled).demangleTopLevel()
     }
     
-    func demangleSymbol(_ SymbolicReferenceResolver: SymbolicReferenceResolver_t? = nil) -> Node? {
-        self.SymbolicReferenceResolver = SymbolicReferenceResolver
-        
+    func demangleSymbol() -> Node? {
         // Demangle old-style class and protocol names, which are still used in the
         // ObjC metadata.
         if nextIf("_Tt") {
@@ -85,18 +80,6 @@ class Demangler: Demanglerable, Mangling {
         return topLevel
     }
     
-    func demangleType(_ SymbolicReferenceResolver: SymbolicReferenceResolver_t? = nil) -> Node? {
-        self.SymbolicReferenceResolver = SymbolicReferenceResolver
-        
-        parseAndPushNodes()
-        
-        if let Result = popNode() {
-            return Result
-        }
-        
-        return createNode(.Suffix, self.textOriginal)
-    }
-    
     @discardableResult
     func parseAndPushNodes() -> Bool {
         while isNotEmpty {
@@ -114,52 +97,6 @@ class Demangler: Demanglerable, Mangling {
         addChild(TypeMangling, LabelList)
         TypeMangling = addChild(TypeMangling, type)
         return TypeMangling
-    }
-    
-    func demangleSymbolicReference(_ rawKind: Character) -> Node? {
-        // The symbolic reference is a 4-byte machine integer encoded in the following
-        // four bytes.
-        if !hasAtLeast(4) {
-            return nil
-        }
-        
-        guard let value = nextNumber(UInt32.self) else { return nil }
-        
-        // Map the encoded kind to a specific kind and directness.
-        let kind: SymbolicReferenceKind
-        let direct: Node.Directness
-        switch rawKind {
-        case 1:
-            kind = .Context
-            direct = .direct
-        case 2:
-            kind = .Context
-            direct = .indirect
-        case 9:
-            kind = .AccessorFunctionReference
-            direct = .direct
-        default:
-            return nil
-        }
-        
-        // Use the resolver, if any, to produce the demangling tree the symbolic
-        // reference represents.
-        var resolved: Node?
-        if let resolver = self.SymbolicReferenceResolver {
-            resolved = resolver(kind, direct, Int(value), self.text)
-        }
-        
-        // With no resolver, or a resolver that failed, refuse to demangle further.
-        if resolved == nil {
-            return nil
-        }
-        
-        // Types register as substitutions even when symbolically referenced.
-        // OOPS: Except for opaque type references!
-        if kind == .Context && resolved.getKind() != .OpaqueTypeDescriptorSymbolicReference && resolved.getKind() != .OpaqueReturnTypeOf {
-            addSubstitution(resolved)
-        }
-        return resolved
     }
     
     func demangleTypeAnnotation() -> Node? {
@@ -205,7 +142,9 @@ class Demangler: Demanglerable, Mangling {
                 // relocations that form the reference value. It can be skipped.
                 continue
             case 1, 2, 3, 4, 5, 6, 7, 8, 9, 0xA, 0xB, 0xC:
-                return demangleSymbolicReference(c)
+                // A symbolic reference points into the binary that holds the symbol.
+                // Without a resolver for it, refuse to demangle further.
+                return nil
             case "A": return demangleMultiSubstitutions()
             case "B": return demangleBuiltinType()
             case "C": return demangleAnyGenericType(.Class)

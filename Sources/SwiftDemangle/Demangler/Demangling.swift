@@ -243,37 +243,4 @@ extension Demangling where Self: StringProtocol, Self: Mangling {
         return true
     }
     
-    internal func demangledModuleName() -> String? {
-        var node = demangleSymbolAsNode()
-        while let nd = node {
-            switch nd.kind {
-            case .Module:
-                return nd.text
-            case .TypeMangling, .Type:
-                node = nd.firstChild
-            case .Global:
-                var newNode: Node?
-                for child in nd.copyOfChildren {
-                    if !child.kind.isFunctionAttr {
-                        newNode = child
-                        break
-                    }
-                }
-                node = newNode
-                break
-            default:
-                if nd.isSpecialized {
-                    node = nd.unspecialized()
-                    break
-                }
-                if nd.kind.isContext {
-                    node = nd.getFirstChild()
-                    break
-                }
-                return ""
-            }
-        }
-        return ""
-    }
-    
 }

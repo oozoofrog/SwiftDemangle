@@ -74,10 +74,6 @@ class OldDemangler: Demanglerable {
         return topLevel
     }
     
-    func demangleTypeName() -> Node? {
-        demangleType()
-    }
-    
     func demangleDirectness() -> Node.Directness? {
         switch true {
         case nextIf("d"):

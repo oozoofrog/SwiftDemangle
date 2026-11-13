@@ -13,17 +13,8 @@ extension BinaryInteger {
         String(self, radix: 16, uppercase: false)
     }
     
-    var HEX: String {
-        String(self, radix: 16, uppercase: true)
-    }
-    
     var bit: String {
         String(self, radix: 2)
-    }
-    
-    mutating func advancing(by n: Int) -> Self {
-        self = self.advanced(by: n)
-        return self
     }
     
     mutating func advancedAfter(by n: Int = 1) -> Self {

@@ -84,13 +84,6 @@ extension Demanglerable {
         position -= 1
     }
 
-    func nextNumber<BI>(_ type: BI.Type) -> BI? where BI: BinaryInteger & BitwiseCopyable {
-        let size = MemoryLayout<BI>.size
-        guard size <= remaining else { return nil }
-        defer { position += size }
-        return buffer.withUnsafeBytes { $0.loadUnaligned(fromByteOffset: position, as: BI.self) }
-    }
-
     /// Reads up to `prefixLength` characters. With nothing to read, returns the unread text without reading it.
     func nextString(_ prefixLength: Int) -> String {
         let length = min(prefixLength, remaining)
