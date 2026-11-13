@@ -66,19 +66,20 @@ class Demangler: Demanglerable, Mangling {
         let topLevel = createNode(.Global)
         let suffix = popNode(.Suffix)
         var Parent = topLevel
+        // Partial apply forwarders nest everything after them, so track how deep Parent is.
+        var parentDepth = 0
         while let FuncAttr = popNode(isFunctionAttr) {
+            guard parentDepth + 1 + FuncAttr.height <= Node.maxDepth else { return nil }
             Parent.addChild(FuncAttr)
             if FuncAttr.getKind() == .PartialApplyForwarder || FuncAttr.getKind() == .PartialApplyObjCForwarder {
                 Parent = FuncAttr
+                parentDepth += 1
             }
         }
         for Nd in nodeStack {
-            switch Nd.getKind() {
-            case .Type:
-                Parent.addChild(Nd.getFirstChild())
-            default:
-                Parent.addChild(Nd)
-            }
+            let child = Nd.getKind() == .Type ? Nd.getFirstChild() : Nd
+            guard parentDepth + 1 + child.height <= Node.maxDepth else { return nil }
+            Parent.addChild(child)
         }
         
         if let suffix {
@@ -107,8 +108,8 @@ class Demangler: Demanglerable, Mangling {
     @discardableResult
     func parseAndPushNodes() -> Bool {
         while self.mangled.isNotEmpty {
-            guard let Node = demangleOperator() else { return false }
-            pushNode(Node)
+            guard let node = demangleOperator(), node.height <= Node.maxDepth else { return false }
+            pushNode(node)
         }
         return true
     }

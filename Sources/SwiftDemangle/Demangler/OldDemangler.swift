@@ -18,6 +18,11 @@ class OldDemangler: Demanglerable {
     private(set) var printerName: String = ""
 
     private let printDebugInformation: Bool
+    
+    /// Nesting of demangleTypeImpl and demangleContext, the two calls every recursion goes through.
+    private var depth = 0
+    /// Each level costs several kilobytes of stack in a debug build.
+    private let maxDepth = 64
 
     required init(_ mangled: String, printDebugInformation: Bool = false) {
         self.mangled = mangled.data(using: .ascii) ?? Data()
@@ -69,6 +74,7 @@ class OldDemangler: Demanglerable {
             topLevel.add(kind: .Suffix, text: self.text)
         }
         
+        guard topLevel.height <= Node.maxDepth else { return nil }
         return topLevel
     }
     
@@ -674,6 +680,8 @@ class OldDemangler: Demanglerable {
         var index_sub: UInt64 = 0
         guard demangleIndex(&index_sub) else { return nil }
         guard index_sub < substitutions.count else { return nil }
+        // Reusing a deep node is the one way to grow the tree without recursing.
+        guard substitutions[Int(index_sub)].height < Node.maxDepth else { return nil }
         return substitutions[Int(index_sub)]
     }
     
@@ -829,6 +837,9 @@ class OldDemangler: Demanglerable {
       // context ::= entity
       // context ::= 'E' module context (extension defined in a different module)
       // context ::= 'e' module context generic-signature (constrained extension)
+        depth += 1
+        defer { depth -= 1 }
+        guard depth <= maxDepth else { return nil }
         guard isNotEmpty else { return nil }
         if nextIf("E") {
             guard let def_module = demangleModule() else { return nil }
@@ -1458,7 +1469,7 @@ class OldDemangler: Demanglerable {
     }
     
     func demangleType() -> Node? {
-        guard let type = demangleTypeImpl() else { return nil }
+        guard let type = demangleTypeImpl(), type.height < Node.maxDepth else { return nil }
         let nodeType = Node(kind: .Type)
         nodeType.add(type)
         return nodeType
@@ -1523,6 +1534,9 @@ class OldDemangler: Demanglerable {
     }
     
     func demangleTypeImpl() -> Node? {
+        depth += 1
+        defer { depth -= 1 }
+        guard depth <= maxDepth else { return nil }
         guard isNotEmpty else { return nil }
         guard let c = next() else { return nil }
         if c == "B" {

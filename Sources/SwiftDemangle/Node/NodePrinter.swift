@@ -19,7 +19,7 @@ struct NodePrinter {
     private(set) var isValid: Bool = true
     var isSpecializationPrefixPrinted = false
     
-    let depthLimit = 768
+    let depthLimit = Node.maxDepth
     
     private mutating func setInvalid() {
         isValid = false

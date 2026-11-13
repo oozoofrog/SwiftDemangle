@@ -19,8 +19,16 @@ public final class Node {
     private(set) var _children: [Node] {
         didSet {
             _children.forEach({ $0.parent = self })
+            height = _children.reduce(0) { max($0, $1.height + 1) }
         }
     }
+    
+    /// Edges on the longest path down to a leaf.
+    private(set) var height = 0
+    
+    /// The tallest tree a demangler returns. Deeper input is treated as undemanglable so
+    /// that parsing, printing and releasing a tree stay within a 512 KB thread stack.
+    static let maxDepth = 256
     
     var copyOfChildren: [Node] { _children }
 
@@ -95,6 +103,7 @@ public final class Node {
         self.kind = kind
         self.payload = .none
         self._children = children.flatten()
+        self.height = _children.reduce(0) { max($0, $1.height + 1) }
         self.updatePayloadForChildren()
     }
     
