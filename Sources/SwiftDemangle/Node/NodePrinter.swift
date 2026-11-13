@@ -826,35 +826,37 @@ struct NodePrinter {
                 .ReabstractionThunkHelper:
             if options.contains(.shortenThunk) {
                 printer("thunk for ")
-                try printNode(node.children(node.copyOfChildren.endIndex - 1), depth: depth + 1)
+                try printNode(node.copyOfChildren.last, depth: depth + 1)
                 return nil
             }
             printer("reabstraction thunk ")
             if node.kind == .ReabstractionThunkHelper {
                 printer("helper ")
             }
-            var children = node.copyOfChildren
-            if children.count == 3 {
-                try printNode(children.removeFirst(), depth: depth + 1)
+            var idx = 0
+            if node.numberOfChildren == 3 {
+                try printNode(node.getChildOrNil(0), depth: depth + 1)
                 printer(" ")
+                idx = 1
             }
             printer("from ")
-            try printNode(children[1], depth: depth + 1)
+            try printNode(node.getChildOrNil(idx + 1), depth: depth + 1)
             printer(" to ")
-            try printNode(children[0], depth: depth + 1)
+            try printNode(node.getChildOrNil(idx), depth: depth + 1)
         case .ReabstractionThunkHelperWithSelf:
             printer("reabstraction thunk ")
-            var children = node.copyOfChildren
-            if (children.count == 4) {
-                try printNode(children.removeFirst(), depth: depth + 1)
+            var idx = 0
+            if node.numberOfChildren == 4 {
+                try printNode(node.getChildOrNil(0), depth: depth + 1)
                 printer(" ")
+                idx = 1
             }
             printer("from ")
-            try printNode(children[2], depth: depth + 1)
+            try printNode(node.getChildOrNil(idx + 2), depth: depth + 1)
             printer(" to ")
-            try printNode(children[1], depth: depth + 1)
+            try printNode(node.getChildOrNil(idx + 1), depth: depth + 1)
             printer(" self ")
-            try printNode(children[0], depth: depth + 1)
+            try printNode(node.getChildOrNil(idx), depth: depth + 1)
         case .MergedFunction:
             if !options.contains(.shortenThunk) {
                 printer("merged ")
