@@ -13,7 +13,8 @@ public final class Node {
     
     private weak var parent: Node?
     
-    private(set) var kind: Kind
+    /// The kind of syntax represented by this node.
+    public private(set) var kind: Kind
     private(set) var payload: Payload
     private(set) var _children: [Node] {
         didSet {
@@ -22,6 +23,9 @@ public final class Node {
     }
     
     var copyOfChildren: [Node] { _children }
+
+    /// The child nodes in syntax-tree order. Changing this array does not change the tree.
+    public var children: [Node] { copyOfChildren }
     
     fileprivate var numberOfParent: Int {
         var count = 0
@@ -222,7 +226,8 @@ public final class Node {
         kind == .Identifier && text == desired
     }
     
-    var text: String {
+    /// The text payload, or an empty string when this node has no text payload.
+    public var text: String {
         if case let .text(text) = self.payload {
             return text
         } else {
@@ -234,7 +239,8 @@ public final class Node {
         self.payload.isText
     }
     
-    var index: UInt64? {
+    /// The numeric payload, or `nil` when this node has no numeric payload.
+    public var index: UInt64? {
         switch self.payload {
         case let .index(index):
             return index
@@ -1613,7 +1619,6 @@ extension Node.Kind {
         Self.requirements.contains(self)
     }
     
-    
     var isContext: Bool {
         Self.contexts.contains(self)
     }
@@ -1622,7 +1627,7 @@ extension Node.Kind {
         Self.functionAttrs.contains(self)
     }
     
-    var isMacroExpandion: Bool {
+    var isMacroExpansion: Bool {
         switch self {
         case .AccessorAttachedMacroExpansion,
                 .MemberAttributeAttachedMacroExpansion,

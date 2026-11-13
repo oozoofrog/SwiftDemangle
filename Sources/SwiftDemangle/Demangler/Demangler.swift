@@ -2873,7 +2873,7 @@ class Demangler: Demanglerable, Mangling {
         }
         
         var context = popNode { kind in
-            kind.isMacroExpandion
+            kind.isMacroExpansion
         }
         
         if context == nil {
