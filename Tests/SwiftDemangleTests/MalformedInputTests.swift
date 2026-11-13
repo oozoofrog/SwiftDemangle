@@ -19,6 +19,9 @@ final class MalformedInputTests {
         "$s99999999999999999999",
         // Associated type witness table accessor without an associated type path.
         "$s4main1SVAA1PAAxAA1QPWT",
+        // Old protocol descriptor without a protocol name.
+        "_TMp",
+        "_TMps10Comparabl",
     ])
     func malformedInputIsReturnedUnchanged(symbol: String) {
         #expect(symbol.demangled == symbol)

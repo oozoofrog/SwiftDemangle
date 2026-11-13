@@ -169,9 +169,8 @@ class OldDemangler: Demanglerable {
             }
             if nextIf("p") {
                 let metadata = Node(kind: .ProtocolDescriptor)
-                if let protocolName = demangleProtocolName() {
-                    metadata.add(protocolName)
-                }
+                guard let protocolName = demangleProtocolName() else { return nil }
+                metadata.add(protocolName)
                 return metadata
             }
             
