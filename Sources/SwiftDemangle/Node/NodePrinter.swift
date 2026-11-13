@@ -797,21 +797,23 @@ struct NodePrinter {
                 .KeyPathHashThunkHelper:
             printer("key path index " + (node.kind == Node.Kind.KeyPathEqualsThunkHelper ? "equality" : "hash") + " operator for ")
             
-            var lastChildIndex = node.copyOfChildren.endIndex
-            var lastChild = node.children(lastChildIndex)
-            if lastChild.kind == .IsSerialized {
+            var lastChildIndex = node.numberOfChildren
+            var lastChild = node.getChildOrNil(lastChildIndex - 1)
+            if lastChild?.kind == .IsSerialized {
                 lastChildIndex -= 1
-                lastChild = node.children(lastChildIndex)
+                lastChild = node.getChildOrNil(lastChildIndex - 1)
             }
             
-            if lastChild.kind == .DependentGenericSignature {
+            if let lastChild, lastChild.kind == .DependentGenericSignature {
                 try printNode(lastChild, depth: depth + 1)
                 lastChildIndex -= 1
             }
             
             printer("(")
-            for index in 0...lastChildIndex where index != 0 {
-                printer(", ")
+            for index in 0..<max(lastChildIndex, 0) {
+                if index != 0 {
+                    printer(", ")
+                }
                 try printNode(node.children(index), depth: depth + 1)
             }
             printer(")")
@@ -2755,7 +2757,8 @@ struct NodePrinter {
                 }
                 
                 let param = child.children(0)
-                let type = child.children(1)
+                // A Type node has one child; NodePrinter.cpp gets null here and prints no value type.
+                let type = child.getChildOrNil(1)
                 if param.kind != .DependentGenericParamType {
                     continue
                 }

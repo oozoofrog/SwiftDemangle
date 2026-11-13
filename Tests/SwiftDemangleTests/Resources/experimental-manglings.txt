@@ -20,3 +20,8 @@ $s3foo7closureSS1aTf1cpfC0_n ---> function signature specialization <Arg[0] = [C
 $s3foo4main1SVTf3pSpi4_n ---> function signature specialization <Arg[0] = [Constant Propagated Struct : main.S], Arg[1] = [Constant Propagated Integer : 4]> of foo
 $s4test1SV1xSivpfFTf4n_g ---> function signature specialization <Return = Owned To Guaranteed> of property wrapped field init accessor of test.S.x : Swift.Int
 $s4main1SV1xSivpfF5LocalL_VySS_SiGMa ---> type metadata accessor for Local #1 in property wrapped field init accessor of main.S<Swift.String>.x : Swift.Int<Swift.Int>
+
+// Key path index operators and value generic parameters; expected output from swift-demangle (Xcode toolchain)
+$sSSTH ---> key path index equality operator for (Swift.String)
+$sSSTh ---> key path index hash operator for (Swift.String)
+$s2vg1gySiAA1SVyxSSGSiRVzlF ---> vg.g<let A>(vg.S<A, Swift.String>) -> Swift.Int

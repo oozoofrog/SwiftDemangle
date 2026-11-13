@@ -119,7 +119,7 @@ public final class Node {
     }
     
     func children(_ at: Int) -> Node {
-        if at < self._children.count {
+        if at >= 0, at < self._children.count {
             return self._children[at]
         } else {
             assertionFailure()

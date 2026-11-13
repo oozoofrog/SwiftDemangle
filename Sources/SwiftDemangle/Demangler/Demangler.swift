@@ -3687,7 +3687,7 @@ extension Node {
         children(at)
     }
     func getChildOrNil(_ at: Int) -> Node? {
-        if at < numberOfChildren {
+        if at >= 0, at < numberOfChildren {
             return children(at)
         } else {
             return nil
