@@ -44,6 +44,22 @@ final class MalformedInputTests {
         "$s4mini3SeqPAA06BorrowB0Ty",
         // Punycode code point above UInt32.max.
         "$s0059xxxxxxxxxxxxxxx_ttttttttBBBBBBBBBBBBBBBBcBBBBBBBBBBBBBBBBee",
+        // Found by mutating the resource-file symbols.
+        // Old variadic tuple without elements.
+        "_Ttt_",
+        // Old differentiable function type with an unknown kind.
+        "_TtbDiSu",
+        "_TFC3foo3barcfD_S0_",
+        // Function type kind the printer does not handle.
+        "$S3abc6testityySiDTm",
+        "_$S8mangling14varargsVsArray3arr1nySid_SStD",
+        // Impl function type with more than one substitution list.
+        "$s39differentiation_subset_parameters_thunk19inoutIndirectCalleryq_x_q_q0_t16_Differentiation14DifferentiableRzAcDR_AcDR0_r1_lFxq_Sdq_xq_Sdr0_ly13TangentVectorAcDPly_AeFQzIsegnrr_Iegnnnro_TJSrSSSpSrSUSP",
+        // Clang type followed by more input.
+        "$sxxxIxzC1xxxesy",
+        // Key path index operator and value generic marker of mutated symbols.
+        "_T0Ix_IyB_TH",
+        "_T010Foundation11MeasurementV12SimulatorKitSo9UnitAngleCRVzlE11OrientationO2eeoiSbAcDEAGOyAF_G_AKtFZ",
     ])
     func malformedInputDoesNotTrap(symbol: String) {
         _ = symbol.demangled

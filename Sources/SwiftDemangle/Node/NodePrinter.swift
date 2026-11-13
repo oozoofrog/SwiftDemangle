@@ -2153,7 +2153,8 @@ struct NodePrinter {
         case .ObjCBlock:
             try printConventionWithMangledCType(convention: "block")
         default:
-            assertionFailure("Unhandled function type in printFunctionType!")
+            // Reachable with malformed input; NodePrinter.cpp only asserts and goes on printing.
+            break
         }
         
         let argumentIndex = type.numberOfChildren - 2

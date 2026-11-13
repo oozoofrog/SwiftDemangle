@@ -1451,7 +1451,7 @@ class OldDemangler: Demanglerable {
             
             tuple.add(elt)
         }
-        if isV == .yes {
+        if isV == .yes, tuple.numberOfChildren > 0 {
             elt.reverseChildren()
             let marker = Node(kind: .VariadicMarker)
             elt.add(marker)
@@ -1491,7 +1491,8 @@ class OldDemangler: Demanglerable {
                 case .forward, .reverse, .normal, .linear:
                     diffKind = kind
                 case .nonDifferentiable:
-                    assertionFailure("Impossible case 'NonDifferentiable'")
+                    // Any other character; OldDemangler.cpp leaves the function non-differentiable.
+                    break
                 }
             }
             if nextIf("Y") {

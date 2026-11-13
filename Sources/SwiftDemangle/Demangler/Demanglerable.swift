@@ -40,7 +40,7 @@ extension Demanglerable {
         let size = MemoryLayout<BI>.size
         if size <= mangled.count {
             let pref = mangled[0..<size]
-            mangled.removeFirst(size)
+            mangled = Data(mangled.dropFirst(size))
             return pref.withUnsafeBytes({ $0.load(as: BI.self) })
         } else {
             return nil
@@ -58,13 +58,13 @@ extension Demanglerable {
         guard length > 0 else { return String(data: mangled, encoding: .ascii) ?? "" }
         
         let next = mangled[0..<length]
-        mangled.removeFirst(length)
+        mangled = Data(mangled.dropFirst(length))
         return String(data: next, encoding: .ascii) ?? ""
     }
     
     func nextIf(_ character: Character) -> Bool {
         if peekChar() == character {
-            mangled.removeFirst()
+            mangled = Data(mangled.dropFirst())
             return true
         } else {
             return false

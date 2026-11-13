@@ -1026,8 +1026,9 @@ class Demangler: Demanglerable, Mangling {
             
             let subsNode = createNode(.ImplPatternSubstitutions)
             subsNode.addChild(sig)
-            assert(Substitutions.size() == 1)
-            subsNode.addChild(Substitutions[0])
+            // Demangler.cpp asserts a single list and uses the first one.
+            guard let substitution = Substitutions.first else { return nil }
+            subsNode.addChild(substitution)
             if SubstitutionRetroConformances.hasValue {
                 subsNode.addChild(SubstitutionRetroConformances)
             }
