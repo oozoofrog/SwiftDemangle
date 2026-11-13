@@ -8,8 +8,8 @@
 import Foundation
 
 class OldDemangler: Demanglerable {
-    var mangled: Data
-    let mangledOriginal: Data
+    let buffer: [UInt8]
+    var position: Int = 0
     
     let numerics: [Character] = (0...9).map(\.description).map(Character.init)
     
@@ -25,8 +25,7 @@ class OldDemangler: Demanglerable {
     private let maxDepth = 64
 
     required init(_ mangled: String, printDebugInformation: Bool = false) {
-        self.mangled = mangled.data(using: .ascii) ?? Data()
-        self.mangledOriginal = Data(self.mangled)
+        self.buffer = Self.bytes(of: mangled)
         self.printDebugInformation = printDebugInformation
     }
     
@@ -97,7 +96,7 @@ class OldDemangler: Demanglerable {
         if isEmpty {
             return false
         }
-        if let n = next()?.number(Number.self) {
+        if let n = nextChar().number(Number.self) {
             number = n
         } else {
             return false
@@ -106,12 +105,12 @@ class OldDemangler: Demanglerable {
             if isEmpty {
                 return true
             }
-            if let n = peek().number(Number.self) {
+            if let n = peekChar().number(Number.self) {
                 number = number &* 10 &+ n
             } else {
                 return true
             }
-            next()
+            nextChar()
         }
     }
     
@@ -125,15 +124,11 @@ class OldDemangler: Demanglerable {
             return nil
         }
         var codes: [Character] = [Character](repeating: "".character, count: 2)
-        if let next = next() {
-            codes[0] = next
-        }
+        codes[0] = nextChar()
         if isEmpty {
             return nil
         }
-        if let next = next() {
-            codes[1] = next
-        }
+        codes[1] = nextChar()
         let codeStr = codes.map(\.description).joined()
         return Node.ValueWitnessKind(code: codeStr)
     }
@@ -367,7 +362,7 @@ class OldDemangler: Demanglerable {
             // length less than or equal to 32. We do not specialize strings with a
             // length greater than 32.
             guard nextIf("e") else { return false }
-            let encoding = peek()
+            let encoding = peekChar()
             guard encoding == "0" || encoding == "1" else { return false }
             let encodingStr: String
             if encoding == "0" {
@@ -396,7 +391,7 @@ class OldDemangler: Demanglerable {
         parent.addFunctionSigSpecializationParamKind(kind: .ClosureProp, texts: name.text)
         
         // Then demangle types until we fail.
-        while peek() != "_", let type = demangleType() {
+        while peekChar() != "_", let type = demangleType() {
             parent.add(type)
         }
         
@@ -468,7 +463,7 @@ class OldDemangler: Demanglerable {
             }
             
             // Create a node for the pass id.
-            spec.add(Node(kind: .SpecializationPassID, index: next()?.number(UInt64.self) ?? 0))
+            spec.add(Node(kind: .SpecializationPassID, index: nextChar().number(UInt64.self) ?? 0))
             
             // And then mangle the generic specialization.
             return demangleGenericSpecialization(spec)
@@ -482,7 +477,7 @@ class OldDemangler: Demanglerable {
             }
             
             // Add the pass id.
-            spec.add(Node(kind: .SpecializationPassID, index: next()?.number(UInt64.self) ?? 0))
+            spec.add(Node(kind: .SpecializationPassID, index: nextChar().number(UInt64.self) ?? 0))
             
             // Then perform the function signature specialization.
             return demangleFunctionSignatureSpecialization(spec)
@@ -518,7 +513,7 @@ class OldDemangler: Demanglerable {
     }
     
     func demangleIdentifier(kind _kind: Node.Kind? = nil) -> Node? {
-        if mangled.isEmpty {
+        if isEmpty {
             return nil
         }
         
@@ -538,7 +533,7 @@ class OldDemangler: Demanglerable {
             // building more specific identifiers.
             guard _kind == nil else { return nil }
             
-            guard let op_mode = next() else { return nil }
+            let op_mode = nextChar()
             switch op_mode {
             case "p":
                 _kind = .PrefixOperator
@@ -619,7 +614,7 @@ class OldDemangler: Demanglerable {
     }
     
     func demangleSubstitutionIndex() -> Node? {
-        if mangled.isEmpty {
+        if isEmpty {
             return nil
         }
         if nextIf("o") {
@@ -870,7 +865,7 @@ class OldDemangler: Demanglerable {
         if nextIf("G") {
             return demangleBoundGenericType()
         }
-        if isStartOfEntity(peek()) {
+        if isStartOfEntity(peekChar()) {
             return demangleEntity()
         } else {
             return demangleModule()
@@ -1219,7 +1214,7 @@ class OldDemangler: Demanglerable {
         guard isNotEmpty else { return nil }
 
         // A dependent member type begins with a non-index, non-'d' character.
-        let c = peek()
+        let c = peekChar()
         if c != "d", c != "_", !c.isNumber {
             guard let baseType = demangleType() else { return nil }
             return demangleDependentMemberTypeName(base: baseType)
@@ -1257,7 +1252,7 @@ class OldDemangler: Demanglerable {
             sig.add(.init(kind: .DependentGenericParamCount, payload: .index(count)))
         }
         
-        while peek() != "R", peek() != "r" {
+        while peekChar() != "R", peekChar() != "r" {
             if nextIf("z") {
                 count = 0
             } else if demangleIndex(&count) {
@@ -1378,7 +1373,7 @@ class OldDemangler: Demanglerable {
         
         var constraint: Node?
         
-        let next = peek()
+        let next = peekChar()
         
         if next == "C" {
             constraint = demangleType()
@@ -1387,7 +1382,7 @@ class OldDemangler: Demanglerable {
             // A substitution may be either the module name of a protocol or a full
             // type name.
             var typeName: Node?
-            self.next()
+            nextChar()
             guard let sub = demangleSubstitutionIndex() else { return nil }
             if sub.kind == .Protocol || sub.kind == .Class {
                 typeName = sub
@@ -1441,7 +1436,7 @@ class OldDemangler: Demanglerable {
             guard isNotEmpty else { return nil }
             elt = Node(kind: .TupleElement)
             
-            if isStartOfIdentifier(peek()) {
+            if isStartOfIdentifier(peekChar()) {
                 guard let label = demangleIdentifier(kind: .TupleElementName) else { return nil }
                 elt.add(label)
             }
@@ -1486,7 +1481,7 @@ class OldDemangler: Demanglerable {
             isAsync = nextIf("Z")
             
             if nextIf("D") {
-                let kind = next().map(\.description).flatMap(MangledDifferentiabilityKind.init) ?? .nonDifferentiable
+                let kind = MangledDifferentiabilityKind(rawValue: nextChar().description) ?? .nonDifferentiable
                 switch kind {
                 case .forward, .reverse, .normal, .linear:
                     diffKind = kind
@@ -1538,10 +1533,10 @@ class OldDemangler: Demanglerable {
         defer { depth -= 1 }
         guard depth <= maxDepth else { return nil }
         guard isNotEmpty else { return nil }
-        guard let c = next() else { return nil }
+        let c = nextChar()
         if c == "B" {
             guard isNotEmpty else { return nil }
-            guard let c = next() else { return nil }
+            let c = nextChar()
             if c == "b" {
                 return Node(kind: .BuiltinTypeName, text: "Builtin.BridgeObject")
             }

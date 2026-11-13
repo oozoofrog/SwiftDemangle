@@ -7,122 +7,125 @@
 
 import Foundation
 
+/// Reads the mangled input like upstream `Demangler` (`Text` + `Pos`):
+/// `buffer` never changes and reading only moves `position` forward.
 protocol Demanglerable: AnyObject {
-    var mangled: Data { get set }
-    var mangledOriginal: Data { get }
-    var text: String { get }
-    var textOriginal: String { get }
+    /// The whole mangled input as ASCII bytes.
+    var buffer: [UInt8] { get }
+    /// Index of the next unread byte in `buffer`.
+    var position: Int { get set }
     var numerics: [Character] { get }
     var substitutions: [Node] { get }
-    
+
     init(_ mangled: String, printDebugInformation: Bool)
 }
 
 extension Demanglerable {
-    
+
+    /// The input as bytes; a string that is not ASCII becomes empty input.
+    static func bytes(of mangled: String) -> [UInt8] {
+        Array(mangled.data(using: .ascii) ?? Data())
+    }
+
+    /// Number of unread bytes.
+    var remaining: Int {
+        buffer.count - position
+    }
+
+    /// The unread text.
     var text: String {
-        String(data: self.mangled, encoding: .ascii) ?? ""
+        String(decoding: buffer[position...], as: UTF8.self)
     }
-    
+
+    /// The whole input, including what has been read.
     var textOriginal: String {
-        String(data: self.mangledOriginal, encoding: .ascii) ?? ""
+        String(decoding: buffer, as: UTF8.self)
     }
-    
+
+    var isEmpty: Bool {
+        position >= buffer.count
+    }
+
+    var isNotEmpty: Bool {
+        !isEmpty
+    }
+
+    /// The next character, or `.zero` at the end of the input.
     func peekChar() -> Character {
-        if let ascii = mangled.first {
-            return Character.init(.init(ascii))
-        } else {
-            return .zero
-        }
+        isEmpty ? .zero : buffer[position].character
     }
-    
-    func nextNumber<BI>(_ type: BI.Type) -> BI? where BI: BinaryInteger {
-        let size = MemoryLayout<BI>.size
-        if size <= mangled.count {
-            let pref = mangled[0..<size]
-            mangled = Data(mangled.dropFirst(size))
-            return pref.withUnsafeBytes({ $0.load(as: BI.self) })
-        } else {
-            return nil
-        }
-    }
-    
+
+    /// Reads one character; returns `.zero` and reads nothing at the end of the input.
     @discardableResult
     func nextChar() -> Character {
-        guard mangled.count < mangledOriginal.count else { return .zero }
-        return Character(.init(mangled.removeFirst()))
+        guard isNotEmpty else { return .zero }
+        defer { position += 1 }
+        return buffer[position].character
     }
-    
-    func nextString(_ prefixLength: Int) -> String {
-        let length = min(prefixLength, mangled.count)
-        guard length > 0 else { return String(data: mangled, encoding: .ascii) ?? "" }
-        
-        let next = mangled[0..<length]
-        mangled = Data(mangled.dropFirst(length))
-        return String(data: next, encoding: .ascii) ?? ""
-    }
-    
-    func nextIf(_ character: Character) -> Bool {
-        if peekChar() == character {
-            mangled = Data(mangled.dropFirst())
-            return true
-        } else {
-            return false
-        }
-    }
-    
-    func peek() -> Character {
-        mangled.first.flatMap({ Character(.init($0)) }) ?? "."
-    }
-    
-    var isEmpty: Bool {
-        mangled.isEmpty
-    }
-    
-    var isNotEmpty: Bool {
-        mangled.isNotEmpty
-    }
-    
-    func nextIf(_ pref: String) -> Bool {
-        let prefData: Data = pref.data(using: .ascii) ?? Data()
-        if prefData.count <= mangled.count, mangled.subdata(in: 0..<prefData.count) == prefData {
-            self.mangled = Data(self.mangled.subdata(in: prefData.count..<mangled.count))
-            return true
-        } else {
-            return false
-        }
-    }
-    
+
     @discardableResult
-    func next() -> Character? {
-        let peeked = peek()
-        if !self.mangled.isEmpty {
-            self.mangled = Data(self.mangled.dropFirst())
-        }
-        return peeked
+    func nextIf(_ character: Character) -> Bool {
+        guard peekChar() == character else { return false }
+        advanceOffset(1)
+        return true
     }
-    
+
+    @discardableResult
+    func nextIf(_ prefix: String) -> Bool {
+        let bytes = prefix.utf8
+        guard bytes.count <= remaining, buffer[position..<(position + bytes.count)].elementsEqual(bytes) else { return false }
+        position += bytes.count
+        return true
+    }
+
+    /// Un-reads the last character.
+    func pushBack() {
+        assert(position > 0)
+        position -= 1
+    }
+
+    func nextNumber<BI>(_ type: BI.Type) -> BI? where BI: BinaryInteger & BitwiseCopyable {
+        let size = MemoryLayout<BI>.size
+        guard size <= remaining else { return nil }
+        defer { position += size }
+        return buffer.withUnsafeBytes { $0.loadUnaligned(fromByteOffset: position, as: BI.self) }
+    }
+
+    /// Reads up to `prefixLength` characters. With nothing to read, returns the unread text without reading it.
+    func nextString(_ prefixLength: Int) -> String {
+        let length = min(prefixLength, remaining)
+        guard length > 0 else { return text }
+        defer { position += length }
+        return slice(length)
+    }
+
+    /// The next `length` characters, without reading them.
+    func slice(_ length: Int) -> String {
+        String(decoding: buffer[position..<(position + min(length, remaining))], as: UTF8.self)
+    }
+
+    func advanceOffset(_ length: Int) {
+        position += min(length, remaining)
+    }
+
+    func hasAtLeast(_ length: UInt64) -> Bool {
+        length <= remaining
+    }
+
     func readUntil(_ c: Character) -> String {
         var result: String = ""
-        while !isEmpty, let peeked = peek().notEqualOrNil(c) {
+        while isNotEmpty, let peeked = peekChar().notEqualOrNil(c) {
             result.append(peeked.description)
             advanceOffset(1)
         }
         return result
     }
-    
-    func slice(_ length: Int) -> String {
-        String(data: mangled[mangled.startIndex..<mangled.index(mangled.startIndex, offsetBy: length)], encoding: .ascii) ?? ""
+
+    func consumeAll() -> String {
+        defer { position = buffer.count }
+        return text
     }
-    
-    func advanceOffset(_ length: Int) {
-        mangled = Data(mangled.dropFirst(length))
-    }
-    
-    func hasAtLeast(_ length: UInt64) -> Bool {
-        length <= mangled.count
-    }
-    
+
     func isStartOfEntity(_ character: Character?) -> Bool {
         switch character {
         case "F", "I", "v", "P", "s", "Z":
@@ -131,11 +134,11 @@ extension Demanglerable {
             return isStartOfNominalType(character)
         }
     }
-    
+
     func isStartOfIdentifier(_ character: Character) -> Bool {
         numerics.contains(character) || character == "o"
     }
-    
+
     func isStartOfNominalType(_ character: Character?) -> Bool {
         switch character {
         case "C", "V", "O":
@@ -144,7 +147,7 @@ extension Demanglerable {
             return false
         }
     }
-    
+
     func nominalTypeMarkerToNodeKind(_ character: Character) -> Node.Kind {
         switch character {
         case "C":
@@ -157,11 +160,5 @@ extension Demanglerable {
             return .Identifier
         }
     }
-    
-    func consumeAll() -> String {
-        let text = self.mangled
-        self.mangled = Data()
-        return String(data: text, encoding: .ascii) ?? ""
-    }
-    
+
 }

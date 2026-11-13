@@ -8,9 +8,8 @@
 import Foundation
 
 class Demangler: Demanglerable, Mangling {
-    var mangled: Data
-    var mangledOriginal: Data
-    var position: Int { mangledOriginal.count - mangled.count }
+    let buffer: [UInt8]
+    var position: Int = 0
     let numerics: [Character] = (0...9).map(\.description).map(Character.init)
     
     private(set) var substitutions: [Node] = []
@@ -28,8 +27,7 @@ class Demangler: Demanglerable, Mangling {
     private let printDebugInformation: Bool
     
     required init(_ mangled: String, printDebugInformation: Bool) {
-        self.mangled = mangled.data(using: .ascii) ?? Data()
-        self.mangledOriginal = Data(self.mangled)
+        self.buffer = Self.bytes(of: mangled)
         self.printDebugInformation = printDebugInformation
     }
     
@@ -107,7 +105,7 @@ class Demangler: Demanglerable, Mangling {
     
     @discardableResult
     func parseAndPushNodes() -> Bool {
-        while self.mangled.isNotEmpty {
+        while isNotEmpty {
             guard let node = demangleOperator(), node.height <= Node.maxDepth else { return false }
             pushNode(node)
         }
@@ -127,7 +125,7 @@ class Demangler: Demanglerable, Mangling {
     func demangleSymbolicReference(_ rawKind: Character) -> Node? {
         // The symbolic reference is a 4-byte machine integer encoded in the following
         // four bytes.
-        if mangled.count + 4 > mangledOriginal.size() {
+        if !hasAtLeast(4) {
             return nil
         }
         
@@ -203,7 +201,10 @@ class Demangler: Demanglerable, Mangling {
         }
     }
     
-    var parsedChars: String = ""
+    /// The input read so far.
+    var parsedChars: String {
+        String(decoding: buffer[..<position], as: UTF8.self)
+    }
     
     func demangleOperator() -> Node? {
         while true {
@@ -460,7 +461,7 @@ class Demangler: Demanglerable, Mangling {
             if isPunycoded {
                 nextIf("_")
             }
-            if self.position + numChars > mangledOriginal.size() {
+            if self.position + numChars > buffer.count {
                 return nil
             }
             let Slice = slice(numChars)
@@ -474,13 +475,14 @@ class Demangler: Demanglerable, Mangling {
                 Identifier.append(PunycodedString)
             } else {
                 Identifier.append(Slice)
+                let SliceChars = Array(Slice)
                 var wordStartPos = -1
-                for Idx in 0...Slice.size() {
-                    let c: Character = Idx < Slice.count ? Slice[Idx] : .zero
-                    if wordStartPos >= 0 && c.isWordEnd(prevChar: Slice[Idx - 1]) {
+                for Idx in 0...SliceChars.count {
+                    let c: Character = Idx < SliceChars.count ? SliceChars[Idx] : .zero
+                    if wordStartPos >= 0 && c.isWordEnd(prevChar: SliceChars[Idx - 1]) {
                         if (Idx - wordStartPos >= 2 && numWords < maxNumWords) {
-                            let word = Slice[wordStartPos..<Idx]
-                            self.words.append(word.description)
+                            let word = String(SliceChars[wordStartPos..<Idx])
+                            self.words.append(word)
                         }
                         wordStartPos = -1
                     }
@@ -1007,7 +1009,7 @@ class Demangler: Demanglerable, Mangling {
     
     func demangleClangType() -> Node? {
         let numChars = demangleNatural()
-        guard numChars > 0, self.position + mangled.count <= mangledOriginal.count else { return nil }
+        guard numChars > 0 else { return nil }
         var mangledClangType: String = ""
         mangledClangType.append(nextString(numChars))
         return createNode(.ClangType, mangledClangType)
@@ -2980,46 +2982,6 @@ class Demangler: Demanglerable, Mangling {
         return createType(integer)
     }
     
-    @discardableResult
-    func nextIf(_ str: String) -> Bool {
-        guard mangled.hasPrefix(str) else { return false }
-        mangled = Data(mangled.dropFirst(str.count))
-        return true
-    }
-    
-    func peekChar() -> Character {
-        guard mangled.isNotEmpty else { return .zero }
-        return mangled[0].character
-    }
-    
-    @discardableResult
-    func nextChar() -> Character {
-        guard let first = mangled.first else { return .zero }
-        if printDebugInformation {
-            parsedChars.append(first.character)
-        }
-        mangled = Data(mangled.dropFirst())
-        return first.character
-    }
-    
-    func nextIf(_ c: Character) -> Bool {
-        guard peekChar() == c else { return false }
-        nextChar()
-        return true
-    }
-    
-    func pushBack() {
-        assert(mangled.count < mangledOriginal.count)
-        mangled.insert(mangledOriginal[mangledOriginal.count - mangled.count - 1], at: mangled.startIndex)
-    }
-    
-    func consumeAll() -> String {
-        defer {
-            mangled = Data()
-        }
-        return String(data: mangled, encoding: .ascii) ?? ""
-    }
-    
     func addSubstitution(_ node: Node?) {
         guard let node = node else { return }
         substitutions.append(node)
@@ -3772,27 +3734,6 @@ private extension String {
     
     mutating func push_back(_ character: Character) {
         self.append(character)
-    }
-}
-
-private extension Data {
-    func empty() -> Bool { isEmpty }
-    func size() -> Int { count }
-    
-    func hasPrefix(_ str: String) -> Bool {
-        guard let strData = str.data(using: .ascii) else { return false }
-        guard strData.count <= self.count else { return false }
-        return strData == self[0..<strData.count]
-    }
-    
-    func substr(_ from: Int) -> String {
-        guard from < self.count else { return "" }
-        return String(data: self[from..<self.count], encoding: .ascii) ?? ""
-    }
-    
-    mutating func push_back(_ character: Character) {
-        guard let value = character.asciiValue else { return }
-        self.append(value)
     }
 }
 
