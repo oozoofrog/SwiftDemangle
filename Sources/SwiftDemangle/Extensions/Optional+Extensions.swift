@@ -29,10 +29,6 @@ extension Optional {
 
 extension Optional where Wrapped: Collection {
     
-    var isEmptyOrNil: Bool {
-        self?.isEmpty ?? true
-    }
-    
     var isNotEmpty: Bool {
         self?.isNotEmpty ?? false
     }

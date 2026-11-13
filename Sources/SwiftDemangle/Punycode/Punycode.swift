@@ -91,7 +91,7 @@ struct Punycode {
                 }
                 
                 // Fail if i + (digit * w) would overflow
-                if digit > (Int.max - i) / w {
+                if digit > (Int(UInt32.max) - i) / w {
                     return nil
                 }
                 
@@ -110,14 +110,14 @@ struct Punycode {
                     break
                 }
                 // Fail if w * (base - t) would overflow
-                if w > Int.max / (base - t) {
+                if w > Int(UInt32.max) / (base - t) {
                     return nil
                 }
                 w = w * (base - t)
             }
             bias = adapt(i - oldi, OutCodePoints.count + 1, oldi == 0)
             // Fail if n + i / (OutCodePoints.size() + 1) would overflow
-            if i / (OutCodePoints.count + 1) > Int.max - Int(n) {
+            if i / (OutCodePoints.count + 1) > Int(UInt32.max) - Int(n) {
                 return nil
             }
             n = n + i / (OutCodePoints.count + 1)

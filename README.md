@@ -74,6 +74,16 @@ owner?.children.map(\.text)        // ["Widget", "Manager"]
 
 `nominalOwner` returns `nil` for module-level declarations and for symbol shapes it does not support, such as protocol witnesses and reabstraction thunks.
 
+## Malformed and untrusted input
+
+A string that cannot be demangled is returned unchanged; the library does not trap on truncated or damaged symbols.
+
+- A string that starts with `s` or `S` is also tried as a symbol without its `$` prefix (`"s4main3fooyyF".demangled` gives `main.foo() -> ()`). Other text is left as it is (`"sorted".demangled` gives `"sorted"`).
+- A symbol whose syntax tree is deeper than 256 levels is returned unchanged. For the old `_T` mangling the limit is 64 nested types. `swift-demangle` has no such limit; the deepest tree among 1.49 million symbols from Xcode's frameworks has 121 levels.
+- A constant-propagated function inside a function signature specialization is demangled up to 8 symbols deep; deeper ones print as their mangled text.
+- With these limits, an optimized build demangles any input within a 512 KB thread stack. A debug build uses far more stack per level, so demangle on a thread with a larger stack there.
+- `demangling(_:printDebugInformation:)` is deprecated; the parameter has no effect. Use `demangling(_:)`.
+
 ## Build xcframework
 
 ```bash

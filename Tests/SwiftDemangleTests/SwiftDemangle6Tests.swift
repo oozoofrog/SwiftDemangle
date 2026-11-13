@@ -138,5 +138,17 @@ struct SwiftDemangle6Tests {
         let demangled = mangled.demangled
         #expect(demangled == expected)
     }
+
+    /// Reading must stay linear in the input length; quadratic reading took minutes here.
+    @Test(.timeLimit(.minutes(1))) func longIdentifiersDemangleInLinearTime() async throws {
+        let length = 200_000
+        let name = String(repeating: "a", count: length)
+        let clock = ContinuousClock()
+        let elapsed = clock.measure {
+            #expect("$s4main\(length)\(name)VD".demangled == "main." + name)
+            #expect("_TtC4main\(length)\(name)".demangled == "main." + name)
+        }
+        #expect(elapsed < .seconds(10))
+    }
 }
     

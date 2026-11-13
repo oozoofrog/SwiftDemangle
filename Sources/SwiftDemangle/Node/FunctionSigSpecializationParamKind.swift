@@ -118,10 +118,6 @@ public struct FunctionSigSpecializationParamKind: Equatable {
         }
     }
     
-    func containKind(_ kind: Kind) -> Bool {
-        self.kind == kind
-    }
-    
     func containOptions(_ members: OptionSet...) -> Bool {
         members.allSatisfy(optionSet.contains)
     }
