@@ -120,7 +120,7 @@ extension Demanglerable {
     }
     
     func hasAtLeast(_ length: UInt64) -> Bool {
-        length <= mangledOriginal.count
+        length <= mangled.count
     }
     
     func isStartOfEntity(_ character: Character?) -> Bool {
