@@ -333,13 +333,15 @@ class OldDemangler: Demanglerable {
         if nextIf("fr") {
             // Demangle the identifier
             guard let name = demangleIdentifier(), nextIf("_") else { return false }
-            parent.addFunctionSigSpecializationParamKind(kind: .ConstantPropFunction, texts: name.text)
+            parent.addFunctionSigSpecializationParamKind(kind: .ConstantPropFunction)
+            parent.add(Node(kind: .Identifier, text: name.text))
             return true
         }
         
         if nextIf("g") {
             guard let name = demangleIdentifier(), nextIf("_") else { return false }
-            parent.addFunctionSigSpecializationParamKind(kind: .ConstantPropGlobal, texts: name.text)
+            parent.addFunctionSigSpecializationParamKind(kind: .ConstantPropGlobal)
+            parent.add(Node(kind: .Identifier, text: name.text))
             return true
         }
         
@@ -372,7 +374,8 @@ class OldDemangler: Demanglerable {
             
             guard nextIf("v") else { return false }
             guard let str = demangleIdentifier(), nextIf("_") else { return false }
-            parent.addFunctionSigSpecializationParamKind(kind: .ConstantPropString, texts: encodingStr, str.text)
+            parent.addFunctionSigSpecializationParamKind(kind: .ConstantPropString, texts: encodingStr)
+            parent.add(Node(kind: .Identifier, text: str.text))
             return true
         }
         

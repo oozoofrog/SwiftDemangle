@@ -58,6 +58,11 @@ public struct DemangleOptions: OptionSet, Sendable {
         .showAsyncResumePartial,
     ]
     
+    /// Options for a symbol name embedded in another symbol, such as a constant
+    /// propagated function. Upstream prints these with `DemangleOptions()`, which
+    /// does not synthesize sugar.
+    static let nestedSymbolOptions: DemangleOptions = defaultOptions.subtracting(.synthesizeSugarOnTypes)
+    
     public static let simplifiedOptions: DemangleOptions = [
         .synthesizeSugarOnTypes,
         .qualifyEntities,

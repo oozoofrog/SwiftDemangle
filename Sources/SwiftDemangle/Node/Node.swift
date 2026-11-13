@@ -326,6 +326,7 @@ extension Node {
                 .BuiltinTypeName,
                 .BuiltinTupleType,
                 .BuiltinFixedArray,
+                .BuiltinBorrow,
                 .Class,
                 .DependentGenericType,
                 .DependentMemberType,
@@ -482,6 +483,11 @@ extension Node {
                 .ConstValue,
                 .CoroFunctionPointer,
                 .DefaultOverride,
+                .BorrowAccessor,
+                .MutateAccessor,
+                .ImplNonisolatedNonsendingIsolation,
+                .PropertyWrappedFieldInitAccessor,
+                .RepresentationChanged,
                 .DependentProtocolConformanceOpaque,
                 .ImplParameterIsolated,
                 .ImplParameterImplicitLeading,
@@ -507,7 +513,7 @@ extension Node {
                 .MethodDescriptor,
                 .MethodLookupFunction,
                 .ModifyAccessor,
-                .Modify2Accessor,
+                .YieldingMutateAccessor,
                 .NativeOwningAddressor,
                 .NativeOwningMutableAddressor,
                 .NativePinningAddressor,
@@ -535,7 +541,7 @@ extension Node {
                 .PeerAttachedMacroExpansion,
                 .PostfixOperator,
                 .PreambleAttachedMacroExpansion,
-                .PredefinedObjCAsyncCompletionHandlerImpl,
+                .CheckedObjCAsyncCompletionHandlerImpl,
                 .PrefixOperator,
                 .PrivateDeclName,
                 .PropertyDescriptor,
@@ -558,7 +564,7 @@ extension Node {
                 .ReabstractionThunkHelperWithSelf,
                 .ReabstractionThunkHelperWithGlobalActor,
                 .ReadAccessor,
-                .Read2Accessor,
+                .YieldingBorrowAccessor,
                 .RelatedEntityDeclName,
                 .RetroactiveConformance,
                 .Setter,
@@ -766,6 +772,7 @@ extension Node {
                 .DefaultArgumentInitializer,
                 .Initializer,
                 .PropertyWrapperBackingInitializer,
+                .PropertyWrappedFieldInitAccessor,
                 .PropertyWrapperInitFromProjectedValue:
             return false
         default:
@@ -1069,7 +1076,7 @@ extension Node {
         case ObjCResilientClassStub
         case FullObjCResilientClassStub
         case ModifyAccessor
-        case Modify2Accessor
+        case YieldingMutateAccessor
         case Module
         case NativeOwningAddressor
         case NativeOwningMutableAddressor
@@ -1080,7 +1087,7 @@ extension Node {
         case NonObjCAttribute
         case Number
         case ObjCAsyncCompletionHandlerImpl
-        case PredefinedObjCAsyncCompletionHandlerImpl
+        case CheckedObjCAsyncCompletionHandlerImpl
         case ObjCAttribute
         case ObjCBlock
         case EscapingObjCBlock
@@ -1122,7 +1129,7 @@ extension Node {
         case ReabstractionThunkHelperWithSelf
         case ReabstractionThunkHelperWithGlobalActor
         case ReadAccessor
-        case Read2Accessor
+        case YieldingBorrowAccessor
         case RelatedEntityDeclName
         case RetroactiveConformance
         case ReturnType
@@ -1309,6 +1316,14 @@ extension Node {
         case NonIsolatedCallerFunctionType
         case OutlinedInitializeWithTakeNoValueWitness
         case SugaredInlineArray
+
+        // Added in Swift 6.4.2
+        case BorrowAccessor
+        case BuiltinBorrow
+        case ImplNonisolatedNonsendingIsolation
+        case MutateAccessor
+        case PropertyWrappedFieldInitAccessor
+        case RepresentationChanged
         
         public func `in`(_ kinds: Self...) -> Bool {
             kinds.contains(self)
@@ -1514,6 +1529,8 @@ extension Node.Kind {
     ]
     private static let contexts: [Node.Kind] = [
         .Allocator,
+        .BorrowAccessor,
+        .MutateAccessor,
         .AnonymousContext,
         .Class,
         .Constructor,
@@ -1535,7 +1552,7 @@ extension Node.Kind {
         .IsolatedDeallocator,
         .MaterializeForSet,
         .ModifyAccessor,
-        .Modify2Accessor,
+        .YieldingMutateAccessor,
         .Module,
         .NativeOwningAddressor,
         .NativeOwningMutableAddressor,
@@ -1545,11 +1562,12 @@ extension Node.Kind {
         .OwningAddressor,
         .OwningMutableAddressor,
         .PropertyWrapperBackingInitializer,
+        .PropertyWrappedFieldInitAccessor,
         .PropertyWrapperInitFromProjectedValue,
         .Protocol,
         .ProtocolSymbolicReference,
         .ReadAccessor,
-        .Read2Accessor,
+        .YieldingBorrowAccessor,
         .Setter,
         .Static,
         .Structure,
