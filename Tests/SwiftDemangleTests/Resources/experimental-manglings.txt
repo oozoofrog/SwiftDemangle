@@ -5,3 +5,18 @@
 // SugaredInlineArray - [N of T] syntax
 $s$2_SiXSA_s11InlineArrayVy$2_SiGtD ---> ([3 of Swift.Int], Swift.InlineArray<3, Swift.Int>)
 $s$2_$0_SSXSAXSA_s11InlineArrayVy$2_ABy$0_SSGGtD ---> ([3 of [1 of Swift.String]], Swift.InlineArray<3, Swift.InlineArray<1, Swift.String>>)
+
+// Swift 6.4.2 node kinds without a line in upstream manglings.txt.
+// Expected output taken from swift-demangle 6.4.2.
+$s2hi1SV1iSivb ---> hi.S.i.borrow : Swift.Int
+$s2hi1SV1iSivz ---> hi.S.i.mutate : Swift.Int
+$s2hi1SVyS2icib ---> hi.S.subscript.borrow : (Swift.Int) -> Swift.Int
+$s2hi1SVyS2iciz ---> hi.S.subscript.mutate : (Swift.Int) -> Swift.Int
+$s2hi1SV1iSivbTwc ---> coro function pointer to hi.S.i.borrow : Swift.Int
+$sxq_Iegnl_D ---> @escaping @callee_guaranteed (@in_guaranteed A, @inout B) -> ()
+$sxIeAghHr_xIeNghHr_TR ---> reabstraction thunk helper from @escaping @isolated(any) @callee_guaranteed @Sendable @async () -> (@out A) to @escaping @caller_isolated @callee_guaranteed @Sendable @async () -> (@out A)
+$sSiSgBW ---> Builtin.Borrow<Swift.Int?>
+$s3foo7closureSS1aTf1cpfC0_n ---> function signature specialization <Arg[0] = [Closure Propagated : closure, Argument Types : [Swift.String], Arg[1] = [Constant Propagated Function : a], Arg[2] = [Same As Argument 0]> of foo
+$s3foo4main1SVTf3pSpi4_n ---> function signature specialization <Arg[0] = [Constant Propagated Struct : main.S], Arg[1] = [Constant Propagated Integer : 4]> of foo
+$s4test1SV1xSivpfFTf4n_g ---> function signature specialization <Return = Owned To Guaranteed> of property wrapped field init accessor of test.S.x : Swift.Int
+$s4main1SV1xSivpfF5LocalL_VySS_SiGMa ---> type metadata accessor for Local #1 in property wrapped field init accessor of main.S<Swift.String>.x : Swift.Int<Swift.Int>

@@ -314,8 +314,9 @@ class Demangler: Demanglerable, Mangling {
             if !c.isNumber {
                 return num
             }
+            // Upstream parses into a 32-bit int and rejects a value that overflows it.
             let newNum = (10 * num) + (c - "0")
-            if newNum < num {
+            if newNum > Int(Int32.max) {
                 return -1000
             }
             num = newNum
@@ -605,6 +606,12 @@ class Demangler: Demanglerable, Mangling {
             Ty = createNode(.BuiltinFixedArray)
             addChild(Ty, size)
             addChild(Ty, element)
+        case "W":
+            guard let referent = popNode(.Type) else {
+                return nil
+            }
+            Ty = createNode(.BuiltinBorrow)
+            addChild(Ty, referent)
         case "O":
             Ty = createNode(.BuiltinTypeName, .BUILTIN_TYPE_NAME_UNKNOWNOBJECT)
         case "o":
@@ -957,6 +964,10 @@ class Demangler: Demanglerable, Mangling {
         case "d": attr = "@unowned"
         case "u": attr = "@unowned_inner_pointer"
         case "a": attr = "@autoreleased"
+        case "k": attr = "@pack_out"
+        case "l": attr = "@guaranteed_address"
+        case "g": attr = "@guaranteed"
+        case "m": attr = "@inout"
         default:
             pushBack()
             return nil
@@ -1045,6 +1056,10 @@ class Demangler: Demanglerable, Mangling {
         
         if nextIf("A") {
             type.addChild(createNode(.ImplErasedIsolation))
+        }
+        
+        if nextIf("N") {
+            type.addChild(createNode(.ImplNonisolatedNonsendingIsolation))
         }
         
         switch MangledDifferentiabilityKind(rawValue: peekChar().description) {
@@ -1468,7 +1483,7 @@ class Demangler: Demanglerable, Mangling {
             let sig = popNode(.DependentGenericSignature)
             let resultType = popNode(.Type)
             let implType = popNode(.Type)
-            let node = createWithChildren(c == "z" ? .ObjCAsyncCompletionHandlerImpl : .PredefinedObjCAsyncCompletionHandlerImpl, implType, resultType, flagMode)
+            let node = createWithChildren(c == "z" ? .ObjCAsyncCompletionHandlerImpl : .CheckedObjCAsyncCompletionHandlerImpl, implType, resultType, flagMode)
             if sig.hasValue {
                 addChild(node, sig)
             }
@@ -1573,12 +1588,12 @@ class Demangler: Demanglerable, Mangling {
             
         case "n":
             let requirementTy = popProtocol()
-            let conformingType = popSelfOrAssocTypePath()
+            let conformingType = popAssociatedConformanceWitnessAccessorSubject()
             let protoTy = popNode(.Type)
             return createWithChildren(.AssociatedConformanceDescriptor, protoTy, conformingType, requirementTy)
         case "N":
             let requirementTy = popProtocol()
-            let assocTypePath = popSelfOrAssocTypePath()
+            let assocTypePath = popAssociatedConformanceWitnessAccessorSubject()
             let protoTy = popNode(.Type)
             return createWithChildren(.DefaultAssociatedConformanceAccessor, protoTy, assocTypePath, requirementTy)
         case "b":
@@ -1856,6 +1871,9 @@ class Demangler: Demanglerable, Mangling {
 
     func demangleFunctionSpecialization() -> Node? {
         var Spec = demangleSpecAttributes(.FunctionSignatureSpecialization)
+        if let Spec, Spec.copyOfChildren.first?.getKind() == .RepresentationChanged {
+            return Spec
+        }
         while Spec.hasValue, !nextIf("_") {
             Spec = addChild(Spec, demangleFuncSpecParam(.FunctionSignatureSpecializationParam))
         }
@@ -1869,39 +1887,40 @@ class Demangler: Demanglerable, Mangling {
         
         // Add the required parameters in reverse order.
         for Param in Spec?.copyOfChildren.reversed() ?? [] {
-            var Param: Node? = Param
-            if Param?.getKind() != .FunctionSignatureSpecializationParam {
+            if Param.getKind() != .FunctionSignatureSpecializationParam {
                 continue
             }
             
-            if Param?.getNumChildren() == 0 {
-                continue
-            }
-            let KindNd = Param?.getFirstChild()
-            assert(KindNd?.getKind() == .FunctionSignatureSpecializationParamKind)
-            let ParamKind = KindNd?.functionSigSpecializationParamKind
-            switch ParamKind?.kind {
-            case .ConstantPropFunction, .ConstantPropGlobal, .ConstantPropString, .ConstantPropKeyPath, .ClosureProp:
-                let FixedChildren = Param?.getNumChildren() ?? 0
-                while let Ty = popNode(.Type) {
-                    switch ParamKind?.kind {
-                    case .ClosureProp, .ConstantPropKeyPath:
-                        Param = addChild(Param, Ty)
-                    default:
-                        return nil
+            let fixedChildren = Param.getNumChildren()
+            var paramToAdd: Node? = Param
+            for childIdx in 0..<fixedChildren {
+                let KindNd = Param.getChild(fixedChildren - childIdx - 1)
+                if KindNd.getKind() != .FunctionSignatureSpecializationParamKind {
+                    continue
+                }
+                
+                switch KindNd.functionSigSpecializationParamKind?.kind {
+                case .ClosureProp, .EscapingClosureProp:
+                    while let Ty = popNode(.Type) {
+                        paramToAdd = addChild(paramToAdd, Ty)
                     }
+                case .ConstantPropKeyPath:
+                    paramToAdd = addChild(paramToAdd, popNode(.Type))
+                    paramToAdd = addChild(paramToAdd, popNode(.Type))
+                case .ConstantPropStruct:
+                    paramToAdd = addChild(paramToAdd, popNode(.Type))
+                    continue
+                case .ConstantPropFunction, .ConstantPropGlobal, .ConstantPropString:
+                    break
+                default:
+                    continue
                 }
-                guard let Name = popNode(.Identifier) else { return nil }
-                var Text = Name.getText()
-                if ParamKind?.kind == .ConstantPropString, !Text.isEmpty, Text[0] == "_" {
-                    // A "_" escapes a leading digit or "_" of a string constant.
-                    Text = Text.dropFirst().description
-                }
-                addChild(Param, createNodeWithAllocatedText(.FunctionSignatureSpecializationParamPayload, Text))
-                Param?.reverseChildren(FixedChildren)
-            default:
-                break
+                paramToAdd = addChild(paramToAdd, popNode(.Identifier))
             }
+            if paramToAdd == nil {
+                return nil
+            }
+            Param.reverseChildren(fixedChildren)
         }
         return Spec
     }
@@ -1916,39 +1935,66 @@ class Demangler: Demanglerable, Mangling {
             // Consumes an identifier and multiple type parameters.
             // The parameters will be added later.
             return addChild(Param, createNode(.FunctionSignatureSpecializationParamKind, .ClosureProp))
-        case "p":
-            switch nextChar() {
-            case "f":
-                // Consumes an identifier parameter, which will be added later.
-                return addChild(Param, createNode(.FunctionSignatureSpecializationParamKind, .ConstantPropFunction))
-            case "g":
-                // Consumes an identifier parameter, which will be added later.
-                return addChild(Param, createNode(.FunctionSignatureSpecializationParamKind, .ConstantPropGlobal))
-            case "i":
-                return addFuncSpecParamNumber(Param, .ConstantPropInteger)
-            case "d":
-                return addFuncSpecParamNumber(Param, .ConstantPropFloat)
-            case "s":
-                // Consumes an identifier parameter (the string constant),
-                // which will be added later.
-                let Encoding: String
-                switch nextChar() {
-                case "b":
-                    Encoding = "u8"
-                case "w":
-                    Encoding = "u16"
-                case "c":
-                    Encoding = "objc"
-                default:
-                    return nil
-                }
-                addChild(Param, createNode(.FunctionSignatureSpecializationParamKind, .ConstantPropString))
-                return addChild(Param, createNode(.FunctionSignatureSpecializationParamPayload, Encoding))
-            case "k":
-                // Consumes two types and a SHA1 identifier.
-                return addChild(Param, createNode(.FunctionSignatureSpecializationParamKind, .ConstantPropKeyPath))
-            default:
+        case "E":
+            // Like "c", but for escaping closures. Consumes an identifier and
+            // multiple type parameters. The parameters will be added later.
+            return addChild(Param, createNode(.FunctionSignatureSpecializationParamKind, .EscapingClosureProp))
+        case "C":
+            // Refers to the closure of a previous argument.
+            addChild(Param, createNode(.FunctionSignatureSpecializationParamKind, .ClosurePropPreviousArg))
+            let prevArgIdx = demangleNatural()
+            if prevArgIdx < 0 {
                 return nil
+            }
+            return addChild(Param, createNode(.FunctionSignatureSpecializationParamPayload, UInt64(prevArgIdx)))
+        case "p":
+            // Constant propagation operators can follow each other, e.g. "pSSi3Si0".
+            while true {
+                switch nextChar() {
+                case "S":
+                    // Consumes a type parameter, which will be added later.
+                    addChild(Param, createNode(.FunctionSignatureSpecializationParamKind, .ConstantPropStruct))
+                case "f":
+                    // Consumes an identifier parameter, which will be added later.
+                    addChild(Param, createNode(.FunctionSignatureSpecializationParamKind, .ConstantPropFunction))
+                case "g":
+                    // Consumes an identifier parameter, which will be added later.
+                    addChild(Param, createNode(.FunctionSignatureSpecializationParamKind, .ConstantPropGlobal))
+                case "i":
+                    if addFuncSpecParamNumber(Param, .ConstantPropInteger) == nil {
+                        return nil
+                    }
+                case "d":
+                    if addFuncSpecParamNumber(Param, .ConstantPropFloat) == nil {
+                        return nil
+                    }
+                case "s":
+                    // Consumes an identifier parameter (the string constant),
+                    // which will be added later.
+                    let Encoding: String
+                    switch nextChar() {
+                    case "b":
+                        Encoding = "u8"
+                    case "w":
+                        Encoding = "u16"
+                    case "c":
+                        Encoding = "objc"
+                    default:
+                        return nil
+                    }
+                    addChild(Param, createNode(.FunctionSignatureSpecializationParamKind, .ConstantPropString))
+                    addChild(Param, createNode(.FunctionSignatureSpecializationParamPayload, Encoding))
+                case "k":
+                    // Consumes two types and a SHA1 identifier.
+                    addChild(Param, createNode(.FunctionSignatureSpecializationParamKind, .ConstantPropKeyPath))
+                case .zero:
+                    // End of input. Pushing back here would re-read the last
+                    // character forever, which upstream does.
+                    return nil
+                default:
+                    pushBack()
+                    return Param
+                }
             }
             
         case "e":
@@ -2006,6 +2052,7 @@ class Demangler: Demanglerable, Mangling {
     func demangleSpecAttributes(_ SpecKind: Node.Kind) -> Node? {
         let isSerialized = nextIf("q")
         let asyncRemoved = nextIf("a")
+        let representationChanged = nextIf("r")
         
         let PassID = nextChar() - "0"
         guard (0...9).contains(PassID) else { return nil }
@@ -2018,6 +2065,10 @@ class Demangler: Demanglerable, Mangling {
         
         if asyncRemoved {
             SpecNd.addChild(createNode(.AsyncRemoved))
+        }
+        
+        if representationChanged {
+            SpecNd.addChild(createNode(.RepresentationChanged))
         }
         
         SpecNd.addChild(createNode(.SpecializationPassID, PassID))
@@ -2070,7 +2121,7 @@ class Demangler: Demanglerable, Mangling {
             return createWithChildren(.AssociatedTypeMetadataAccessor, Conf, Name)
         case "T":
             let ProtoTy = popNode(.Type)
-            let ConformingType = popSelfOrAssocTypePath()
+            let ConformingType = popAssocTypePath()
             let Conf = popProtocolConformance()
             return createWithChildren(.AssociatedTypeWitnessTableAccessor, Conf, ConformingType, ProtoTy)
         case "b":
@@ -2360,13 +2411,17 @@ class Demangler: Demanglerable, Mangling {
         case "r":
             Kind = .ReadAccessor
         case "y":
-            Kind = .Read2Accessor
+            Kind = .YieldingBorrowAccessor
         case "M":
             Kind = .ModifyAccessor
         case "x":
-            Kind = .Modify2Accessor
+            Kind = .YieldingMutateAccessor
         case "i":
             Kind = .InitAccessor
+        case "b":
+            Kind = .BorrowAccessor
+        case "z":
+            Kind = .MutateAccessor
         case "a":
             switch nextChar() {
             case "O":
@@ -2453,6 +2508,9 @@ class Demangler: Demanglerable, Mangling {
         case "P":
             Args = .None
             Kind = .PropertyWrapperBackingInitializer
+        case "F":
+            Args = .None
+            Kind = .PropertyWrappedFieldInitAccessor
         case "W":
             Args = .None
             Kind = .PropertyWrapperInitFromProjectedValue
@@ -2670,6 +2728,20 @@ class Demangler: Demanglerable, Mangling {
         case "i":
             ConstraintKind = .Inverse
             TypeKind = .Generic
+            inverseKind = demangleIndexAsNode()
+            if inverseKind == nil {
+                return nil
+            }
+        case "j":
+            ConstraintKind = .Inverse
+            TypeKind = .Assoc
+            inverseKind = demangleIndexAsNode()
+            if inverseKind == nil {
+                return nil
+            }
+        case "J":
+            ConstraintKind = .Inverse
+            TypeKind = .CompoundAssoc
             inverseKind = demangleIndexAsNode()
             if inverseKind == nil {
                 return nil
@@ -2989,6 +3061,7 @@ class Demangler: Demanglerable, Mangling {
                 .DefaultArgumentInitializer,
                 .Initializer,
                 .PropertyWrapperBackingInitializer,
+                .PropertyWrappedFieldInitAccessor,
                 .PropertyWrapperInitFromProjectedValue,
                 .Static:
             return false
@@ -3415,13 +3488,25 @@ class Demangler: Demanglerable, Mangling {
         return assocTypePath
     }
     
-    func popSelfOrAssocTypePath() -> Node? {
-        if let Type = popNode(.Type) {
-            if let child = Type.copyOfChildren.first, child.getKind() == .DependentGenericParamType {
-                return Type
+    func isGenericParamType(_ node: Node?) -> Bool {
+        guard let node else { return false }
+        switch node.getKind() {
+        case .Type:
+            return isGenericParamType(node.copyOfChildren.first)
+        case .DependentGenericParamType:
+            return true
+        default:
+            return false
+        }
+    }
+    
+    func popAssociatedConformanceWitnessAccessorSubject() -> Node? {
+        if let type = popNode(.Type) {
+            if isGenericParamType(type) {
+                return type
             }
             
-            pushNode(Type)
+            pushNode(type)
         }
         
         return popAssocTypePath()

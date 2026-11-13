@@ -30,6 +30,8 @@ final class NominalOwnerTraversalTests {
         .Getter,
         .BoundGenericClass,
         .PartialApplyForwarder,
+        .FieldOffset,
+        .Metaclass,
     ])
     func missingChildrenHaveNoOwner(kind: Node.Kind) {
         #expect(Node(kind: kind).extractNominalOwner() == nil)

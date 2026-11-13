@@ -15,9 +15,9 @@
 - [x] IsolatedAnyFunctionType - isolated any function type
 - [x] SendingResultFunctionType - sending result function type
 - [x] MacroExpansionLoc - print location of macro expansion
-- [x] Modify2Accessor - modify2: improved version of modify accessor
+- [x] Modify2Accessor - modify2: improved version of modify accessor (renamed to YieldingMutateAccessor in 6.4.2)
 - [x] PreambleAttachedMacroExpansion
-- [x] Read2Accessor - read accessor for coroutine
+- [x] Read2Accessor - read accessor for coroutine (renamed to YieldingBorrowAccessor in 6.4.2)
 - [x] Pack - generic pack
 - [x] SILPackDirect - direct SIL pack
 - [x] SILPackIndirect - indirect SIL pack
@@ -61,4 +61,24 @@
 - [x] NonIsolatedCallerFunctionType - @nonisolated(nonsending) function type
 - [x] OutlinedInitializeWithTakeNoValueWitness - outlined init with take no value witness
 - [x] SugaredInlineArray - sugared inline array type [N of T]
-
+// Added in Swift 6.4.2
+- [x] BorrowAccessor - borrow accessor (`b`)
+- [x] MutateAccessor - mutate accessor (`z`)
+- [x] YieldingBorrowAccessor (renamed from Read2Accessor) - prints `yielding_borrow`
+- [x] YieldingMutateAccessor (renamed from Modify2Accessor) - prints `yielding_mutate`
+- [x] CheckedObjCAsyncCompletionHandlerImpl (renamed from PredefinedObjCAsyncCompletionHandlerImpl) - prints `checked`
+- [x] BuiltinBorrow - Builtin.Borrow<T> (`BW`)
+- [x] ImplNonisolatedNonsendingIsolation - @caller_isolated SIL function type (`N`)
+- [x] PropertyWrappedFieldInitAccessor - property wrapped field init accessor (`fF`)
+- [x] RepresentationChanged - representation changed specialization (`Tfr`)
+// Changed in Swift 6.4.2 without a new Kind
+- [x] SIL result conventions `l` (@guaranteed_address), `g` (@guaranteed), `m` (@inout); `k` (@pack_out) was missing from the 6.2.3 sync and is added too
+- [x] Generic requirements `Rj`, `RJ` - inverse requirement on an associated type
+- [x] `Tn` / `TN` subject can be a generic parameter type
+- [x] FunctionSigSpecializationParamKind: ConstantPropStruct (`pS`), ClosurePropPreviousArg (`C<n>`), EscapingClosureProp (`E`); constant propagation operators can be chained; function, global, string, key path and closure names are Identifier nodes
+- [x] Nested symbol names inside a specialization are printed without type sugar
+// Differences from upstream
+- [x] A specialization that ends right after `p` (e.g. `...Tf4p`) fails here; upstream 6.4.2 loops forever on it
+// Not ported
+- [ ] RemoteAddress node payload - used only by remote reflection
+- [ ] Remangler changes - this library has no remangler

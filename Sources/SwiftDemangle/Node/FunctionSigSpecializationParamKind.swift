@@ -40,6 +40,9 @@ public struct FunctionSigSpecializationParamKind: Equatable {
         case BoxToStack = 7
         case InOutToOut = 8
         case ConstantPropKeyPath = 9
+        case ConstantPropStruct = 10
+        case ClosurePropPreviousArg = 11
+        case EscapingClosureProp = 12
 
         var description: String {
             switch self {
@@ -63,6 +66,12 @@ public struct FunctionSigSpecializationParamKind: Equatable {
                 return "FunctionSigSpecializationParamKind.InOutToOut"
             case .ConstantPropKeyPath:
                 return "FunctionSigSpecializationParamKind.ConstantPropKeyPath"
+            case .ConstantPropStruct:
+                return "FunctionSigSpecializationParamKind.ConstantPropStruct"
+            case .ClosurePropPreviousArg:
+                return "FunctionSigSpecializationParamKind.ClosurePropPreviousArg"
+            case .EscapingClosureProp:
+                return "FunctionSigSpecializationParamKind.EscapingClosureProp"
             }
         }
         
@@ -123,7 +132,8 @@ public struct FunctionSigSpecializationParamKind: Equatable {
     }
     
     var optionSet: OptionSet {
-        guard rawValue > 9 else { return [] }
+        // Bits 0-5 hold the kind; option flags start at bit 6.
+        guard rawValue >= 1 << 6 else { return [] }
         return OptionSet(rawValue: rawValue)
     }
     

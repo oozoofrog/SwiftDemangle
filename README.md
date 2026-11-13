@@ -8,7 +8,19 @@
 
 ## Overview
 
-`SwiftDemangle` is a library designed for demangling Swift symbols, inspired by Swift's own `swift-demangle` tool. This library offers compatibility up to Swift version 6.0(maybe 6.1 too), providing an easy-to-use interface for converting mangled Swift symbols into a human-readable format.
+`SwiftDemangle` is a library designed for demangling Swift symbols, inspired by Swift's own `swift-demangle` tool. It follows the demangler of Swift 6.4.2, providing an easy-to-use interface for converting mangled Swift symbols into a human-readable format.
+
+## What's New in 6.4.2
+
+Synced with the Swift 6.4.2 demangler.
+
+- **Output changes** (same symbols, new text, following upstream):
+  - `read2` / `modify2` accessors print as `yielding_borrow` / `yielding_mutate`
+  - `predefined @objc completion handler block implementation` prints as `checked @objc completion handler block implementation`
+- **New manglings:** `borrow` / `mutate` accessors, `Builtin.Borrow<T>`, property wrapped field init accessors, `@caller_isolated` SIL function types, `@guaranteed_address` / `@guaranteed` / `@inout` SIL results, inverse requirements on associated types (`A.Element: ~Swift.Copyable`), `representation changed of` specializations
+- **Function signature specializations:** constant propagated structs, chained constant propagation, escaping closure propagation and `Same As Argument N`
+- **Node tree access:** `String.node` returns the demangled tree for read-only traversal (`kind`, `children`, `text`, `index`)
+- **Nominal owner lookup:** `String.nominalOwner` returns the nominal type that owns a symbol, including type metadata, metaclass, value witness table and field offset symbols
 
 ## What's New in 6.0.4
 
@@ -35,7 +47,7 @@ Version 6.0.2 of SwiftDemangle introduces significant updates and improvements, 
 ```Swift
 # If using Swift Package Manager
 dependencies: [
-    .package(url: "https://github.com/oozoofrog/SwiftDemangle", .upToNextMajor(from: "6.0.4"))
+    .package(url: "https://github.com/oozoofrog/SwiftDemangle", .upToNextMajor(from: "6.4.2"))
 ]
 ```
 
@@ -53,7 +65,14 @@ print(demangledVector)  // Output: Builtin.Vec4xFPIEEE16
 let mangledProtocol = "$ss6SimpleHr"
 let demangledProtocol = mangledProtocol.demangled
 print(demangledProtocol)  // Output: protocol descriptor runtime record for Swift.Simple
+
+// Example 3: Finding the type that owns a symbol
+let owner = "$s6Widget7ManagerC9operationyyF".nominalOwner
+owner?.kind == .Class              // true
+owner?.children.map(\.text)        // ["Widget", "Manager"]
 ```
+
+`nominalOwner` returns `nil` for module-level declarations and for symbol shapes it does not support, such as protocol witnesses and reabstraction thunks.
 
 ## Build xcframework
 

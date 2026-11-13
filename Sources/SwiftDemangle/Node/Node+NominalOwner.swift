@@ -22,6 +22,10 @@ extension Node {
                 // Function type manglings can have a LabelList before the Type.
                 current = node.childIf(.Type)
 
+            case .FieldOffset:
+                // Child 0 is the directness; the stored property follows it.
+                current = node.childIf(.Variable)
+
             case .Type,
                     .BoundGenericClass, .BoundGenericStructure, .BoundGenericEnum,
                     .BoundGenericProtocol, .BoundGenericOtherNominalType,
@@ -29,6 +33,14 @@ extension Node {
                     .Static, .CurryThunk, .DispatchThunk, .MethodDescriptor,
                     .PropertyDescriptor,
                     .TypeMetadata, .TypeMetadataAccessFunction, .FullTypeMetadata,
+                    .TypeMetadataLazyCache, .GenericTypeMetadataPattern,
+                    .TypeMetadataInstantiationFunction, .TypeMetadataInstantiationCache,
+                    .TypeMetadataCompletionFunction, .TypeMetadataSingletonInitializationCache,
+                    .Metaclass, .ClassMetadataBaseOffset, .MethodLookupFunction,
+                    .ObjCResilientClassStub, .FullObjCResilientClassStub,
+                    .ObjCMetadataUpdateFunction, .ValueWitnessTable,
+                    .ReflectionMetadataFieldDescriptor, .ReflectionMetadataBuiltinDescriptor,
+                    .ReflectionMetadataSuperclassDescriptor,
                     .NominalTypeDescriptor, .NominalTypeDescriptorRecord,
                     .ProtocolDescriptor, .ProtocolDescriptorRecord:
                 // These wrappers put the declaration/type before any other payload.
@@ -39,10 +51,11 @@ extension Node {
                     .IsolatedDeallocator, .IVarInitializer, .IVarDestroyer,
                     .ExplicitClosure, .ImplicitClosure, .DefaultArgumentInitializer,
                     .Initializer, .PropertyWrapperBackingInitializer,
+                    .PropertyWrappedFieldInitAccessor,
                     .PropertyWrapperInitFromProjectedValue,
                     .Getter, .Setter, .GlobalGetter, .WillSet, .DidSet,
-                    .ReadAccessor, .Read2Accessor, .ModifyAccessor, .Modify2Accessor,
-                    .InitAccessor, .MaterializeForSet,
+                    .ReadAccessor, .YieldingBorrowAccessor, .ModifyAccessor, .YieldingMutateAccessor,
+                    .InitAccessor, .BorrowAccessor, .MutateAccessor, .MaterializeForSet,
                     .OwningAddressor, .OwningMutableAddressor,
                     .NativeOwningAddressor, .NativeOwningMutableAddressor,
                     .NativePinningAddressor, .NativePinningMutableAddressor,

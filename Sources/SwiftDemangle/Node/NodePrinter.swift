@@ -83,6 +83,9 @@ struct NodePrinter {
         case .AsyncRemoved:
             printer("async demotion of ")
             try printNode(node.children(0), depth: depth + 1)
+        case .RepresentationChanged:
+            printer("representation changed of ")
+            try printNode(node.children(0), depth: depth + 1)
         case .CurryThunk:
             printer("curry thunk of ")
             try printNode(node.children(0), depth: depth + 1)
@@ -376,6 +379,15 @@ struct NodePrinter {
                 hasName: false,
                 extraName: "property wrapper backing initializer"
             )
+        case .PropertyWrappedFieldInitAccessor:
+            return try printEntity(
+                entity: node,
+                depth: depth,
+                asPrefixContext: asPrefixContext,
+                typePrinting: .noType,
+                hasName: false,
+                extraName: "property wrapped field init accessor"
+            )
         case .DefaultArgumentInitializer:
             return try printEntity(
                 entity: node,
@@ -584,10 +596,14 @@ struct NodePrinter {
                 .FunctionSignatureSpecializationParam:
             throw SwiftDemangleError.nodePrinterError(description: "should be handled in printSpecializationPrefix", nodeDebugDescription: node.debugDescription)
         case .FunctionSignatureSpecializationParamPayload:
-            if let demangleName = try node.text.demangleSymbolAsString(with: .defaultOptions).emptyToNil() {
-                printer(demangleName)
-            } else {
-                printer(node.text)
+            if node.hasText {
+                if let demangleName = try node.text.demangleSymbolAsString(with: .nestedSymbolOptions).emptyToNil() {
+                    printer(demangleName)
+                } else {
+                    printer(node.text)
+                }
+            } else if let index = node.index {
+                printer(index.description)
             }
         case .FunctionSignatureSpecializationParamKind:
             if let kind = node.functionSigSpecializationParamKind {
@@ -653,6 +669,12 @@ struct NodePrinter {
                         printer("InOut Converted to Out")
                     case .ConstantPropKeyPath:
                         printer("Constant Propagated KeyPath")
+                    case .ConstantPropStruct:
+                        printer("Constant Propagated Struct")
+                    case .EscapingClosureProp:
+                        printer("Escaping Closure Propagated")
+                    case .ClosurePropPreviousArg:
+                        printer("Same As Argument")
                     }
                 }
                 if !kind.optionSet.isEmpty {
@@ -670,6 +692,10 @@ struct NodePrinter {
             try printNode(node.children(0), depth: depth + 1)
             printer(", ")
             try printNode(node.children(1), depth: depth + 1)
+            printer(">")
+        case .BuiltinBorrow:
+            printer("Builtin.Borrow<")
+            try printNode(node.children(0), depth: depth + 1)
             printer(">")
         case .Number:
             printer(node.index.or(0).description)
@@ -1126,14 +1152,18 @@ struct NodePrinter {
             return try printAbstractStorage(node: node.children(0), depth: depth, asPrefixContext: asPrefixContext, extraName: "didset")
         case .ReadAccessor:
             return try printAbstractStorage(node: node.children(0), depth: depth, asPrefixContext: asPrefixContext, extraName: "read")
-        case .Read2Accessor:
-            return try printAbstractStorage(node: node.children(0), depth: depth, asPrefixContext: asPrefixContext, extraName: "read2")
+        case .YieldingBorrowAccessor:
+            return try printAbstractStorage(node: node.children(0), depth: depth, asPrefixContext: asPrefixContext, extraName: "yielding_borrow")
         case .ModifyAccessor:
             return try printAbstractStorage(node: node.children(0), depth: depth, asPrefixContext: asPrefixContext, extraName: "modify")
-        case .Modify2Accessor:
-            return try printAbstractStorage(node: node.children(0), depth: depth, asPrefixContext: asPrefixContext, extraName: "modify2")
+        case .YieldingMutateAccessor:
+            return try printAbstractStorage(node: node.children(0), depth: depth, asPrefixContext: asPrefixContext, extraName: "yielding_mutate")
         case .InitAccessor:
             return try printAbstractStorage(node: node.children(0), depth: depth, asPrefixContext: asPrefixContext, extraName: "init")
+        case .BorrowAccessor:
+            return try printAbstractStorage(node: node.children(0), depth: depth, asPrefixContext: asPrefixContext, extraName: "borrow")
+        case .MutateAccessor:
+            return try printAbstractStorage(node: node.children(0), depth: depth, asPrefixContext: asPrefixContext, extraName: "mutate")
         case .Allocator:
             return try printEntity(entity: node, depth: depth, asPrefixContext: asPrefixContext, typePrinting: .functionStyle, hasName: false, extraName: node.children(0).isClassType ? "__allocating_init" : "init")
         case .Constructor:
@@ -1189,6 +1219,8 @@ struct NodePrinter {
             }
         case .ImplEscaping:
             printer("@escaping")
+        case .ImplNonisolatedNonsendingIsolation:
+            printer("@caller_isolated")
         case .ImplErasedIsolation:
             printer("@isolated(any)")
         case .ImplCoroutineKind:
@@ -1545,8 +1577,8 @@ struct NodePrinter {
                 try printChildren(node, depth: depth, separator: ", ")
                 printer(")")
             }
-        case .PredefinedObjCAsyncCompletionHandlerImpl:
-            printer("predefined ")
+        case .CheckedObjCAsyncCompletionHandlerImpl:
+            printer("checked ")
             fallthrough
         case .ObjCAsyncCompletionHandlerImpl:
             printer("@objc completion handler block implementation for ")
@@ -2014,6 +2046,7 @@ struct NodePrinter {
             case .DefaultArgumentInitializer,
                     .Initializer,
                     .PropertyWrapperBackingInitializer,
+                    .PropertyWrappedFieldInitAccessor,
                     .PropertyWrapperInitFromProjectedValue:
                 printer(" of ")
             default:
@@ -2281,6 +2314,10 @@ struct NodePrinter {
             }
             return
         }
+        if node.copyOfChildren.first?.kind == .RepresentationChanged {
+            printer("representation changed of ")
+            return
+        }
         printer(description + " <")
         var separator = ""
         var argumentNumber = 0
@@ -2319,101 +2356,142 @@ struct NodePrinter {
     
     mutating func printFunctionSigSpecializationParams(node: Node, depth: Int) throws {
         var index = 0
+        var argIndex = 0
         let endIndex = node.numberOfChildren
         while index < endIndex {
-            let firstChild = node.children(index)
-            if let paramKindValue = firstChild.functionSigSpecializationParamKind {
-                if let kind = paramKindValue.kind {
-                    switch kind {
-                    case .BoxToValue,
-                            .BoxToStack,
-                            .InOutToOut:
-                        try printNode(node.children(index), depth: depth + 1)
-                        index += 1
-                    case .ConstantPropFunction,
-                            .ConstantPropGlobal:
-                        if index + 2 > endIndex { return }
-                        printer("[")
-                        try printNode(node.children(index), depth: depth + 1)
-                        index += 1
-                        printer(" : ")
-                        let text = node.children(index).text
-                        index += 1
-                        let demangleName = try text.demangleSymbolAsString(
-                            with: .defaultOptions,
-                            printDebugInformation: false
-                        )
-                        printer(demangleName.emptyToNil() ?? text)
-                        printer("]")
-                    case .ConstantPropInteger,
-                            .ConstantPropFloat:
-                        if index + 2 > endIndex { return }
-                        printer("[")
-                        try printNode(node.children(index), depth: depth + 1)
-                        index += 1
-                        printer(" : ")
-                        try printNode(node.children(index), depth: depth + 1)
-                        index += 1
-                        printer("]")
-                    case .ConstantPropString:
-                        if index + 3 > endIndex { return }
-                        printer("[")
-                        try printNode(node.children(index), depth: depth + 1)
-                        index += 1
-                        printer(" : ")
-                        try printNode(node.children(index), depth: depth + 1)
-                        index += 1
-                        printer("'")
-                        try printNode(node.children(index), depth: depth + 1)
-                        index += 1
-                        printer("'")
-                        printer("]")
-                    case .ConstantPropKeyPath:
-                        if index + 4 > endIndex { return }
-                        printer("[")
-                        try printNode(node.getChild(index), depth: depth + 1)
-                        index += 1
-                        printer(" : ")
-                        try printNode(node.getChild(index), depth: depth + 1)
-                        index += 1
-                        printer("<")
-                        try printNode(node.getChild(index), depth: depth + 1)
-                        index += 1
-                        printer(",")
-                        try printNode(node.getChild(index), depth: depth + 1)
-                        index += 1
-                        printer(">]")
-                    case .ClosureProp:
-                        if index + 2 > endIndex { return }
-                        printer("[")
-                        try printNode(node.children(index), depth: depth + 1)
-                        index += 1
-                        printer(" : ")
-                        try printNode(node.children(index), depth: depth + 1)
-                        index += 1
-                        printer(", Argument Types : [")
-                        while index < node.numberOfChildren {
-                            let child = node.children(index)
-                            // Until we no longer have a type node, keep demangling.
-                            if child.kind != .Type {
-                                break
-                            }
-                            try printNode(child, depth: depth + 1)
-                            index += 1
-                            
-                            // If we are not done, print the ", ".
-                            if index < node.numberOfChildren, node.children(index).text.emptyToNil() != nil {
-                                printer(", ")
-                            }
-                        }
-                        printer("]")
-                    }
-                } else {
-                    assert(paramKindValue.isValidOptionSet, "Invalid OptionSet")
-                    try printNode(node.children(index), depth: depth + 1)
-                    index += 1
-                }
+            let child = node.children(index)
+            guard let paramKindValue = child.functionSigSpecializationParamKind else { return }
+            guard let kind = paramKindValue.kind else {
+                assert(paramKindValue.isValidOptionSet, "Invalid OptionSet")
+                try printNode(node.children(index), depth: depth + 1)
+                index += 1
+                continue
             }
+            switch kind {
+            case .BoxToValue,
+                    .BoxToStack,
+                    .InOutToOut:
+                try printNode(node.children(index), depth: depth + 1)
+                index += 1
+            case .ConstantPropFunction,
+                    .ConstantPropGlobal:
+                printer("[")
+                try printNode(node.children(index), depth: depth + 1)
+                index += 1
+                printer(" : ")
+                try printNextParamChildNode(node: node, index: &argIndex, kind: kind, depth: depth)
+                printer("]")
+            case .ConstantPropInteger,
+                    .ConstantPropFloat:
+                if index + 2 > endIndex { return }
+                printer("[")
+                try printNode(node.children(index), depth: depth + 1)
+                index += 1
+                printer(" : ")
+                try printNode(node.children(index), depth: depth + 1)
+                index += 1
+                printer("]")
+            case .ConstantPropString:
+                if index + 2 > endIndex { return }
+                printer("[")
+                try printNode(node.children(index), depth: depth + 1)
+                index += 1
+                printer(" : ")
+                try printNode(node.children(index), depth: depth + 1)
+                index += 1
+                printer("'")
+                try printNextParamChildNode(node: node, index: &argIndex, kind: kind, depth: depth)
+                printer("'")
+                printer("]")
+            case .ConstantPropKeyPath:
+                printer("[")
+                try printNode(node.children(index), depth: depth + 1)
+                index += 1
+                printer(" : ")
+                try printNextParamChildNode(node: node, index: &argIndex, kind: kind, depth: depth)
+                printer("<")
+                try printNextParamChildNode(node: node, index: &argIndex, kind: kind, depth: depth)
+                printer(",")
+                try printNextParamChildNode(node: node, index: &argIndex, kind: kind, depth: depth)
+                printer(">]")
+            case .ConstantPropStruct:
+                printer("[")
+                try printNode(node.children(index), depth: depth + 1)
+                index += 1
+                printer(" : ")
+                try printNextParamChildNode(node: node, index: &argIndex, kind: kind, depth: depth)
+                printer("]")
+            case .ClosureProp,
+                    .EscapingClosureProp:
+                if index + 2 > endIndex { return }
+                printer("[")
+                try printNode(node.children(index), depth: depth + 1)
+                index += 1
+                printer(" : ")
+                try printNode(node.children(index), depth: depth + 1)
+                index += 1
+                printer(", Argument Types : [")
+                while index < node.numberOfChildren {
+                    let child = node.children(index)
+                    // Until we no longer have a type node, keep demangling.
+                    if child.kind != .Type {
+                        break
+                    }
+                    try printNode(child, depth: depth + 1)
+                    index += 1
+                    
+                    // If we are not done, print the ", ".
+                    if index < node.numberOfChildren, node.children(index).text.emptyToNil() != nil {
+                        printer(", ")
+                    }
+                }
+                printer("]")
+            case .ClosurePropPreviousArg:
+                if index + 2 > endIndex { return }
+                printer("[")
+                try printNode(node.children(index), depth: depth + 1)
+                index += 1
+                printer(" ")
+                try printNode(node.children(index), depth: depth + 1)
+                index += 1
+                printer("]")
+            }
+        }
+    }
+    
+    /// Prints the next child of `node` that is neither a param kind nor a param payload,
+    /// starting at `index`, formatted for the constant propagation `kind`.
+    mutating func printNextParamChildNode(node: Node, index: inout Int, kind: FunctionSigSpecializationParamKind.Kind, depth: Int) throws {
+        while index < node.numberOfChildren {
+            let child = node.children(index)
+            index += 1
+            if child.kind == .FunctionSignatureSpecializationParamKind || child.kind == .FunctionSignatureSpecializationParamPayload {
+                continue
+            }
+            switch kind {
+            case .ConstantPropInteger, .ConstantPropFloat:
+                guard child.hasText else { return }
+                let text = child.text
+                let demangleName = try text.demangleSymbolAsString(with: .nestedSymbolOptions, printDebugInformation: false)
+                printer(demangleName.emptyToNil() ?? text)
+            case .ConstantPropString:
+                if child.hasText {
+                    let text = child.text
+                    if text.first == "_" {
+                        // A "_" escapes a leading digit or "_" of a string constant.
+                        printer(String(text.dropFirst()))
+                        return
+                    }
+                }
+                try printNode(child, depth: depth + 1)
+            case .ConstantPropFunction, .ConstantPropGlobal:
+                let text = child.text
+                let demangleName = try text.demangleSymbolAsString(with: .nestedSymbolOptions, printDebugInformation: false)
+                printer(demangleName.emptyToNil() ?? text)
+            default:
+                try printNode(child, depth: depth + 1)
+            }
+            return
         }
     }
     
